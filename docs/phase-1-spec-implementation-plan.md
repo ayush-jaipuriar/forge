@@ -928,7 +928,7 @@ Use this section as the live implementation tracker.
 
 ### Overall Status
 
-- [ ] Milestone 0 complete
+- [x] Milestone 0 complete
 - [ ] Milestone 1 complete
 - [ ] Milestone 2 complete
 - [ ] Milestone 3 complete
@@ -943,7 +943,9 @@ Use this section as the live implementation tracker.
 
 ### Current Iteration Notes
 
-- Created this Phase 1 planning document from `PRS.md` and clarified Phase 1 constraints.
-- Established milestone order, architecture boundaries, and embedded testing/documentation expectations.
-- Next implementation step: start Milestone 0 and create the project foundation.
-
+- Created the Vite + React + TypeScript project foundation and aligned the toolchain to a PWA-compatible Vite 7 setup.
+- Replaced the starter demo UI with a real route-based Forge shell, theme system, shared providers, and initial feature page placeholders.
+- Added baseline docs for architecture, Firebase setup, deployment, calendar scaffolding, and future extension notes.
+- Added `.env.example`, path aliases, Vitest setup, a smoke-style shell test, and baseline PWA configuration.
+- Verification completed successfully with `npm run lint`, `npm run test:run`, `npm run typecheck`, and `npm run build`.
+- Next implementation step: continue with Milestone 1 completion and then wire real Firebase auth and persistence in Milestone 2.
