@@ -544,6 +544,15 @@ Create the config-driven core domain model that powers the rest of the applicati
 
 Create the persistence architecture that supports both real Firebase data and offline-first critical actions.
 
+### Short Implementation Outline
+
+- define repository interfaces for day instances, settings, prep progress, workout logs, sleep logs, and scores
+- stand up a local IndexedDB database as the first persistence implementation for critical Phase 1 reads and writes
+- add a sync queue model with typed action metadata, retry bookkeeping, and replay ordering
+- build a sync provider/orchestrator that can observe online state, surface sync health to the UI, and replay queued writes when the session is authenticated
+- route Today and Schedule through persistence-aware workspace hooks so generated day instances become cacheable local data instead of per-render derived values
+- keep Firestore adapters thin and focused so local-first behavior remains the primary UX path
+
 ### Deliverables
 
 - repository interfaces
@@ -554,19 +563,19 @@ Create the persistence architecture that supports both real Firebase data and of
 
 ### Checklist
 
-- [ ] Define repository interfaces for day instances, prep progress, workout logs, sleep logs, scores, and settings.
+- [x] Define repository interfaces for day instances, prep progress, workout logs, sleep logs, scores, and settings.
 - [ ] Implement Firestore repository adapters for core Phase 1 entities.
-- [ ] Implement local persistence adapters for cached day state and pending writes.
-- [ ] Define a sync queue item model with action type, payload, retry state, and timestamps.
+- [x] Implement local persistence adapters for cached day state and pending writes.
+- [x] Define a sync queue item model with action type, payload, retry state, and timestamps.
 - [ ] Implement optimistic local updates for critical actions.
-- [ ] Create a sync orchestrator that can replay queued actions when connectivity returns.
+- [x] Create a sync orchestrator that can replay queued actions when connectivity returns.
 - [ ] Design conflict-safe update behavior for day execution data.
-- [ ] Expose subtle sync status to the UI through a shared state boundary.
+- [x] Expose subtle sync status to the UI through a shared state boundary.
 
 ### Testing and Documentation
 
 - [ ] Add unit tests for queue serialization, replay ordering, and conflict helper utilities.
-- [ ] Document offline assumptions and sync flow in `docs/architecture-overview.md`.
+- [x] Document offline assumptions and sync flow in `docs/architecture-overview.md`.
 - [ ] Add notes about tradeoffs and limits of Phase 1 conflict resolution.
 
 ### Exit Criteria
@@ -978,4 +987,12 @@ Use this section as the live implementation tracker.
 - Extended seed-derived consumption into Prep and Physical so those screens now reflect taxonomy shape, daily prep focus, and workout schedule reality instead of placeholder copy.
 - Local verification passed again with `npm run lint`, `npm run test:run`, `npm run typecheck`, and `npm run build`.
 - Milestone 3 is now complete from the Phase 1 checklist perspective: templates, seed data, generation logic, fallback transformations, helper mapping, and initial UI consumption are all in place.
-- Next implementation step: begin Milestone 4 and build the repository/local-persistence/sync-queue layer that will eventually persist these generated and user-mutated day instances.
+- Added the Milestone 4 persistence foundation: repository interfaces, IndexedDB-backed local repositories, a typed sync queue model, Firestore replay adapters for day instances and settings, and a sync orchestrator/provider pair that can flush queued writes when an authenticated session is online.
+- Routed Today and Schedule through persistence-aware workspace hooks so generated day instances are cached locally instead of being regenerated on each render.
+- Added IndexedDB test support with `fake-indexeddb`, plus initial sync-queue tests for typed queue-item creation.
+- Converted day mode override into the first real local-first mutation path: Today now writes the override into persisted local settings, enqueues a settings sync action, and invalidates Today/Schedule workspace queries so the regenerated day model reflects the persisted override immediately.
+- Added a focused service test for the day-mode override flow so settings persistence and queued sync behavior stay verifiable.
+- Tightened the review findings in the mutation path: outstanding sync state now includes failed items, failed items remain replayable, optimistic day-mode updates roll back safely on error, and singleton settings writes are coalesced to the latest snapshot instead of stacking duplicate queue entries.
+- Local verification passed for the persistence foundation with `npm run lint`, `npm run test:run`, `npm run typecheck`, and `npm run build`.
+- Milestone 4 is not complete yet: optimistic mutation flows, broader Firestore adapters, and explicit conflict-resolution helpers still need to be layered on top of the new repository/sync base.
+- Next implementation step: continue Milestone 4 by routing real day-mode and execution-state mutations through the local repositories and sync queue so critical actions become genuinely local-first.

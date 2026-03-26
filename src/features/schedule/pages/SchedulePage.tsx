@@ -1,10 +1,20 @@
-import { Grid, Stack, Typography } from '@mui/material'
+import { CircularProgress, Grid, Stack, Typography } from '@mui/material'
 import { SectionHeader } from '@/components/common/SectionHeader'
 import { SurfaceCard } from '@/components/common/SurfaceCard'
-import { getWeeklyRoutineSnapshot } from '@/data/seeds/useRoutineSnapshot'
+import { useWeeklyWorkspace } from '@/features/schedule/hooks/useWeeklyWorkspace'
 
 export function SchedulePage() {
-  const weekInstances = getWeeklyRoutineSnapshot()
+  const { data: weekInstances, isLoading } = useWeeklyWorkspace()
+
+  if (isLoading || !weekInstances) {
+    return (
+      <SurfaceCard title="Loading weekly routine" description="Forge is restoring the locally cached week view.">
+        <Stack alignItems="center" py={2}>
+          <CircularProgress color="primary" />
+        </Stack>
+      </SurfaceCard>
+    )
+  }
 
   return (
     <Stack spacing={3}>

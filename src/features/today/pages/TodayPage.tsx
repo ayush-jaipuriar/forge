@@ -2,14 +2,39 @@ import AccessTimeRoundedIcon from '@mui/icons-material/AccessTimeRounded'
 import AutoGraphRoundedIcon from '@mui/icons-material/AutoGraphRounded'
 import FitnessCenterRoundedIcon from '@mui/icons-material/FitnessCenterRounded'
 import KeyboardDoubleArrowRightRoundedIcon from '@mui/icons-material/KeyboardDoubleArrowRightRounded'
-import { Box, Button, Grid, Stack, Typography } from '@mui/material'
+import { useEffect } from 'react'
+import { Box, Button, CircularProgress, Grid, Stack, Typography } from '@mui/material'
 import { SectionHeader } from '@/components/common/SectionHeader'
 import { MetricTile } from '@/components/common/MetricTile'
 import { SurfaceCard } from '@/components/common/SurfaceCard'
-import { getTodayRoutineSnapshot } from '@/data/seeds/useRoutineSnapshot'
+import { useUiStore } from '@/app/store/uiStore'
+import { DayModeSelector } from '@/features/today/components/DayModeSelector'
+import { useTodayWorkspace } from '@/features/today/hooks/useTodayWorkspace'
+import { useUpdateDayMode } from '@/features/today/hooks/useUpdateDayMode'
 
 export function TodayPage() {
-  const { currentBlock, dateLabel, dayInstance, scheduledWorkout, topPriorities, weekdayLabel } = getTodayRoutineSnapshot()
+  const { data, isLoading } = useTodayWorkspace()
+  const setDayMode = useUiStore((state) => state.setDayMode)
+  const currentDayMode = useUiStore((state) => state.dayMode)
+  const updateDayModeMutation = useUpdateDayMode()
+
+  useEffect(() => {
+    if (data) {
+      setDayMode(data.dayInstance.dayMode)
+    }
+  }, [data, setDayMode])
+
+  if (isLoading || !data) {
+    return (
+      <SurfaceCard title="Loading today's operating plan" description="Forge is restoring the locally cached day instance.">
+        <Stack alignItems="center" py={2}>
+          <CircularProgress color="primary" />
+        </Stack>
+      </SurfaceCard>
+    )
+  }
+
+  const { currentBlock, dateLabel, dayInstance, scheduledWorkout, topPriorities, weekdayLabel } = data
 
   return (
     <Stack spacing={3}>
@@ -60,6 +85,18 @@ export function TodayPage() {
           <MetricTile eyebrow="Priority Count" value={`${topPriorities.length} live`} detail="Deep work, required-output blocks, and workout windows are prioritized first." />
         </Grid>
       </Grid>
+
+      <SurfaceCard
+        eyebrow="Mode Override"
+        title="Adjust the execution posture, not the underlying routine."
+        description="This is the first real local-first mutation flow in the app: the override is persisted to local settings immediately and the workspace is regenerated from that persisted state."
+      >
+        <DayModeSelector
+          activeDayMode={currentDayMode}
+          disabled={updateDayModeMutation.isPending}
+          onSelect={(dayMode) => updateDayModeMutation.mutate({ date: dayInstance.date, dayMode })}
+        />
+      </SurfaceCard>
 
       <Grid container spacing={2}>
         <Grid size={{ xs: 12, lg: 7 }}>

@@ -1,13 +1,13 @@
 import { create } from 'zustand'
-import type { DayMode, WarState } from '@/domain/common/types'
+import type { DayMode, SyncStatus, WarState } from '@/domain/common/types'
 
 type UiState = {
   dayMode: DayMode
   warState: WarState
-  syncStatus: 'stable' | 'syncing' | 'queued'
+  syncStatus: SyncStatus
   setDayMode: (dayMode: DayMode) => void
   setWarState: (warState: WarState) => void
-  setSyncStatus: (syncStatus: UiState['syncStatus']) => void
+  setSyncStatus: (syncStatus: SyncStatus) => void
 }
 
 export const useUiStore = create<UiState>((set) => ({

@@ -41,6 +41,32 @@ This document captures the Phase 1 architectural baseline that implementation sh
 - Today and Schedule now read from generated routine snapshots instead of hardcoded placeholder agendas
 - Prep and Physical now also consume seed-derived snapshot helpers so the screens reflect taxonomy shape and workout schedule reality instead of placeholder prose
 
+## Milestone 4 Persistence Foundation Additions
+
+- repository interfaces now exist for day instances, settings, prep progress, workout logs, sleep logs, scores, and sync queue access
+- IndexedDB is the first concrete local-first persistence layer for day instances, settings, and queued sync actions
+- Today and Schedule now load through persistence-aware query hooks instead of reading directly from pure seed helper functions
+- a sync provider observes online/auth state and surfaces sync health through shared UI state
+- Firestore day-instance/settings adapters now exist as replay targets for queued writes
+- day mode overrides now flow through a dedicated settings mutation service instead of transient UI state, which makes the generated workspace genuinely depend on persisted local settings
+
+### Current Offline Assumptions
+
+- day instances are keyed by date and treated as the primary operational record for execution state in the current foundation
+- local IndexedDB state is the first read path for Today and Schedule so the app can recover the current workspace without depending on a fresh network round-trip
+- queued sync actions are replayed only when the browser is online and the auth session is authenticated
+- current replay order is FIFO by queue time, which is sufficient while writes are still coarse-grained and scoped to a small number of entity types
+- day mode override writes are applied locally first, then the affected Today and Schedule queries are invalidated so the regenerated workspace reflects persisted state immediately
+- failed sync items still count as outstanding local state and remain replayable on future sync attempts instead of being treated as safely settled
+- singleton settings writes are coalesced so the most recent local settings snapshot replaces older queued settings upserts
+
+### Current Conflict Strategy and Limits
+
+- the current foundation favors predictable local continuity over sophisticated merge behavior
+- for day instances, the practical near-term strategy is whole-record upsert by date until block-level mutation commands exist
+- this means explicit conflict helpers and field-level merges are still a remaining Milestone 4 task, not a solved problem
+- Firestore adapters are intentionally thin so conflict policy can evolve in the application/domain layer instead of being buried inside integration code
+
 ## Layer Boundaries
 
 ### Presentation
