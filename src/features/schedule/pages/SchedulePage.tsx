@@ -1,4 +1,6 @@
-import { Card, CardContent, Grid, Stack, Typography } from '@mui/material'
+import { Grid, Stack } from '@mui/material'
+import { SectionHeader } from '@/components/common/SectionHeader'
+import { SurfaceCard } from '@/components/common/SurfaceCard'
 
 const dayCards = [
   { day: 'Monday', type: 'WFH High Output', focus: 'DSA + Java/Backend + Gym' },
@@ -12,25 +14,15 @@ const dayCards = [
 export function SchedulePage() {
   return (
     <Stack spacing={3}>
-      <Typography variant="h2">Schedule</Typography>
-      <Typography color="text.secondary" maxWidth={720}>
-        This screen will eventually expose limited operational overrides while protecting the fixed-routine philosophy
-        of V1.
-      </Typography>
+      <SectionHeader
+        eyebrow="Schedule"
+        title="Fixed routine, visible at a glance."
+        description="This screen will eventually expose limited operational overrides while protecting the fixed-routine philosophy of V1."
+      />
       <Grid container spacing={2}>
         {dayCards.map((day) => (
           <Grid key={day.day} size={{ xs: 12, md: 6, xl: 4 }}>
-            <Card>
-              <CardContent sx={{ p: 2.5 }}>
-                <Stack spacing={1}>
-                  <Typography variant="overline" color="primary.light">
-                    {day.day}
-                  </Typography>
-                  <Typography variant="h3">{day.type}</Typography>
-                  <Typography color="text.secondary">{day.focus}</Typography>
-                </Stack>
-              </CardContent>
-            </Card>
+            <SurfaceCard eyebrow={day.day} title={day.type} description={day.focus} />
           </Grid>
         ))}
       </Grid>

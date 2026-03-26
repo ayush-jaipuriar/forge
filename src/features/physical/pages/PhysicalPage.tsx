@@ -1,4 +1,6 @@
-import { Card, CardContent, Grid, Stack, Typography } from '@mui/material'
+import { Grid, Stack } from '@mui/material'
+import { SectionHeader } from '@/components/common/SectionHeader'
+import { SurfaceCard } from '@/components/common/SurfaceCard'
 
 const cards = [
   {
@@ -14,22 +16,15 @@ const cards = [
 export function PhysicalPage() {
   return (
     <Stack spacing={3}>
-      <Typography variant="h2">Physical</Typography>
-      <Typography color="text.secondary" maxWidth={720}>
-        Forge treats physical execution as a core discipline signal, not a side widget. The screen will stay lightweight
-        while remaining important to scoring and readiness.
-      </Typography>
+      <SectionHeader
+        eyebrow="Physical"
+        title="Physical execution is part of the score."
+        description="Forge treats physical execution as a core discipline signal, not a side widget. The screen will stay lightweight while remaining important to scoring and readiness."
+      />
       <Grid container spacing={2}>
         {cards.map((card) => (
           <Grid key={card.title} size={{ xs: 12, md: 6 }}>
-            <Card>
-              <CardContent sx={{ p: 2.5 }}>
-                <Stack spacing={1}>
-                  <Typography variant="h3">{card.title}</Typography>
-                  <Typography color="text.secondary">{card.detail}</Typography>
-                </Stack>
-              </CardContent>
-            </Card>
+            <SurfaceCard title={card.title} description={card.detail} />
           </Grid>
         ))}
       </Grid>

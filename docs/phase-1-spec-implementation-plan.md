@@ -929,7 +929,7 @@ Use this section as the live implementation tracker.
 ### Overall Status
 
 - [x] Milestone 0 complete
-- [ ] Milestone 1 complete
+- [x] Milestone 1 complete
 - [ ] Milestone 2 complete
 - [ ] Milestone 3 complete
 - [ ] Milestone 4 complete
@@ -947,5 +947,7 @@ Use this section as the live implementation tracker.
 - Replaced the starter demo UI with a real route-based Forge shell, theme system, shared providers, and initial feature page placeholders.
 - Added baseline docs for architecture, Firebase setup, deployment, calendar scaffolding, and future extension notes.
 - Added `.env.example`, path aliases, Vitest setup, a smoke-style shell test, and baseline PWA configuration.
-- Verification completed successfully with `npm run lint`, `npm run test:run`, `npm run typecheck`, and `npm run build`.
-- Next implementation step: continue with Milestone 1 completion and then wire real Firebase auth and persistence in Milestone 2.
+- Expanded the design system with a loaded Sora variable font, shared `SectionHeader`, `SurfaceCard`, `MetricTile`, `EmptyState`, `StatusBadge`, and `SyncIndicator` primitives.
+- Refined the shell with desktop signal strips, mobile drawer navigation, shared surface patterns, and a more consistent page-level visual language.
+- Added primitive-focused UI tests and verified the milestone with `npm run lint`, `npm run test:run`, `npm run typecheck`, and `npm run build`.
+- Next implementation step: begin Milestone 2 and wire real Firebase auth/session/persistence flows.

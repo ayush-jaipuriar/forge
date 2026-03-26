@@ -50,6 +50,11 @@ export const forgeTheme = createTheme({
       fontWeight: 600,
       letterSpacing: '-0.02em',
     },
+    overline: {
+      fontSize: '0.72rem',
+      fontWeight: 700,
+      letterSpacing: '0.18em',
+    },
     body1: {
       lineHeight: 1.65,
     },
@@ -72,9 +77,9 @@ export const forgeTheme = createTheme({
     MuiCard: {
       styleOverrides: {
         root: {
-          background:
-            'linear-gradient(180deg, rgba(22, 28, 41, 0.94) 0%, rgba(13, 17, 26, 0.98) 100%)',
+          background: forgeTokens.gradients.card,
           backdropFilter: 'blur(14px)',
+          boxShadow: forgeTokens.shadow.glow,
         },
       },
     },
@@ -83,6 +88,7 @@ export const forgeTheme = createTheme({
         root: {
           borderRadius: forgeTokens.radius.pill,
           border: `1px solid ${forgeTokens.palette.border.strong}`,
+          backdropFilter: 'blur(10px)',
         },
       },
     },
@@ -102,6 +108,14 @@ export const forgeTheme = createTheme({
         outlined: {
           borderColor: forgeTokens.palette.border.strong,
           backgroundColor: alpha(forgeTokens.palette.background.elevated, 0.45),
+        },
+      },
+    },
+    MuiDrawer: {
+      styleOverrides: {
+        paper: {
+          background: forgeTokens.gradients.spotlight,
+          borderLeft: `1px solid ${forgeTokens.palette.border.strong}`,
         },
       },
     },

@@ -8,11 +8,12 @@ Life OS.
 
 ## Foundation Status
 
-The project now includes the Milestone 0 foundation:
+The project now includes the Milestone 0 and Milestone 1 foundation:
 
 - Vite + React + TypeScript baseline
-- MUI theme shell aligned to Forge's dark execution-first direction
+- custom MUI design system aligned to Forge's dark execution-first direction
 - route-based application shell
+- shared UI primitives for sections, surfaces, metrics, empty states, and status indicators
 - Zustand and TanStack Query setup boundaries
 - Firebase config boundary and environment template
 - Vitest and Testing Library setup

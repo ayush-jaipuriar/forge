@@ -24,8 +24,16 @@ export const forgeTokens = {
       strong: 'rgba(255, 255, 255, 0.16)',
     },
   },
+  gradients: {
+    page:
+      'radial-gradient(circle at top, rgba(199, 90, 50, 0.14), transparent 25%), linear-gradient(180deg, #090b12 0%, #06080f 100%)',
+    card: 'linear-gradient(180deg, rgba(22, 28, 41, 0.94) 0%, rgba(13, 17, 26, 0.98) 100%)',
+    spotlight:
+      'radial-gradient(circle at top right, rgba(210, 162, 98, 0.16), transparent 32%), linear-gradient(180deg, rgba(17, 22, 33, 0.95) 0%, rgba(9, 11, 18, 1) 100%)',
+  },
   shadow: {
     card: '0 18px 40px rgba(0, 0, 0, 0.26)',
+    glow: '0 0 0 1px rgba(210, 162, 98, 0.12), 0 20px 45px rgba(0, 0, 0, 0.35)',
   },
   radius: {
     card: 20,
