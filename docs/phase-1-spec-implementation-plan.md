@@ -993,6 +993,7 @@ Use this section as the live implementation tracker.
 - Converted day mode override into the first real local-first mutation path: Today now writes the override into persisted local settings, enqueues a settings sync action, and invalidates Today/Schedule workspace queries so the regenerated day model reflects the persisted override immediately.
 - Added a focused service test for the day-mode override flow so settings persistence and queued sync behavior stay verifiable.
 - Tightened the review findings in the mutation path: outstanding sync state now includes failed items, failed items remain replayable, optimistic day-mode updates roll back safely on error, and singleton settings writes are coalesced to the latest snapshot instead of stacking duplicate queue entries.
+- Added a short Today UI pass for the first mutation flow: the mode-override card now shows the active day stance, exposes more truthful sync-language, and makes local-save versus queued/syncing behavior visible to the operator.
 - Local verification passed for the persistence foundation with `npm run lint`, `npm run test:run`, `npm run typecheck`, and `npm run build`.
 - Milestone 4 is not complete yet: optimistic mutation flows, broader Firestore adapters, and explicit conflict-resolution helpers still need to be layered on top of the new repository/sync base.
 - Next implementation step: continue Milestone 4 by routing real day-mode and execution-state mutations through the local repositories and sync queue so critical actions become genuinely local-first.

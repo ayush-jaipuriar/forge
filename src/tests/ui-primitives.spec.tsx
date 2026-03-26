@@ -3,6 +3,7 @@ import { AppProviders } from '@/app/providers/AppProviders'
 import { EmptyState } from '@/components/common/EmptyState'
 import { SectionHeader } from '@/components/common/SectionHeader'
 import { SurfaceCard } from '@/components/common/SurfaceCard'
+import { SyncIndicator } from '@/components/status/SyncIndicator'
 
 describe('UI primitives', () => {
   it('renders the section header with the expected content', () => {
@@ -39,5 +40,15 @@ describe('UI primitives', () => {
     const stack = title.parentElement?.parentElement
 
     expect(stack).toHaveStyle({ alignItems: 'flex-start' })
+  })
+
+  it('renders sync indicator copy that matches the current queue semantics', () => {
+    render(
+      <AppProviders>
+        <SyncIndicator status="queued" />
+      </AppProviders>,
+    )
+
+    expect(screen.getByText('Queued to Sync')).toBeInTheDocument()
   })
 })

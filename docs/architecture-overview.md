@@ -59,6 +59,7 @@ This document captures the Phase 1 architectural baseline that implementation sh
 - day mode override writes are applied locally first, then the affected Today and Schedule queries are invalidated so the regenerated workspace reflects persisted state immediately
 - failed sync items still count as outstanding local state and remain replayable on future sync attempts instead of being treated as safely settled
 - singleton settings writes are coalesced so the most recent local settings snapshot replaces older queued settings upserts
+- the Today mode-override card now surfaces the active execution stance and mutation lifecycle explicitly so local-first state changes feel intentional instead of invisible
 
 ### Current Conflict Strategy and Limits
 

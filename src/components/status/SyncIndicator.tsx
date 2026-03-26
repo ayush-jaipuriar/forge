@@ -1,6 +1,6 @@
 import SyncRoundedIcon from '@mui/icons-material/SyncRounded'
-import WifiOffRoundedIcon from '@mui/icons-material/WifiOffRounded'
 import CloudDoneRoundedIcon from '@mui/icons-material/CloudDoneRounded'
+import CloudUploadRoundedIcon from '@mui/icons-material/CloudUploadRounded'
 import { Chip } from '@mui/material'
 
 type SyncIndicatorProps = {
@@ -9,7 +9,7 @@ type SyncIndicatorProps = {
 
 const statusMap = {
   stable: {
-    label: 'Sync Stable',
+    label: 'Synced',
     color: 'success' as const,
     icon: <CloudDoneRoundedIcon fontSize="small" />,
   },
@@ -19,9 +19,9 @@ const statusMap = {
     icon: <SyncRoundedIcon fontSize="small" />,
   },
   queued: {
-    label: 'Queued Offline',
+    label: 'Queued to Sync',
     color: 'default' as const,
-    icon: <WifiOffRoundedIcon fontSize="small" />,
+    icon: <CloudUploadRoundedIcon fontSize="small" />,
   },
 }
 
