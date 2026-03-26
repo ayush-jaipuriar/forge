@@ -19,6 +19,17 @@ The project now includes the Milestone 0 and Milestone 1 foundation:
 - Vitest and Testing Library setup
 - baseline PWA configuration
 
+## Current Auth State
+
+Milestone 2 auth wiring is now implemented in code:
+
+- protected app routes
+- Firebase Auth session provider
+- Google Sign-In entry flow
+- first-login Firestore bootstrap for user and settings docs
+
+Real sign-in still requires you to populate `.env` with your Firebase project values.
+
 ## Scripts
 
 - `npm run dev`

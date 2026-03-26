@@ -1,7 +1,12 @@
 import GoogleIcon from '@mui/icons-material/Google'
-import { Box, Button, Card, CardContent, Stack, Typography } from '@mui/material'
+import { Alert, Box, Button, Card, CardContent, Divider, Stack, Typography } from '@mui/material'
+import { missingFirebaseEnvKeys } from '@/lib/firebase/config'
+import { useAuthSession } from '@/features/auth/providers/useAuthSession'
 
 export function AuthPage() {
+  const { errorMessage, signInWithGoogle, status } = useAuthSession()
+  const signInDisabled = status === 'checking' || status === 'missing_config'
+
   return (
     <Box
       sx={{
@@ -19,11 +24,33 @@ export function AuthPage() {
             </Typography>
             <Typography variant="h2">Sign in to Forge</Typography>
             <Typography color="text.secondary">
-              Firebase Auth and real Google Sign-In will replace this shell in Milestone 2.
+              Forge now uses real Firebase Auth boundaries. Google Sign-In is the only allowed entry path for Phase 1.
             </Typography>
-            <Button variant="contained" startIcon={<GoogleIcon />}>
-              Continue with Google
+            {status === 'missing_config' ? (
+              <Alert severity="warning" variant="outlined">
+                Firebase configuration is incomplete. Add the missing keys to your local `.env` file:
+                {' '}
+                {missingFirebaseEnvKeys.join(', ')}
+              </Alert>
+            ) : null}
+            {errorMessage ? (
+              <Alert severity={status === 'missing_config' ? 'warning' : 'error'} variant="outlined">
+                {errorMessage}
+              </Alert>
+            ) : null}
+            <Button
+              variant="contained"
+              startIcon={<GoogleIcon />}
+              onClick={() => void signInWithGoogle()}
+              disabled={signInDisabled}
+            >
+              {status === 'checking' ? 'Connecting...' : 'Continue with Google'}
             </Button>
+            <Divider flexItem />
+            <Typography variant="body2" color="text.secondary">
+              First successful sign-in will also bootstrap your user document and default settings document in
+              Firestore.
+            </Typography>
           </Stack>
         </CardContent>
       </Card>

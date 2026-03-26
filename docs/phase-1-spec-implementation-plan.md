@@ -453,6 +453,15 @@ Establish the premium dark visual system and the shell that every core flow will
 
 Connect the application to real Firebase services and establish the authenticated user boundary.
 
+### Short Implementation Outline
+
+- establish a single Firebase app/auth/firestore initialization module
+- create an auth session provider that owns startup, auth-state observation, and user bootstrap sequencing
+- add guarded routes so app screens require a real authenticated session
+- connect the auth screen to Google Sign-In and honest error/loading states
+- bootstrap the signed-in user document and default settings document on first login
+- update tests so route-guard and session behavior remain verifiable without a live Firebase project during CI
+
 ### Deliverables
 
 - Firebase app initialization
@@ -488,6 +497,15 @@ Connect the application to real Firebase services and establish the authenticate
 ### Goal
 
 Create the config-driven core domain model that powers the rest of the application.
+
+### Short Implementation Outline
+
+- expand the current domain types into explicit routine, prep, physical, and execution models
+- encode the fixed weekly routine, block templates, prep taxonomy, and workout schedule as typed seed modules
+- build a day-instance generator that derives a concrete day plan from weekday and date context
+- build fallback transformation helpers so low-energy and survival modes create adjusted instances without mutating templates
+- keep time/block metadata structured enough that scoring, recommendations, and persistence can consume it later without remapping
+- validate the routine engine with unit tests before wiring it into the screens
 
 ### Deliverables
 
@@ -931,7 +949,7 @@ Use this section as the live implementation tracker.
 - [x] Milestone 0 complete
 - [x] Milestone 1 complete
 - [ ] Milestone 2 complete
-- [ ] Milestone 3 complete
+- [x] Milestone 3 complete
 - [ ] Milestone 4 complete
 - [ ] Milestone 5 complete
 - [ ] Milestone 6 complete
@@ -950,4 +968,14 @@ Use this section as the live implementation tracker.
 - Expanded the design system with a loaded Sora variable font, shared `SectionHeader`, `SurfaceCard`, `MetricTile`, `EmptyState`, `StatusBadge`, and `SyncIndicator` primitives.
 - Refined the shell with desktop signal strips, mobile drawer navigation, shared surface patterns, and a more consistent page-level visual language.
 - Added primitive-focused UI tests and verified the milestone with `npm run lint`, `npm run test:run`, `npm run typecheck`, and `npm run build`.
-- Next implementation step: begin Milestone 2 and wire real Firebase auth/session/persistence flows.
+- Added the Milestone 2 auth foundation: Firebase app/init boundaries, session provider, guarded routes, Google Sign-In wiring, and first-login Firestore bootstrap for user/settings docs.
+- Added auth-focused tests for authenticated rendering, unauthenticated routing, and sign-in interaction wiring.
+- Local verification passed with `npm run lint`, `npm run test:run`, `npm run typecheck`, and `npm run build`.
+- Milestone 2 still needs live verification with real `.env` Firebase credentials before it should be marked complete in the tracker.
+- Added the Milestone 3 domain foundation: shared routine/prep/physical types, typed seed modules for routine/taxonomy/workout schedule, and a `generateDayInstance` routine engine with fallback-mode transformations.
+- Added routine-engine tests covering base weekday generation plus low-energy and survival-mode transformations.
+- Added serialization helpers, weekly snapshot helpers, block selectors, and wired generated day data into the Today and Schedule screens.
+- Extended seed-derived consumption into Prep and Physical so those screens now reflect taxonomy shape, daily prep focus, and workout schedule reality instead of placeholder copy.
+- Local verification passed again with `npm run lint`, `npm run test:run`, `npm run typecheck`, and `npm run build`.
+- Milestone 3 is now complete from the Phase 1 checklist perspective: templates, seed data, generation logic, fallback transformations, helper mapping, and initial UI consumption are all in place.
+- Next implementation step: begin Milestone 4 and build the repository/local-persistence/sync-queue layer that will eventually persist these generated and user-mutated day instances.

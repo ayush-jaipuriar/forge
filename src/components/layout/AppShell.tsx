@@ -1,3 +1,4 @@
+import LogoutRoundedIcon from '@mui/icons-material/LogoutRounded'
 import MenuRoundedIcon from '@mui/icons-material/MenuRounded'
 import { useState } from 'react'
 import { Box, Button, Container, Drawer, IconButton, Stack, Typography } from '@mui/material'
@@ -7,10 +8,12 @@ import { useUiStore } from '@/app/store/uiStore'
 import { StatusBadge } from '@/components/status/StatusBadge'
 import { SyncIndicator } from '@/components/status/SyncIndicator'
 import { forgeTokens } from '@/app/theme/tokens'
+import { useAuthSession } from '@/features/auth/providers/useAuthSession'
 
 export function AppShell() {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
   const location = useLocation()
+  const { signOutUser, user } = useAuthSession()
   const dayMode = useUiStore((state) => state.dayMode)
   const warState = useUiStore((state) => state.warState)
   const syncStatus = useUiStore((state) => state.syncStatus)
@@ -40,6 +43,9 @@ export function AppShell() {
                 <Typography variant="body2" color="text.secondary">
                   Architecture-first foundation for disciplined daily execution.
                 </Typography>
+                <Typography variant="body2" color="text.secondary">
+                  {user?.displayName ?? user?.email ?? 'Authenticated Operator'}
+                </Typography>
               </Stack>
               <Stack direction="row" spacing={1} alignItems="center">
                 <StatusBadge label={warState === 'onTrack' ? 'On Track' : titleFromToken(warState)} tone={warState} />
@@ -58,6 +64,15 @@ export function AppShell() {
                 >
                   <MenuRoundedIcon />
                 </IconButton>
+                <Button
+                  variant="outlined"
+                  color="inherit"
+                  startIcon={<LogoutRoundedIcon fontSize="small" />}
+                  onClick={() => void signOutUser()}
+                  sx={{ display: { xs: 'none', md: 'inline-flex' } }}
+                >
+                  Sign out
+                </Button>
               </Stack>
             </Stack>
           </Box>
@@ -142,6 +157,15 @@ export function AppShell() {
             <StatusBadge label={titleFromToken(dayMode)} tone={dayMode} />
             <SyncIndicator status={syncStatus} />
           </Stack>
+          <Button
+            variant="outlined"
+            color="inherit"
+            startIcon={<LogoutRoundedIcon fontSize="small" />}
+            onClick={() => void signOutUser()}
+            sx={{ alignSelf: 'flex-start' }}
+          >
+            Sign out
+          </Button>
         </Stack>
       </Drawer>
 

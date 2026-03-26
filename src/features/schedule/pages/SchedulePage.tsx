@@ -1,17 +1,11 @@
-import { Grid, Stack } from '@mui/material'
+import { Grid, Stack, Typography } from '@mui/material'
 import { SectionHeader } from '@/components/common/SectionHeader'
 import { SurfaceCard } from '@/components/common/SurfaceCard'
-
-const dayCards = [
-  { day: 'Monday', type: 'WFH High Output', focus: 'DSA + Java/Backend + Gym' },
-  { day: 'Tuesday', type: 'WFO Continuity', focus: 'System Design retention' },
-  { day: 'Wednesday', type: 'WFO Continuity', focus: 'LLD / DSA retention' },
-  { day: 'Thursday', type: 'WFH High Output', focus: 'LLD + Backend + Gym' },
-  { day: 'Friday', type: 'WFH High Output', focus: 'System Design + AI/Behavioral + Gym' },
-  { day: 'Saturday', type: 'Weekend Deep Work', focus: 'DSA + LLD + Backend/Mock' },
-]
+import { getWeeklyRoutineSnapshot } from '@/data/seeds/useRoutineSnapshot'
 
 export function SchedulePage() {
+  const weekInstances = getWeeklyRoutineSnapshot()
+
   return (
     <Stack spacing={3}>
       <SectionHeader
@@ -20,9 +14,24 @@ export function SchedulePage() {
         description="This screen will eventually expose limited operational overrides while protecting the fixed-routine philosophy of V1."
       />
       <Grid container spacing={2}>
-        {dayCards.map((day) => (
-          <Grid key={day.day} size={{ xs: 12, md: 6, xl: 4 }}>
-            <SurfaceCard eyebrow={day.day} title={day.type} description={day.focus} />
+        {weekInstances.map((day) => (
+          <Grid key={day.id} size={{ xs: 12, md: 6, xl: 4 }}>
+            <SurfaceCard
+              eyebrow={`${day.weekdayLabel} · ${day.dateLabel}`}
+              title={day.label}
+              description={day.focusLabel}
+            >
+              <Stack spacing={1}>
+                {day.expectationSummary.slice(0, 2).map((expectation) => (
+                  <Typography key={expectation} variant="body2" color="text.secondary">
+                    {expectation}
+                  </Typography>
+                ))}
+                <Typography variant="body2" color="primary.light">
+                  {day.blocks.length} planned blocks
+                </Typography>
+              </Stack>
+            </SurfaceCard>
           </Grid>
         ))}
       </Grid>

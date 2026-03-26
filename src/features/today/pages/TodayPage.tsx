@@ -6,14 +6,11 @@ import { Box, Button, Grid, Stack, Typography } from '@mui/material'
 import { SectionHeader } from '@/components/common/SectionHeader'
 import { MetricTile } from '@/components/common/MetricTile'
 import { SurfaceCard } from '@/components/common/SurfaceCard'
-
-const agenda = [
-  { time: '08:00', title: 'Morning Deep Block', detail: 'DSA / System Design' },
-  { time: '13:00', title: 'Mini Prep Block', detail: 'Retention and review' },
-  { time: '19:00', title: 'Workout Window', detail: 'Upper A / Lower A by schedule' },
-]
+import { getTodayRoutineSnapshot } from '@/data/seeds/useRoutineSnapshot'
 
 export function TodayPage() {
+  const { currentBlock, dateLabel, dayInstance, scheduledWorkout, topPriorities, weekdayLabel } = getTodayRoutineSnapshot()
+
   return (
     <Stack spacing={3}>
       <SurfaceCard
@@ -25,7 +22,7 @@ export function TodayPage() {
         <SectionHeader
           eyebrow="Today"
           title="Run the day with clarity."
-          description="The Today surface is where Forge becomes operational: agenda visibility, current block context, friction-light logging, and the recommendation lane that will later connect to scoring and fallback logic."
+          description={`${weekdayLabel}, ${dateLabel}. ${dayInstance.label} focused on ${dayInstance.focusLabel.toLowerCase()}.`}
           action={
             <Stack direction={{ xs: 'column', sm: 'row' }} spacing={1.5}>
               <Button variant="contained" startIcon={<KeyboardDoubleArrowRightRoundedIcon />}>
@@ -42,20 +39,25 @@ export function TodayPage() {
       <Grid container spacing={2}>
         <Grid size={{ xs: 12, sm: 6, lg: 3 }}>
           <MetricTile
-            eyebrow="Master Score"
-            value="62 / 100"
-            detail="Strict weighting will live in the domain layer."
+            eyebrow="Day Type"
+            value={dayInstance.label}
+            detail="Generated directly from the seeded routine engine."
             tone="warning"
           />
         </Grid>
         <Grid size={{ xs: 12, sm: 6, lg: 3 }}>
-          <MetricTile eyebrow="Readiness Pace" value="On Watch" detail="Target date remains visible from the start." />
+          <MetricTile eyebrow="Current Block" value={currentBlock?.title ?? 'No active block'} detail={currentBlock?.detail ?? 'No block matched the current time.'} />
         </Grid>
         <Grid size={{ xs: 12, sm: 6, lg: 3 }}>
-          <MetricTile eyebrow="Workout" value="Upper A" detail="Physical execution stays first-class." tone="success" />
+          <MetricTile
+            eyebrow="Workout"
+            value={scheduledWorkout?.label ?? 'Recovery / Flex'}
+            detail="Physical execution is read from the seeded workout schedule."
+            tone="success"
+          />
         </Grid>
         <Grid size={{ xs: 12, sm: 6, lg: 3 }}>
-          <MetricTile eyebrow="Sync State" value="Stable" detail="Offline queue wiring starts in the foundation." />
+          <MetricTile eyebrow="Priority Count" value={`${topPriorities.length} live`} detail="Deep work, required-output blocks, and workout windows are prioritized first." />
         </Grid>
       </Grid>
 
@@ -64,12 +66,12 @@ export function TodayPage() {
           <SurfaceCard
             eyebrow="Operational View"
             title="Agenda"
-            description="Blocks are already framed in the tone the final execution screen will use: compact, direct, and easy to scan under pressure."
+            description={`This is now generated from the seeded ${dayInstance.dayType} template rather than hardcoded page copy.`}
           >
             <Stack spacing={2}>
-              {agenda.map((block) => (
+              {dayInstance.blocks.map((block) => (
                 <Box
-                  key={block.title}
+                  key={block.id}
                   sx={{
                     border: '1px solid',
                     borderColor: 'divider',
@@ -82,7 +84,7 @@ export function TodayPage() {
                   }}
                 >
                   <Typography variant="body2" color="primary.light">
-                    {block.time}
+                    {block.startTime ?? (block.durationMinutes ? `${block.durationMinutes}m` : 'Flexible')}
                   </Typography>
                   <Stack spacing={0.5}>
                     <Typography variant="h3">{block.title}</Typography>
@@ -99,22 +101,33 @@ export function TodayPage() {
           <Stack spacing={2} sx={{ height: '100%' }}>
             <SurfaceCard
               eyebrow="Decision Layer"
-              title="Recommendation Engine"
-              description="Rules-based recommendations will live outside the UI and return ranked, explainable next actions."
+              title="Top Priorities"
+              description="Priority ordering is now derived from the routine engine and block metadata."
             >
-              <Stack direction="row" spacing={1} alignItems="center">
-                <AutoGraphRoundedIcon color="primary" />
-                <Typography color="text.secondary">Recommendation panels will explain why the next action matters.</Typography>
+              <Stack spacing={1.25}>
+                {topPriorities.map((block) => (
+                  <Stack key={block.id} direction="row" spacing={1} alignItems="center">
+                    <AutoGraphRoundedIcon color="primary" />
+                    <Typography color="text.secondary">
+                      {block.title}
+                      {block.requiredOutput ? ' · output required' : ''}
+                    </Typography>
+                  </Stack>
+                ))}
               </Stack>
             </SurfaceCard>
             <SurfaceCard
               eyebrow="Physical Signal"
-              title="Physical Execution"
-              description="Workout state, sleep state, and readiness pressure will feed the main score rather than sit in a side tracker."
+              title="Expectation Summary"
+              description="The generated day instance also carries the expectation language that scoring and guidance will consume later."
             >
-              <Stack direction="row" spacing={1} alignItems="center">
-                <FitnessCenterRoundedIcon color="primary" />
-                <Typography color="text.secondary">The visual language already keeps physical execution equally serious.</Typography>
+              <Stack spacing={1.25}>
+                {dayInstance.expectationSummary.map((expectation) => (
+                  <Stack key={expectation} direction="row" spacing={1} alignItems="center">
+                    <FitnessCenterRoundedIcon color="primary" />
+                    <Typography color="text.secondary">{expectation}</Typography>
+                  </Stack>
+                ))}
               </Stack>
             </SurfaceCard>
           </Stack>

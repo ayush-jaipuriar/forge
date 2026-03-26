@@ -17,9 +17,22 @@ The project expects the following variables:
 
 ## Next Implementation Step
 
-Milestone 2 will:
+Milestone 2 now wires:
 
-- initialize the Firebase app
-- attach Firebase Auth
-- enable Google Sign-In
-- define Firestore bootstrap flows for the first signed-in user
+- Firebase app initialization
+- Firebase Auth session observation
+- Google Sign-In via popup
+- Firestore bootstrap flows for the first signed-in user
+
+## Auth Flow
+
+1. Forge initializes Firebase from environment variables.
+2. The auth session provider subscribes to `onAuthStateChanged`.
+3. When a user is present, Forge bootstraps:
+   - `users/{uid}`
+   - `users/{uid}/settings/default`
+4. Protected routes render only after the authenticated session is ready.
+
+## Local Verification Note
+
+Without real Firebase project values in `.env`, the app will honestly show a configuration warning on the sign-in screen instead of pretending auth is available.

@@ -22,6 +22,25 @@ This document captures the Phase 1 architectural baseline that implementation sh
 - responsive shell refined with desktop command strips, mobile drawer navigation, and sync-state visibility
 - placeholder screens aligned to one shared visual language instead of repeated one-off card markup
 
+## Milestone 2 Auth Boundary Additions
+
+- centralized Firebase app, Auth, Firestore, and Google provider initialization
+- `AuthSessionProvider` now owns auth-state observation, session restoration, and first-login bootstrap
+- route guards separate authenticated app surfaces from the public sign-in entry route
+- first successful login bootstraps the user document and a default settings document in Firestore
+- tests now cover authenticated shell rendering, unauthenticated routing, and sign-in interaction wiring
+
+## Milestone 3 Routine Engine Additions
+
+- shared domain types now cover weekdays, day types, block kinds, workout states, confidence states, readiness states, and sync states
+- the fixed weekly routine is encoded in a typed seed module instead of being implied by screen text
+- prep taxonomy and workout schedule are also seeded through typed modules
+- `generateDayInstance` converts routine templates into concrete day instances keyed by date
+- fallback behavior is modeled as a transformation over generated instances rather than mutation of the source templates
+- serialization helpers now provide a persistence-ready shape for day instances
+- Today and Schedule now read from generated routine snapshots instead of hardcoded placeholder agendas
+- Prep and Physical now also consume seed-derived snapshot helpers so the screens reflect taxonomy shape and workout schedule reality instead of placeholder prose
+
 ## Layer Boundaries
 
 ### Presentation
