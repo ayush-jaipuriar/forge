@@ -10,6 +10,7 @@ Firebase Hosting is the intended default deployment target.
 - the app shell is configured for offline recovery with precached assets plus runtime caching for navigations, scripts, styles, and images
 - Firebase Hosting configuration now exists in [firebase.json](/Users/ayushjaipuriar/Documents/GitHub/forge/firebase.json) with SPA rewrites and cache headers for the shell, manifest, and service worker
 - the shell exposes install, update, and offline/degraded-state messaging directly in the UI instead of relying on browser chrome alone
+- direct Android Chrome verification has now been completed on a real `adb`-connected device using the built preview served over `adb reverse`
 
 ## Build and Preview
 
@@ -46,9 +47,14 @@ Current Hosting expectations:
 
 ## Current Limitations
 
-- direct Android Chrome verification has not been completed in this repo session because no Android device was connected over `adb` and no local Android emulator was available; desktop Chromium verification is complete, and the shell was also spot-checked in a mobile-sized viewport
 - live authenticated offline verification for Today still depends on real Firebase `.env` values because the built app currently lands on the auth gate without local auth config
 - offline resilience currently focuses on cached shell recovery plus local IndexedDB-backed state, not full query-cache persistence for every route
+
+## Latest Device Verification
+
+- verified on a real Android device in Chrome that the built Forge auth shell loads correctly at the preview origin
+- verified Chrome surfaced the Android install flow through `Add to home screen`, with both `Install` and `Create shortcut` options visible
+- verified that reopening the same URL after stopping the local preview origin still rendered the cached auth shell, which confirms the Android offline shell baseline
 
 ## Production Environment Notes
 

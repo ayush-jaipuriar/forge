@@ -29,6 +29,7 @@ This document captures the Phase 1 architectural baseline that implementation sh
 - route guards separate authenticated app surfaces from the public sign-in entry route
 - first successful login bootstraps the user document and a default settings document in Firestore
 - tests now cover authenticated shell rendering, unauthenticated routing, and sign-in interaction wiring
+- live project verification has now confirmed the real Google sign-in flow plus Firestore bootstrap for `users/{uid}` and `users/{uid}/settings/default`
 
 ## Milestone 3 Routine Engine Additions
 
@@ -108,7 +109,7 @@ This document captures the Phase 1 architectural baseline that implementation sh
 - runtime caching is intentionally narrow and shell-focused: navigations use `NetworkFirst`, core shell assets use `StaleWhileRevalidate`, and images use `CacheFirst`; this keeps the app resilient without pretending that all remote data is offline-safe
 - install, update, offline, and queued-state messaging now live in the app shell itself so the operator does not have to infer state from browser chrome or missing network indicators
 - Firebase Hosting is now configured as an SPA target with explicit rewrite and cache-header behavior, which keeps deployed routing and service-worker refresh semantics aligned with the local production preview
-- browser verification is currently strongest on desktop Chromium: the manifest, icons, service-worker registration, and forced-offline shell reload were verified there, while direct Android Chrome verification remains a documented follow-up task
+- browser verification has now been completed on both desktop Chromium and a real Android Chrome device, including installability surfaces and cached-shell recovery after the origin was stopped
 
 ## Milestone 10 Calendar Boundary Assumptions
 

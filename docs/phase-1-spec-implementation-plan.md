@@ -744,7 +744,7 @@ Ship the application as a credible installable web app with resilient loading an
 - [x] Add service worker support and cache strategy for core shell assets.
 - [x] Ensure Today screen and recent cached data can render offline.
 - [x] Add installability UX and offline/degraded-state handling.
-- [ ] Verify browser behavior on Android Chrome and desktop Chromium browsers.
+- [x] Verify browser behavior on Android Chrome and desktop Chromium browsers.
 - [x] Prepare Hosting configuration and SPA routing behavior.
 - [x] Validate that offline queue replay works correctly after reconnection.
 
@@ -807,18 +807,18 @@ Stabilize the Phase 1 system so it is implementation-complete, documented, and r
 
 ### Checklist
 
-- [ ] Run a full quality pass across auth, Today, Schedule, Prep, Physical, Readiness, offline, and installability flows.
-- [ ] Clean up folder placement, naming, and boundary violations discovered during implementation.
-- [ ] Add `.env.example` with safe placeholders only.
-- [ ] Finalize `README.md` with setup, scripts, and local development instructions.
-- [ ] Finalize architecture, Firebase setup, deployment, and future extension docs.
-- [ ] Review edge cases around low-energy days, survival mode, skipped deep work, and queued sync recovery.
-- [ ] Confirm no Phase 2 or Phase 3 scope accidentally leaked into Phase 1 complexity.
+- [x] Run a full quality pass across auth, Today, Schedule, Prep, Physical, Readiness, offline, and installability flows.
+- [x] Clean up folder placement, naming, and boundary violations discovered during implementation.
+- [x] Add `.env.example` with safe placeholders only.
+- [x] Finalize `README.md` with setup, scripts, and local development instructions.
+- [x] Finalize architecture, Firebase setup, deployment, and future extension docs.
+- [x] Review edge cases around low-energy days, survival mode, skipped deep work, and queued sync recovery.
+- [x] Confirm no Phase 2 or Phase 3 scope accidentally leaked into Phase 1 complexity.
 
 ### Testing and Documentation
 
-- [ ] Run and verify the full test suite for Phase 1 logic and key UI confidence points.
-- [ ] Add a known limitations section so unresolved Phase 1 constraints are visible and honest.
+- [x] Run and verify the full test suite for Phase 1 logic and key UI confidence points.
+- [x] Add a known limitations section so unresolved Phase 1 constraints are visible and honest.
 
 ### Exit Criteria
 
@@ -957,16 +957,16 @@ Use this section as the live implementation tracker.
 
 - [x] Milestone 0 complete
 - [x] Milestone 1 complete
-- [ ] Milestone 2 complete
+- [x] Milestone 2 complete
 - [x] Milestone 3 complete
 - [x] Milestone 4 complete
 - [x] Milestone 5 complete
 - [x] Milestone 6 complete
 - [x] Milestone 7 complete
 - [x] Milestone 8 complete
-- [ ] Milestone 9 complete
+- [x] Milestone 9 complete
 - [x] Milestone 10 complete
-- [ ] Milestone 11 complete
+- [x] Milestone 11 complete
 
 ### Current Iteration Notes
 
@@ -980,7 +980,7 @@ Use this section as the live implementation tracker.
 - Added the Milestone 2 auth foundation: Firebase app/init boundaries, session provider, guarded routes, Google Sign-In wiring, and first-login Firestore bootstrap for user/settings docs.
 - Added auth-focused tests for authenticated rendering, unauthenticated routing, and sign-in interaction wiring.
 - Local verification passed with `npm run lint`, `npm run test:run`, `npm run typecheck`, and `npm run build`.
-- Milestone 2 still needs live verification with real `.env` Firebase credentials before it should be marked complete in the tracker.
+- Completed live Firebase verification against a real project with real `.env` values: Google sign-in succeeded and Firestore showed both `users/{uid}` and `users/{uid}/settings/default` from the bootstrap path.
 - Added the Milestone 3 domain foundation: shared routine/prep/physical types, typed seed modules for routine/taxonomy/workout schedule, and a `generateDayInstance` routine engine with fallback-mode transformations.
 - Added routine-engine tests covering base weekday generation plus low-energy and survival-mode transformations.
 - Added serialization helpers, weekly snapshot helpers, block selectors, and wired generated day data into the Today and Schedule screens.
@@ -1001,7 +1001,7 @@ Use this section as the live implementation tracker.
 - Closed the remaining practical day-instance mutation gap on Today by wiring real move-later and restore actions through the same queued local-first day write path used by complete and skip.
 - Local verification passed for the persistence foundation with `npm run lint`, `npm run test:run`, `npm run typecheck`, and `npm run build`.
 - Milestone 4 is now complete from the implementation-plan perspective: the repo has a working local-first persistence foundation for the currently implemented critical actions, visible sync state, replayable queued writes, documented conflict/coalescing behavior, and meaningful tests around the queue and mutation paths.
-- The most important remaining caveats are not Milestone 4 blockers anymore: live Firebase verification still blocks Milestone 2 signoff, and the current conflict strategy is intentionally coarse whole-record upserts until a later phase justifies finer merge semantics.
+- The most important remaining caveat from the persistence foundation is the intentionally coarse whole-record upsert conflict strategy, which is still acceptable in Phase 1 until a later phase justifies finer merge semantics.
 - Added the first explicit Milestone 5 salvage interaction: Today now surfaces a dedicated fallback suggestion card when score pressure or support signals make the current mode dishonest, and the user can apply the suggested mode in one step.
 - Added lightweight block-level execution notes to the Today agenda so deviations and recovery context can be captured without leaving the execution surface or creating a separate note system.
 - Added Today-focused regression coverage for fallback interaction, lightweight note capture, fallback-suggestion domain logic, and day-instance note persistence through the queued local-first mutation path.
@@ -1026,11 +1026,14 @@ Use this section as the live implementation tracker.
 - Milestone 8 is now complete from the implementation-plan perspective.
 - Added the Milestone 9 platform layer: richer manifest metadata, generated install icons, service-worker runtime caching, install/update/offline shell UX, and Firebase Hosting SPA routing configuration.
 - Added focused test coverage for offline helper logic and reconnect-triggered sync replay, then verified the built preview in desktop Chromium with a registered service worker, reachable manifest/icons, and a successful forced-offline reload of the auth shell.
-- Attempted the direct Android verification pass and confirmed the current machine has neither a connected `adb` device nor a local Android emulator, so the browser/device checklist item remains open by environment constraint rather than silent omission.
-- Recorded the remaining limitation explicitly instead of over-claiming completion: Android Chrome was not directly verified in this environment, and live authenticated offline validation still depends on real Firebase `.env` values.
+- Completed the direct Android verification pass on a real `adb`-connected device: Chrome rendered the built auth shell correctly, exposed the install surface through `Add to home screen`, and showed `Install` plus `Create shortcut` in the follow-up sheet.
+- Stopped the local preview origin after the first load and reopened the same URL on-device, then confirmed the cached auth shell still rendered, which closes the Milestone 9 Android offline-baseline check honestly.
 - Local verification passed again with `npm run lint`, `npm run test:run`, `npm run typecheck`, and `npm run build`.
 - Added the Milestone 10 calendar seam: typed calendar domain models, a placeholder Google Calendar service boundary, a structured `calendarIntegration` settings snapshot, and a recommendation-context mapper that converts future calendar collisions into the existing conflict-protection rule input.
 - Rebuilt the Settings screen around real infrastructure state so auth, PWA status, calendar scaffolding, feature gates, and the future `[FORGE] <block title>` metadata convention are visible instead of living only in code.
 - Added tests for calendar metadata conventions, collision-context shaping, and calendar-driven recommendation priority so future Calendar work can plug into a protected boundary instead of re-litigating the interface later.
 - Local verification passed with `npm run lint`, `npm run test:run`, and `npm run typecheck`; the code changes are ready for the final build/QA pass in Milestone 11.
-- Next implementation step: move into Milestone 11 while carrying the deferred Android Chrome verification as a short hardening task outside the Milestone 10 scope.
+- Completed the Milestone 11 hardening pass: refreshed the top-level README, added a release-readiness checklist, finalized Firebase/future-extension docs, and added an explicit known-limitations view so the remaining external blockers are visible instead of implied.
+- Re-verified the full repo with `npm run lint`, `npm run test:run`, `npm run typecheck`, and `npm run build`, and reviewed the main Phase 1 edge cases through the existing scoring, recommendation, fallback, and sync test coverage.
+- Milestone 11 is complete from the implementation-plan perspective, and the remaining external signoff gaps have now been closed through real Firebase verification plus real Android Chrome verification.
+- Next implementation step: treat Phase 1 as closed and move into Phase 2 planning and implementation.
