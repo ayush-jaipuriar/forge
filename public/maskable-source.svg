@@ -1,0 +1,21 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="512" height="512" viewBox="0 0 512 512" fill="none">
+  <defs>
+    <linearGradient id="mask-bg" x1="76" y1="52" x2="426" y2="456" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#1A2231" />
+      <stop offset="1" stop-color="#090B12" />
+    </linearGradient>
+    <linearGradient id="mask-core" x1="148" y1="132" x2="352" y2="384" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#F6C56F" />
+      <stop offset="1" stop-color="#D79235" />
+    </linearGradient>
+    <linearGradient id="mask-edge" x1="286" y1="132" x2="384" y2="250" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#9CE7F5" />
+      <stop offset="1" stop-color="#3AA5BE" />
+    </linearGradient>
+  </defs>
+  <rect width="512" height="512" rx="160" fill="url(#mask-bg)" />
+  <circle cx="256" cy="256" r="188" fill="#111724" fill-opacity=".3" />
+  <path d="M154 136H366L336 192H226V238H320L292 292H226V376H154V136Z" fill="url(#mask-core)" />
+  <path d="M278 136H366L322 218H270L278 136Z" fill="url(#mask-edge)" />
+  <path d="M314 234H370L314 376H254L314 234Z" fill="#F3EEE5" fill-opacity=".92" />
+</svg>

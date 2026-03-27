@@ -1,6 +1,7 @@
 import type { SettingsRepository } from '@/data/repositories/types'
 import { getForgeDb } from '@/data/local/forgeDb'
 import { createDefaultUserSettings } from '@/domain/settings/types'
+import { createDefaultCalendarConnectionSnapshot } from '@/domain/calendar/types'
 
 export class LocalSettingsRepository implements SettingsRepository {
   async getDefault() {
@@ -8,9 +9,14 @@ export class LocalSettingsRepository implements SettingsRepository {
     const settings = await db.get('settings', 'default')
 
     if (settings) {
+      const legacyCalendarConnected = 'calendarConnected' in settings ? settings.calendarConnected : undefined
       const normalizedSettings = {
         ...createDefaultUserSettings(),
         ...settings,
+        calendarIntegration: settings.calendarIntegration ?? {
+          ...createDefaultCalendarConnectionSnapshot(),
+          connectionStatus: legacyCalendarConnected ? 'scaffoldingReady' : 'notConnected',
+        },
         dayModeOverrides: settings.dayModeOverrides ?? {},
         dayTypeOverrides: settings.dayTypeOverrides ?? {},
         dailySignals: settings.dailySignals ?? {},
@@ -34,6 +40,7 @@ export class LocalSettingsRepository implements SettingsRepository {
     await db.put('settings', {
       ...createDefaultUserSettings(),
       ...settings,
+      calendarIntegration: settings.calendarIntegration ?? createDefaultCalendarConnectionSnapshot(),
       dayModeOverrides: settings.dayModeOverrides ?? {},
       dayTypeOverrides: settings.dayTypeOverrides ?? {},
       dailySignals: settings.dailySignals ?? {},

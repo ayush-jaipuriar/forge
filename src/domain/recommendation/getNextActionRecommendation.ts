@@ -1,4 +1,5 @@
 import type { EnergyStatus, SleepStatus } from '@/domain/common/types'
+import type { CalendarRecommendationContext } from '@/domain/calendar/types'
 import type { WorkoutLogEntry, WorkoutScheduleEntry } from '@/domain/physical/types'
 import type { ReadinessSnapshot } from '@/domain/readiness/types'
 import type { NextActionRecommendation } from '@/domain/recommendation/types'
@@ -16,7 +17,7 @@ type RecommendationContext = {
   sleepStatus: SleepStatus
   energyStatus: EnergyStatus
   schedulePressureLevel?: ReadinessSnapshot['paceSnapshot']['paceLevel']
-  conflictState?: 'clear' | 'constrained'
+  calendarContext?: CalendarRecommendationContext | null
   fallbackState?: 'stable' | 'suggested' | 'active'
   currentTime?: string
 }
@@ -32,7 +33,7 @@ export function getNextActionRecommendation({
   sleepStatus,
   energyStatus,
   schedulePressureLevel = readinessSnapshot.paceSnapshot.paceLevel,
-  conflictState = 'clear',
+  calendarContext = null,
   fallbackState = dayInstance.dayMode === 'normal' || dayInstance.dayMode === 'ideal' ? 'stable' : 'active',
   currentTime = getCurrentTimeKey(new Date()),
 }: RecommendationContext): NextActionRecommendation {
@@ -50,6 +51,7 @@ export function getNextActionRecommendation({
   const staleLowValueBlock =
     dayInstance.blocks.find((block) => ['activation', 'analytics'].includes(block.kind) && block.status === 'planned') ?? null
   const effectiveWorkoutState = workoutState?.status ?? scheduledWorkout?.status ?? 'optional'
+  const conflictState = calendarContext?.conflictState ?? 'clear'
 
   const orderedRules: Array<() => NextActionRecommendation | null> = [
     () => {
@@ -57,10 +59,12 @@ export function getNextActionRecommendation({
         return {
           ruleKey: 'protect-conflict-boundary',
           actionLabel: `Protect ${currentBlock.title} against outside drift`,
-          rationale: 'The schedule is constrained, so the best move is to preserve the active block boundary instead of improvising new work.',
+          rationale:
+            'The schedule is constrained by outside commitments, so the best move is to preserve the active block boundary instead of improvising new work.',
           urgency: 'high',
           alternativePath: planningBlock ? `If the block is no longer realistic, switch to ${planningBlock.title} and re-close the day.` : undefined,
-          explanation: 'Conflict state takes top precedence because fragmented attention destroys the rest of the rule stack.',
+          explanation:
+            'Calendar conflict state takes top precedence because fragmented attention destroys the rest of the rule stack before score math can recover it.',
         }
       }
 

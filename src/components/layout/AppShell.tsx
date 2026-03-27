@@ -9,6 +9,9 @@ import { StatusBadge } from '@/components/status/StatusBadge'
 import { SyncIndicator } from '@/components/status/SyncIndicator'
 import { forgeTokens } from '@/app/theme/tokens'
 import { useAuthSession } from '@/features/auth/providers/useAuthSession'
+import { PwaStatusCard } from '@/features/pwa/components/PwaStatusCard'
+import { getConnectivityStatusModel, shouldShowPwaStatusCard } from '@/features/pwa/pwaStatus'
+import { usePwaState } from '@/features/pwa/providers/usePwaState'
 
 export function AppShell() {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
@@ -17,6 +20,16 @@ export function AppShell() {
   const dayMode = useUiStore((state) => state.dayMode)
   const warState = useUiStore((state) => state.warState)
   const syncStatus = useUiStore((state) => state.syncStatus)
+  const { applyAppUpdate, canInstall, dismissOfflineReady, isInstalled, isOnline, needRefresh, offlineReady, promptInstall } =
+    usePwaState()
+  const connectivityStatus = getConnectivityStatusModel({ isOnline, syncStatus })
+  const showPwaSurface = shouldShowPwaStatusCard({
+    isOnline,
+    syncStatus,
+    canInstall,
+    needRefresh,
+    offlineReady,
+  })
 
   return (
     <Box sx={{ minHeight: '100vh', pb: { xs: 10, md: 4 } }}>
@@ -90,10 +103,26 @@ export function AppShell() {
             />
             <SignalStrip
               eyebrow="System Health"
-              value={syncStatus === 'stable' ? 'Ready for Firebase wiring' : titleFromToken(syncStatus)}
-              detail="Sync-state components are established before offline queue logic is introduced."
+              value={connectivityStatus.title}
+              detail={connectivityStatus.detail}
             />
           </Stack>
+
+          {showPwaSurface ? (
+            <PwaStatusCard
+              isOnline={isOnline}
+              syncStatus={syncStatus}
+              canInstall={canInstall}
+              isInstalled={isInstalled}
+              needRefresh={needRefresh}
+              offlineReady={offlineReady}
+              onInstall={async () => {
+                await promptInstall()
+              }}
+              onApplyUpdate={() => applyAppUpdate()}
+              onDismissOfflineReady={dismissOfflineReady}
+            />
+          ) : null}
 
           <Stack direction="row" spacing={1} sx={{ display: { xs: 'none', md: 'flex' }, flexWrap: 'wrap' }}>
             {navigationItems.map(({ icon: Icon, label, path }) => {

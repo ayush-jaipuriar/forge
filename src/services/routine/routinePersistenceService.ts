@@ -1,5 +1,6 @@
 import { forgePrepTaxonomy, forgeRoutine, forgeWorkoutSchedule } from '@/data/seeds'
 import { localDayInstanceRepository, localSettingsRepository } from '@/data/local'
+import { googleCalendarScaffoldingService } from '@/services/calendar/calendarIntegrationService'
 import { getWorkoutForDate } from '@/domain/physical/selectors'
 import { getCurrentBlock, getTopPriorityBlocks } from '@/domain/routine/selectors'
 import { getFocusedPrepDomains, mergePrepTopicProgress } from '@/domain/prep/selectors'
@@ -56,6 +57,10 @@ export async function getOrCreateTodayWorkspace(date = new Date()) {
     focusedDomains: focusedPrepDomains,
     topics: prepTopics,
   })
+  const calendarContext = await googleCalendarScaffoldingService.getRecommendationContext({
+    date: dateKey,
+    connection: settings?.calendarIntegration,
+  })
   const scorePreview = calculateDayScorePreview(dayInstance, {
     scheduledWorkout,
     workoutState,
@@ -87,6 +92,7 @@ export async function getOrCreateTodayWorkspace(date = new Date()) {
     sleepDurationHours: dailySignals.sleepDurationHours,
     scorePreview,
     fallbackSuggestion,
+    calendarContext,
     recommendation: getNextActionRecommendation({
       dayInstance,
       currentBlock,
@@ -98,7 +104,7 @@ export async function getOrCreateTodayWorkspace(date = new Date()) {
       sleepStatus: dailySignals.sleepStatus,
       energyStatus: dailySignals.energyStatus,
       schedulePressureLevel: readinessSnapshot.paceSnapshot.paceLevel,
-      conflictState: 'clear',
+      calendarContext,
       fallbackState: fallbackSuggestion ? 'suggested' : dayInstance.dayMode === 'normal' || dayInstance.dayMode === 'ideal' ? 'stable' : 'active',
     }),
   }

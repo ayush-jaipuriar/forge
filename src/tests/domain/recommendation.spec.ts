@@ -1,5 +1,7 @@
 import { describe, expect, it } from 'vitest'
 import { forgeRoutine } from '@/data/seeds'
+import { deriveRecommendationCalendarContext } from '@/domain/calendar/deriveRecommendationCalendarContext'
+import { createDefaultCalendarConnectionSnapshot } from '@/domain/calendar/types'
 import { generateDayInstance } from '@/domain/routine/generateDayInstance'
 import { calculateDayScorePreview } from '@/domain/scoring/calculateDayScorePreview'
 import { getNextActionRecommendation } from '@/domain/recommendation/getNextActionRecommendation'
@@ -212,5 +214,57 @@ describe('getNextActionRecommendation', () => {
 
     expect(recommendation.ruleKey).toBe('closing-workout-window')
     expect(recommendation.actionLabel).toMatch(/train/i)
+  })
+
+  it('protects the current block when calendar conflict context is constrained', () => {
+    const dayInstance = generateDayInstance({
+      date: '2026-03-26',
+      routine: forgeRoutine,
+    })
+    const scorePreview = calculateDayScorePreview(dayInstance, {
+      scheduledWorkout: null,
+      workoutState: null,
+      sleepStatus: 'unknown',
+      readinessSnapshot,
+    })
+    const currentBlock = dayInstance.blocks.find((block) => block.kind === 'activation') ?? null
+
+    const recommendation = getNextActionRecommendation({
+      dayInstance,
+      currentBlock,
+      topPriorities: dayInstance.blocks.filter((block) => block.status === 'planned'),
+      scorePreview,
+      readinessSnapshot,
+      scheduledWorkout: null,
+      workoutState: null,
+      sleepStatus: 'unknown',
+      energyStatus: 'normal',
+      calendarContext: deriveRecommendationCalendarContext({
+        date: '2026-03-26',
+        connection: {
+          ...createDefaultCalendarConnectionSnapshot(),
+          connectionStatus: 'scaffoldingReady',
+        },
+        summary: {
+          date: '2026-03-26',
+          severity: 'hard',
+          overlappingEventCount: 1,
+          mirroredBlockCount: 0,
+          source: 'placeholder',
+          constrainedWindows: [
+            {
+              startsAt: '2026-03-26T08:30:00+05:30',
+              endsAt: '2026-03-26T09:00:00+05:30',
+              reason: 'Future meeting collision placeholder',
+              eventIds: ['evt_conflict_1'],
+            },
+          ],
+        },
+      }),
+      currentTime: '08:20',
+    })
+
+    expect(recommendation.ruleKey).toBe('protect-conflict-boundary')
+    expect(recommendation.explanation).toMatch(/calendar conflict state/i)
   })
 })

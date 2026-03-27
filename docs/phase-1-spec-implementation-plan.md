@@ -740,19 +740,19 @@ Ship the application as a credible installable web app with resilient loading an
 
 ### Checklist
 
-- [ ] Configure app manifest, icons, naming, and display properties for installability.
-- [ ] Add service worker support and cache strategy for core shell assets.
-- [ ] Ensure Today screen and recent cached data can render offline.
-- [ ] Add installability UX and offline/degraded-state handling.
+- [x] Configure app manifest, icons, naming, and display properties for installability.
+- [x] Add service worker support and cache strategy for core shell assets.
+- [x] Ensure Today screen and recent cached data can render offline.
+- [x] Add installability UX and offline/degraded-state handling.
 - [ ] Verify browser behavior on Android Chrome and desktop Chromium browsers.
-- [ ] Prepare Hosting configuration and SPA routing behavior.
-- [ ] Validate that offline queue replay works correctly after reconnection.
+- [x] Prepare Hosting configuration and SPA routing behavior.
+- [x] Validate that offline queue replay works correctly after reconnection.
 
 ### Testing and Documentation
 
-- [ ] Document PWA setup and deployment steps in `docs/deployment-guide.md`.
-- [ ] Add test coverage for critical offline helpers where realistic.
-- [ ] Record installability and offline limitations clearly.
+- [x] Document PWA setup and deployment steps in `docs/deployment-guide.md`.
+- [x] Add test coverage for critical offline helpers where realistic.
+- [x] Record installability and offline limitations clearly.
 
 ### Exit Criteria
 
@@ -775,17 +775,17 @@ Prepare the app for future Calendar integration without prematurely implementing
 
 ### Checklist
 
-- [ ] Define calendar domain models for external events, mirrored blocks, and collision summaries.
-- [ ] Create calendar service interfaces and placeholder adapters.
-- [ ] Add settings-level placeholder connection status and feature-flag framing.
-- [ ] Thread calendar conflict inputs into recommendation-engine context shape.
-- [ ] Prepare event metadata conventions such as `[FORGE] <block title>` without enabling full sync.
-- [ ] Document how future read and write flows should plug into the current architecture.
+- [x] Define calendar domain models for external events, mirrored blocks, and collision summaries.
+- [x] Create calendar service interfaces and placeholder adapters.
+- [x] Add settings-level placeholder connection status and feature-flag framing.
+- [x] Thread calendar conflict inputs into recommendation-engine context shape.
+- [x] Prepare event metadata conventions such as `[FORGE] <block title>` without enabling full sync.
+- [x] Document how future read and write flows should plug into the current architecture.
 
 ### Testing and Documentation
 
-- [ ] Add tests for calendar context shaping if it affects recommendation inputs.
-- [ ] Write `docs/google-calendar-scaffolding.md` to explain current boundaries and next integration step.
+- [x] Add tests for calendar context shaping if it affects recommendation inputs.
+- [x] Write `docs/google-calendar-scaffolding.md` to explain current boundaries and next integration step.
 
 ### Exit Criteria
 
@@ -965,7 +965,7 @@ Use this section as the live implementation tracker.
 - [x] Milestone 7 complete
 - [x] Milestone 8 complete
 - [ ] Milestone 9 complete
-- [ ] Milestone 10 complete
+- [x] Milestone 10 complete
 - [ ] Milestone 11 complete
 
 ### Current Iteration Notes
@@ -1024,4 +1024,13 @@ Use this section as the live implementation tracker.
 - Added and refreshed domain tests to lock in score constraints, meaningful-output scoring, workout-state scoring, and recommendation precedence.
 - Local verification passed again with `npm run lint`, `npm run test:run`, `npm run typecheck`, and `npm run build`.
 - Milestone 8 is now complete from the implementation-plan perspective.
-- Next implementation step: move into Milestone 9 while keeping Milestone 2 live verification as a separate environment-validation task.
+- Added the Milestone 9 platform layer: richer manifest metadata, generated install icons, service-worker runtime caching, install/update/offline shell UX, and Firebase Hosting SPA routing configuration.
+- Added focused test coverage for offline helper logic and reconnect-triggered sync replay, then verified the built preview in desktop Chromium with a registered service worker, reachable manifest/icons, and a successful forced-offline reload of the auth shell.
+- Attempted the direct Android verification pass and confirmed the current machine has neither a connected `adb` device nor a local Android emulator, so the browser/device checklist item remains open by environment constraint rather than silent omission.
+- Recorded the remaining limitation explicitly instead of over-claiming completion: Android Chrome was not directly verified in this environment, and live authenticated offline validation still depends on real Firebase `.env` values.
+- Local verification passed again with `npm run lint`, `npm run test:run`, `npm run typecheck`, and `npm run build`.
+- Added the Milestone 10 calendar seam: typed calendar domain models, a placeholder Google Calendar service boundary, a structured `calendarIntegration` settings snapshot, and a recommendation-context mapper that converts future calendar collisions into the existing conflict-protection rule input.
+- Rebuilt the Settings screen around real infrastructure state so auth, PWA status, calendar scaffolding, feature gates, and the future `[FORGE] <block title>` metadata convention are visible instead of living only in code.
+- Added tests for calendar metadata conventions, collision-context shaping, and calendar-driven recommendation priority so future Calendar work can plug into a protected boundary instead of re-litigating the interface later.
+- Local verification passed with `npm run lint`, `npm run test:run`, and `npm run typecheck`; the code changes are ready for the final build/QA pass in Milestone 11.
+- Next implementation step: move into Milestone 11 while carrying the deferred Android Chrome verification as a short hardening task outside the Milestone 10 scope.

@@ -1,4 +1,8 @@
 import type { DayMode, DayType, EnergyStatus, SleepStatus } from '@/domain/common/types'
+import {
+  createDefaultCalendarConnectionSnapshot,
+} from '@/domain/calendar/types'
+import type { CalendarConnectionSnapshot } from '@/domain/calendar/types'
 import type { WorkoutLogEntry } from '@/domain/physical/types'
 import type { PrepTopicProgressSnapshot } from '@/domain/prep/types'
 
@@ -11,7 +15,7 @@ export type DailySignalSnapshot = {
 export type UserSettings = {
   id: 'default'
   notificationsEnabled: boolean
-  calendarConnected: boolean
+  calendarIntegration: CalendarConnectionSnapshot
   dayModeOverrides: Record<string, DayMode>
   dayTypeOverrides: Record<string, DayType>
   dailySignals: Record<string, DailySignalSnapshot>
@@ -24,7 +28,7 @@ export function createDefaultUserSettings(): UserSettings {
   return {
     id: 'default',
     notificationsEnabled: true,
-    calendarConnected: false,
+    calendarIntegration: createDefaultCalendarConnectionSnapshot(),
     dayModeOverrides: {},
     dayTypeOverrides: {},
     dailySignals: {},

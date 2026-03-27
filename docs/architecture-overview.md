@@ -102,6 +102,22 @@ This document captures the Phase 1 architectural baseline that implementation sh
 - the current precedence is: protect conflict boundary, missed-prime salvage, critical stabilization, fallback downgrades, closing workout window, stale low-value move-later, morning prime execution, WFO recovery shift, finish current block, then advance top priority
 - recommendation context now includes actual workout state, readiness pace, fallback posture, sleep, energy, and score pressure from the same workspace generation path, which keeps the engine strict without duplicating UI-only heuristics
 
+## Milestone 9 PWA and Hosting Assumptions
+
+- the app now ships with a richer manifest, real install icons, and a service worker generated from the production build rather than relying on a minimal placeholder setup
+- runtime caching is intentionally narrow and shell-focused: navigations use `NetworkFirst`, core shell assets use `StaleWhileRevalidate`, and images use `CacheFirst`; this keeps the app resilient without pretending that all remote data is offline-safe
+- install, update, offline, and queued-state messaging now live in the app shell itself so the operator does not have to infer state from browser chrome or missing network indicators
+- Firebase Hosting is now configured as an SPA target with explicit rewrite and cache-header behavior, which keeps deployed routing and service-worker refresh semantics aligned with the local production preview
+- browser verification is currently strongest on desktop Chromium: the manifest, icons, service-worker registration, and forced-offline shell reload were verified there, while direct Android Chrome verification remains a documented follow-up task
+
+## Milestone 10 Calendar Boundary Assumptions
+
+- calendar scaffolding now lives in typed domain models rather than UI placeholders alone, which means future provider integration can arrive without redefining settings or recommendation inputs
+- the settings model now stores a `calendarIntegration` snapshot with provider status, feature-gate framing, managed-event mode, and selected-calendar ids; this replaces the older boolean placeholder with something future work can actually extend
+- the Google Calendar service boundary is intentionally placeholder-only in Phase 1: it normalizes connection state, exposes a recommendation-ready collision context, and formats `[FORGE]` event metadata previews, but it does not perform provider reads or writes yet
+- recommendation context now accepts typed calendar conflict input, and the top-precedence conflict-protection rule is already wired to respect that future context without changing the surrounding recommendation stack later
+- the Settings screen is now the operational home for this scaffolding, which keeps integration state visible without leaking provider assumptions into Today or Schedule prematurely
+
 ### Current Conflict Strategy and Limits
 
 - the current foundation favors predictable local continuity over sophisticated merge behavior

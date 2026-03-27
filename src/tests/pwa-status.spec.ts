@@ -1,0 +1,57 @@
+import { describe, expect, it } from 'vitest'
+import { getConnectivityStatusModel, shouldShowPwaStatusCard } from '@/features/pwa/pwaStatus'
+
+describe('pwaStatus helpers', () => {
+  it('surfaces the strongest offline queue warning when connectivity is down and writes are outstanding', () => {
+    const model = getConnectivityStatusModel({
+      isOnline: false,
+      syncStatus: 'queued',
+    })
+
+    expect(model.eyebrow).toBe('Offline Queue')
+    expect(model.tone).toBe('warning')
+    expect(model.detail).toMatch(/replay/i)
+  })
+
+  it('treats a healthy connected shell as success', () => {
+    const model = getConnectivityStatusModel({
+      isOnline: true,
+      syncStatus: 'stable',
+    })
+
+    expect(model.title).toBe('Installable and connected')
+    expect(model.tone).toBe('success')
+  })
+
+  it('shows the status surface when install, update, or offline states need user attention', () => {
+    expect(
+      shouldShowPwaStatusCard({
+        isOnline: true,
+        syncStatus: 'stable',
+        canInstall: false,
+        needRefresh: false,
+        offlineReady: false,
+      }),
+    ).toBe(false)
+
+    expect(
+      shouldShowPwaStatusCard({
+        isOnline: false,
+        syncStatus: 'stable',
+        canInstall: false,
+        needRefresh: false,
+        offlineReady: false,
+      }),
+    ).toBe(true)
+
+    expect(
+      shouldShowPwaStatusCard({
+        isOnline: true,
+        syncStatus: 'stable',
+        canInstall: true,
+        needRefresh: false,
+        offlineReady: false,
+      }),
+    ).toBe(true)
+  })
+})

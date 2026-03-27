@@ -41,7 +41,13 @@ export async function bootstrapUserSession(user: User) {
   if (!settingsSnapshot.exists()) {
     batch.set(settingsRef, {
       notificationsEnabled: true,
-      calendarConnected: false,
+      calendarIntegration: {
+        provider: 'google',
+        connectionStatus: 'notConnected',
+        featureGate: 'scaffoldingOnly',
+        managedEventMode: 'disabled',
+        selectedCalendarIds: [],
+      },
       dayModeOverrides: {},
       dayTypeOverrides: {},
       dailySignals: {},
