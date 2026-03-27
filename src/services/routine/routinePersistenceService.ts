@@ -6,6 +6,7 @@ import { generateDayInstance } from '@/domain/routine/generateDayInstance'
 import { formatDateLabel, formatWeekdayLabel, generateWeekInstances, getDateKey } from '@/domain/routine/week'
 import { calculateDayScorePreview } from '@/domain/scoring/calculateDayScorePreview'
 import { calculateReadinessSnapshot } from '@/domain/readiness/calculateReadinessSnapshot'
+import { getFallbackModeSuggestion } from '@/domain/recommendation/getFallbackModeSuggestion'
 import { getNextActionRecommendation } from '@/domain/recommendation/getNextActionRecommendation'
 import type { DayInstance } from '@/domain/routine/types'
 
@@ -47,6 +48,12 @@ export async function getOrCreateTodayWorkspace(date = new Date()) {
     sleepStatus: dailySignals.sleepStatus,
     readinessSnapshot,
   })
+  const fallbackSuggestion = getFallbackModeSuggestion({
+    dayInstance,
+    scorePreview,
+    sleepStatus: dailySignals.sleepStatus,
+    energyStatus: dailySignals.energyStatus,
+  })
 
   return {
     dateKey,
@@ -61,6 +68,7 @@ export async function getOrCreateTodayWorkspace(date = new Date()) {
     sleepStatus: dailySignals.sleepStatus,
     energyStatus: dailySignals.energyStatus,
     scorePreview,
+    fallbackSuggestion,
     recommendation: getNextActionRecommendation({
       dayInstance,
       currentBlock,

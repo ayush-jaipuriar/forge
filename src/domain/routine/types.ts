@@ -53,6 +53,7 @@ export type BlockInstance = {
   title: string
   kind: BlockKind
   status: BlockStatus
+  executionNote?: string
   startTime?: string
   endTime?: string
   durationMinutes?: number

@@ -1,6 +1,7 @@
 import type { BlockStatus } from '@/domain/common/types'
 import { localDayInstanceRepository, localSyncQueueRepository } from '@/data/local'
-import { updateBlockStatus } from '@/domain/routine/mutations'
+import { updateBlockExecutionNote, updateBlockStatus } from '@/domain/routine/mutations'
+import type { DayInstance } from '@/domain/routine/types'
 import { getOrCreateTodayWorkspace } from '@/services/routine/routinePersistenceService'
 import { createSyncQueueItem } from '@/services/sync/syncQueue'
 import { flushSyncQueue } from '@/services/sync/syncOrchestrator'
@@ -22,13 +23,44 @@ export async function updateDayBlockStatus({
   status,
   userId,
 }: UpdateDayBlockStatusInput): Promise<UpdateDayBlockStatusResult> {
-  let dayInstance = await localDayInstanceRepository.getByDate(date)
+  return updateDayInstance({
+    date,
+    userId,
+    updater: (dayInstance) => updateBlockStatus(dayInstance, blockId, status),
+  })
+}
 
-  if (!dayInstance) {
-    dayInstance = (await getOrCreateTodayWorkspace(new Date(`${date}T00:00:00`))).dayInstance
-  }
+type UpdateDayBlockNoteInput = {
+  date: string
+  blockId: string
+  executionNote: string
+  userId?: string
+}
 
-  const nextDayInstance = updateBlockStatus(dayInstance, blockId, status)
+export async function updateDayBlockNote({
+  date,
+  blockId,
+  executionNote,
+  userId,
+}: UpdateDayBlockNoteInput): Promise<UpdateDayBlockStatusResult> {
+  return updateDayInstance({
+    date,
+    userId,
+    updater: (dayInstance) => updateBlockExecutionNote(dayInstance, blockId, executionNote),
+  })
+}
+
+async function updateDayInstance({
+  date,
+  userId,
+  updater,
+}: {
+  date: string
+  userId?: string
+  updater: (dayInstance: DayInstance) => DayInstance
+}): Promise<UpdateDayBlockStatusResult> {
+  const dayInstance = await getExistingOrGeneratedDayInstance(date)
+  const nextDayInstance = updater(dayInstance)
 
   if (nextDayInstance === dayInstance) {
     return {
@@ -56,6 +88,16 @@ export async function updateDayBlockStatus({
   return {
     pendingCount: await localSyncQueueRepository.countOutstanding(),
   }
+}
+
+async function getExistingOrGeneratedDayInstance(date: string) {
+  const existing = await localDayInstanceRepository.getByDate(date)
+
+  if (existing) {
+    return existing
+  }
+
+  return (await getOrCreateTodayWorkspace(new Date(`${date}T00:00:00`))).dayInstance
 }
 
 function isOnline() {

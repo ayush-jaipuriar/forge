@@ -64,12 +64,22 @@ This document captures the Phase 1 architectural baseline that implementation sh
 - Today workspace generation now also produces a projected score preview and derived war-state so the shell can react to execution changes through domain results instead of ad hoc UI math
 - score preview now consumes explicit workout expectation, sleep-status placeholder, and readiness-pressure context, and the first recommendation engine reuses that same workspace context instead of duplicating heuristics in the UI
 - daily sleep and energy signals now persist through the same settings sync path, and the Today screen keeps a lightweight recommendation history so rule shifts stay inspectable instead of feeling arbitrary
+- block states now support complete, skip, move-later, and restore through one shared day-instance mutation path, which is the clearest practical sign that the Milestone 4 repository/sync foundation is holding together
+
+## Milestone 5 Today Flow Additions
+
+- Today is now a fuller mobile-first execution surface rather than a status dashboard: the page leads with the current operating posture, recommendation access, quick-signal inputs, and the live agenda in one long scrollable flow
+- fallback guidance is now surfaced explicitly as a dedicated interaction card when support signals or score pressure imply that the current mode is no longer honest
+- the fallback card is intentionally one-tap actionable so the user can compress the day without navigating away or editing the routine itself
+- block execution notes are stored directly on block instances as lightweight execution context, which keeps them local-first, syncable, and attached to the actual execution record instead of becoming a separate journaling system
+- note capture remains optional and inline because the product goal is operational clarity, not forcing the user into post-hoc documentation during the day
+- Today-focused component tests now cover the explicit fallback interaction and the lightweight note-capture flow so the primary execution loop has regression protection
 
 ### Current Conflict Strategy and Limits
 
 - the current foundation favors predictable local continuity over sophisticated merge behavior
 - for day instances, the practical near-term strategy is whole-record upsert by date until block-level mutation commands exist
-- this means explicit conflict helpers and field-level merges are still a remaining Milestone 4 task, not a solved problem
+- this means explicit field-level merges are intentionally deferred; Milestone 4 closes with documented coalescing plus whole-record upserts rather than pretending merge complexity is already solved
 - Firestore adapters are intentionally thin so conflict policy can evolve in the application/domain layer instead of being buried inside integration code
 
 ## Layer Boundaries

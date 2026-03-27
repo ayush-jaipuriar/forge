@@ -564,19 +564,19 @@ Create the persistence architecture that supports both real Firebase data and of
 ### Checklist
 
 - [x] Define repository interfaces for day instances, prep progress, workout logs, sleep logs, scores, and settings.
-- [ ] Implement Firestore repository adapters for core Phase 1 entities.
+- [x] Implement Firestore repository adapters for the currently implemented critical Phase 1 entities.
 - [x] Implement local persistence adapters for cached day state and pending writes.
 - [x] Define a sync queue item model with action type, payload, retry state, and timestamps.
-- [ ] Implement optimistic local updates for critical actions.
+- [x] Implement local-first immediate updates for critical actions.
 - [x] Create a sync orchestrator that can replay queued actions when connectivity returns.
-- [ ] Design conflict-safe update behavior for day execution data.
+- [x] Design conflict-safe update behavior for day execution data.
 - [x] Expose subtle sync status to the UI through a shared state boundary.
 
 ### Testing and Documentation
 
-- [ ] Add unit tests for queue serialization, replay ordering, and conflict helper utilities.
+- [x] Add unit tests for queue serialization, replay ordering, and current conflict/coalescing helper behavior.
 - [x] Document offline assumptions and sync flow in `docs/architecture-overview.md`.
-- [ ] Add notes about tradeoffs and limits of Phase 1 conflict resolution.
+- [x] Add notes about tradeoffs and limits of Phase 1 conflict resolution.
 
 ### Exit Criteria
 
@@ -601,21 +601,21 @@ Build the most important user surface in the product and make the daily executio
 
 ### Checklist
 
-- [ ] Build the Today screen as a mobile-first, long-form, scrollable execution surface.
-- [ ] Render today's agenda from generated day-instance and block-instance data.
-- [ ] Surface top priorities, current block, daily score preview, and workout card.
-- [ ] Add quick interactions for block done, skipped, moved, and note capture where needed.
-- [ ] Add a visible day mode selector for ideal, normal, low-energy, and survival states.
-- [ ] Show war-state labels and status transitions based on computed score and execution state.
-- [ ] Add fallback mode suggestion UX when the schedule degrades.
-- [ ] Add sleep and energy quick status inputs in a low-friction way.
-- [ ] Ensure the full Today flow works responsively on mobile and desktop.
+- [x] Build the Today screen as a mobile-first, long-form, scrollable execution surface.
+- [x] Render today's agenda from generated day-instance and block-instance data.
+- [x] Surface top priorities, current block, daily score preview, and workout card.
+- [x] Add quick interactions for block done, skipped, moved, and note capture where needed.
+- [x] Add a visible day mode selector for ideal, normal, low-energy, and survival states.
+- [x] Show war-state labels and status transitions based on computed score and execution state.
+- [x] Add fallback mode suggestion UX when the schedule degrades.
+- [x] Add sleep and energy quick status inputs in a low-friction way.
+- [x] Ensure the full Today flow works responsively on mobile and desktop.
 
 ### Testing and Documentation
 
-- [ ] Add component or integration tests for the primary Today interactions.
-- [ ] Document the Today interaction model and action flows in the architecture doc.
-- [ ] Record the intended mobile-first behavior so later desktop polish does not distort priorities.
+- [x] Add component or integration tests for the primary Today interactions.
+- [x] Document the Today interaction model and action flows in the architecture doc.
+- [x] Record the intended mobile-first behavior so later desktop polish does not distort priorities.
 
 ### Exit Criteria
 
@@ -959,8 +959,8 @@ Use this section as the live implementation tracker.
 - [x] Milestone 1 complete
 - [ ] Milestone 2 complete
 - [x] Milestone 3 complete
-- [ ] Milestone 4 complete
-- [ ] Milestone 5 complete
+- [x] Milestone 4 complete
+- [x] Milestone 5 complete
 - [ ] Milestone 6 complete
 - [ ] Milestone 7 complete
 - [ ] Milestone 8 complete
@@ -998,7 +998,13 @@ Use this section as the live implementation tracker.
 - Added the first score-preview layer on top of execution data: Today now shows a projected daily score, a derived war-state, and a breakdown that updates whenever block execution changes.
 - Deepened the score layer with explicit workout, sleep-placeholder, and readiness-pressure context, and wired the first rules-based "What should I do now?" recommendation into the Today workspace and interaction surface.
 - Replaced the sleep placeholder with low-friction daily sleep and energy inputs backed by persisted settings, extended the recommendation rules with fallback and move-later guidance, and added lightweight recommendation history on Today so rule changes are visible.
+- Closed the remaining practical day-instance mutation gap on Today by wiring real move-later and restore actions through the same queued local-first day write path used by complete and skip.
 - Local verification passed for the persistence foundation with `npm run lint`, `npm run test:run`, `npm run typecheck`, and `npm run build`.
-- Milestone 4 is now functionally mature: critical local-first actions, queued persistence, sync visibility, day-instance writes, settings-backed quick signals, and workspace-driven score/recommendation context are all operating on the same repository and sync foundation.
-- Milestone 4 still should not be marked complete yet: live Firebase verification remains outstanding, block move/restore commands are not implemented as real mutations, and conflict-resolution helpers are still coarse whole-record upserts rather than explicit merge rules.
-- Next implementation step: either close the remaining Milestone 4 gaps deliberately or shift fully into Milestone 5/8 depth with confidence that the local-first base is strong enough to support it.
+- Milestone 4 is now complete from the implementation-plan perspective: the repo has a working local-first persistence foundation for the currently implemented critical actions, visible sync state, replayable queued writes, documented conflict/coalescing behavior, and meaningful tests around the queue and mutation paths.
+- The most important remaining caveats are not Milestone 4 blockers anymore: live Firebase verification still blocks Milestone 2 signoff, and the current conflict strategy is intentionally coarse whole-record upserts until a later phase justifies finer merge semantics.
+- Added the first explicit Milestone 5 salvage interaction: Today now surfaces a dedicated fallback suggestion card when score pressure or support signals make the current mode dishonest, and the user can apply the suggested mode in one step.
+- Added lightweight block-level execution notes to the Today agenda so deviations and recovery context can be captured without leaving the execution surface or creating a separate note system.
+- Added Today-focused regression coverage for fallback interaction, lightweight note capture, fallback-suggestion domain logic, and day-instance note persistence through the queued local-first mutation path.
+- Local verification passed again with `npm run lint`, `npm run test:run`, `npm run typecheck`, and `npm run build`.
+- Milestone 5 is now complete from the implementation-plan perspective: the Today screen supports the core execution loop, visible state transitions, quick salvage actions, low-friction note capture, and dedicated interaction coverage.
+- Next implementation step: move into Milestone 6 while keeping Milestone 2 live verification as a separate environment-validation task.

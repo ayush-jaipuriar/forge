@@ -3,7 +3,7 @@ import { localDayInstanceRepository, localSyncQueueRepository } from '@/data/loc
 import { resetForgeDb } from '@/data/local/forgeDb'
 import { forgeRoutine } from '@/data/seeds'
 import { generateDayInstance } from '@/domain/routine/generateDayInstance'
-import { updateDayBlockStatus } from '@/services/routine/dayExecutionService'
+import { updateDayBlockNote, updateDayBlockStatus } from '@/services/routine/dayExecutionService'
 
 describe('updateDayBlockStatus', () => {
   beforeEach(async () => {
@@ -69,5 +69,77 @@ describe('updateDayBlockStatus', () => {
     }
 
     expect(queueItems[0].payload.blocks[0].status).toBe('skipped')
+  })
+
+  it('supports move-later and restore transitions through the same queued day-instance path', async () => {
+    const dayInstance = generateDayInstance({
+      date: '2026-03-26',
+      routine: forgeRoutine,
+    })
+
+    await localDayInstanceRepository.upsert(dayInstance)
+
+    await updateDayBlockStatus({
+      date: dayInstance.date,
+      blockId: dayInstance.blocks[0].id,
+      status: 'moved',
+    })
+
+    await updateDayBlockStatus({
+      date: dayInstance.date,
+      blockId: dayInstance.blocks[0].id,
+      status: 'planned',
+    })
+
+    const updatedDay = await localDayInstanceRepository.getByDate(dayInstance.date)
+    const queueItems = await localSyncQueueRepository.listOutstanding()
+
+    expect(updatedDay?.blocks[0].status).toBe('planned')
+    expect(queueItems).toHaveLength(1)
+    expect(queueItems[0].actionType).toBe('upsertDayInstance')
+
+    if (queueItems[0].actionType !== 'upsertDayInstance') {
+      throw new Error('Expected a day-instance sync queue item.')
+    }
+
+    expect(queueItems[0].payload.blocks[0].status).toBe('planned')
+  })
+
+  it('persists execution notes through the same coalesced day-instance queue path', async () => {
+    const dayInstance = generateDayInstance({
+      date: '2026-03-26',
+      routine: forgeRoutine,
+    })
+
+    await localDayInstanceRepository.upsert(dayInstance)
+
+    await updateDayBlockNote({
+      date: dayInstance.date,
+      blockId: dayInstance.blocks[0].id,
+      executionNote: 'Slipped because the commute ran long.',
+    })
+
+    await updateDayBlockNote({
+      date: dayInstance.date,
+      blockId: dayInstance.blocks[0].id,
+      executionNote: 'Slipped because the commute ran long. Resume with the first focused 30-minute push.',
+    })
+
+    const updatedDay = await localDayInstanceRepository.getByDate(dayInstance.date)
+    const queueItems = await localSyncQueueRepository.listOutstanding()
+
+    expect(updatedDay?.blocks[0].executionNote).toBe(
+      'Slipped because the commute ran long. Resume with the first focused 30-minute push.',
+    )
+    expect(queueItems).toHaveLength(1)
+    expect(queueItems[0].actionType).toBe('upsertDayInstance')
+
+    if (queueItems[0].actionType !== 'upsertDayInstance') {
+      throw new Error('Expected a day-instance sync queue item.')
+    }
+
+    expect(queueItems[0].payload.blocks[0].executionNote).toBe(
+      'Slipped because the commute ran long. Resume with the first focused 30-minute push.',
+    )
   })
 })

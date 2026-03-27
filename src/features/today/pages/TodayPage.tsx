@@ -10,9 +10,12 @@ import { SurfaceCard } from '@/components/common/SurfaceCard'
 import { StatusBadge } from '@/components/status/StatusBadge'
 import { SyncIndicator } from '@/components/status/SyncIndicator'
 import { useUiStore } from '@/app/store/uiStore'
+import { BlockNoteComposer } from '@/features/today/components/BlockNoteComposer'
 import { DayModeSelector } from '@/features/today/components/DayModeSelector'
+import { FallbackModeSuggestionCard } from '@/features/today/components/FallbackModeSuggestionCard'
 import { SignalToggleGroup } from '@/features/today/components/SignalToggleGroup'
 import { useTodayWorkspace } from '@/features/today/hooks/useTodayWorkspace'
+import { useUpdateBlockNote } from '@/features/today/hooks/useUpdateBlockNote'
 import { useUpdateBlockStatus } from '@/features/today/hooks/useUpdateBlockStatus'
 import { useUpdateDailySignals } from '@/features/today/hooks/useUpdateDailySignals'
 import { useUpdateDayMode } from '@/features/today/hooks/useUpdateDayMode'
@@ -25,9 +28,11 @@ export function TodayPage() {
   const currentDayMode = useUiStore((state) => state.dayMode)
   const syncStatus = useUiStore((state) => state.syncStatus)
   const updateDayModeMutation = useUpdateDayMode()
+  const updateBlockNoteMutation = useUpdateBlockNote()
   const updateBlockStatusMutation = useUpdateBlockStatus()
   const updateDailySignalsMutation = useUpdateDailySignals()
   const [showRecommendation, setShowRecommendation] = useState(false)
+  const [dismissedFallbackKey, setDismissedFallbackKey] = useState<string | null>(null)
   const [recommendationHistory, setRecommendationHistory] = useState<
     Array<{
       timestamp: string
@@ -54,8 +59,12 @@ export function TodayPage() {
     )
   }
 
-  const { currentBlock, dateLabel, dayInstance, energyStatus, focusedPrepDomains, recommendation, readinessSnapshot, scheduledWorkout, scorePreview, sleepStatus, topPriorities, weekdayLabel } = data
+  const { currentBlock, dateLabel, dayInstance, energyStatus, fallbackSuggestion, focusedPrepDomains, recommendation, readinessSnapshot, scheduledWorkout, scorePreview, sleepStatus, topPriorities, weekdayLabel } = data
   const activeMode = dayModeDetails[currentDayMode]
+  const fallbackKey = fallbackSuggestion
+    ? getFallbackKey(dayInstance.date, fallbackSuggestion.suggestedDayMode, fallbackSuggestion.explanation)
+    : null
+  const showFallbackSuggestion = fallbackSuggestion && fallbackKey !== dismissedFallbackKey
   const modeFeedback = getModeFeedback({
     dayMode: currentDayMode,
     syncStatus,
@@ -185,6 +194,20 @@ export function TodayPage() {
         </SurfaceCard>
       ) : null}
 
+      {showFallbackSuggestion ? (
+        <FallbackModeSuggestionCard
+          suggestion={fallbackSuggestion}
+          currentModeLabel={activeMode.label}
+          disabled={updateDayModeMutation.isPending}
+          onApply={(dayMode) => updateDayModeMutation.mutate({ date: dayInstance.date, dayMode })}
+          onDismiss={() => {
+            if (fallbackKey) {
+              setDismissedFallbackKey(fallbackKey)
+            }
+          }}
+        />
+      ) : null}
+
       <SurfaceCard
         eyebrow="Quick Signals"
         title="Log sleep and energy without breaking flow."
@@ -310,42 +333,100 @@ export function TodayPage() {
                       {block.detail}
                     </Typography>
                     {block.status === 'planned' ? (
-                      <Stack direction={{ xs: 'column', sm: 'row' }} spacing={1} pt={0.75}>
-                        <Button
-                          size="small"
-                          variant="contained"
-                          disabled={updateBlockStatusMutation.isPending}
-                          onClick={() =>
-                            updateBlockStatusMutation.mutate({
+                      <Stack spacing={1.25} pt={0.75}>
+                        <Stack direction={{ xs: 'column', sm: 'row' }} spacing={1}>
+                          <Button
+                            size="small"
+                            variant="contained"
+                            disabled={updateBlockStatusMutation.isPending}
+                            onClick={() =>
+                              updateBlockStatusMutation.mutate({
+                                date: dayInstance.date,
+                                blockId: block.id,
+                                status: 'completed',
+                              })
+                            }
+                          >
+                            Mark Done
+                          </Button>
+                          <Button
+                            size="small"
+                            variant="outlined"
+                            disabled={updateBlockStatusMutation.isPending}
+                            onClick={() =>
+                              updateBlockStatusMutation.mutate({
+                                date: dayInstance.date,
+                                blockId: block.id,
+                                status: 'moved',
+                              })
+                            }
+                          >
+                            Move Later
+                          </Button>
+                          <Button
+                            size="small"
+                            variant="outlined"
+                            disabled={updateBlockStatusMutation.isPending}
+                            onClick={() =>
+                              updateBlockStatusMutation.mutate({
+                                date: dayInstance.date,
+                                blockId: block.id,
+                                status: 'skipped',
+                              })
+                            }
+                          >
+                            Skip
+                          </Button>
+                        </Stack>
+                        <BlockNoteComposer
+                          note={block.executionNote}
+                          disabled={updateBlockNoteMutation.isPending}
+                          onSave={(executionNote) =>
+                            updateBlockNoteMutation.mutate({
                               date: dayInstance.date,
                               blockId: block.id,
-                              status: 'completed',
+                              executionNote,
                             })
                           }
-                        >
-                          Mark Done
-                        </Button>
-                        <Button
-                          size="small"
-                          variant="outlined"
-                          disabled={updateBlockStatusMutation.isPending}
-                          onClick={() =>
-                            updateBlockStatusMutation.mutate({
-                              date: dayInstance.date,
-                              blockId: block.id,
-                              status: 'skipped',
-                            })
-                          }
-                        >
-                          Skip
-                        </Button>
+                        />
                       </Stack>
                     ) : (
-                      <Typography variant="body2" color="text.secondary" sx={{ pt: 0.75 }}>
-                        {block.status === 'completed'
-                          ? 'Logged as complete and removed from the live execution queue.'
-                          : 'Marked as skipped so the day can keep moving without hiding the deviation.'}
-                      </Typography>
+                      <Stack spacing={1.25} pt={0.75}>
+                        <Stack direction={{ xs: 'column', sm: 'row' }} spacing={1}>
+                          <Typography variant="body2" color="text.secondary" sx={{ flex: 1 }}>
+                            {block.status === 'completed'
+                              ? 'Logged as complete and removed from the live execution queue.'
+                              : block.status === 'moved'
+                                ? 'Moved later so the day can keep moving without pretending this block is dead.'
+                                : 'Marked as skipped so the day can keep moving without hiding the deviation.'}
+                          </Typography>
+                          <Button
+                            size="small"
+                            variant="outlined"
+                            disabled={updateBlockStatusMutation.isPending}
+                            onClick={() =>
+                              updateBlockStatusMutation.mutate({
+                                date: dayInstance.date,
+                                blockId: block.id,
+                                status: 'planned',
+                              })
+                            }
+                          >
+                            Restore
+                          </Button>
+                        </Stack>
+                        <BlockNoteComposer
+                          note={block.executionNote}
+                          disabled={updateBlockNoteMutation.isPending}
+                          onSave={(executionNote) =>
+                            updateBlockNoteMutation.mutate({
+                              date: dayInstance.date,
+                              blockId: block.id,
+                              executionNote,
+                            })
+                          }
+                        />
+                      </Stack>
                     )}
                   </Stack>
                 </Box>
@@ -547,4 +628,8 @@ function getModeFeedback({
     title: 'Local workspace and sync state are aligned.',
     detail: 'Today and Schedule are both reflecting the persisted mode with no outstanding sync work.',
   }
+}
+
+function getFallbackKey(date: string, suggestedDayMode: DayMode, explanation: string) {
+  return `${date}:${suggestedDayMode}:${explanation}`
 }
