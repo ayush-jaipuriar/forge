@@ -6,6 +6,7 @@ import { hasFirebaseEnv, missingFirebaseEnvKeys } from '@/lib/firebase/config'
 import { AuthSessionContext } from '@/features/auth/providers/authSessionContext'
 import { bootstrapUserSession } from '@/features/auth/services/bootstrapUserSession'
 import type { AuthSessionValue, AuthStatus, SessionUser } from '@/features/auth/types/auth'
+import { reportMonitoringError } from '@/services/monitoring/monitoringService'
 
 type AuthState = {
   status: AuthStatus
@@ -80,6 +81,13 @@ export function AuthSessionProvider({ children }: PropsWithChildren) {
             errorMessage: null,
           })
         } catch (error) {
+          reportMonitoringError({
+            domain: 'auth',
+            action: 'bootstrap-user-session',
+            message: 'Failed to bootstrap the authenticated Firebase session.',
+            error,
+          })
+
           if (!active) {
             return
           }
@@ -92,6 +100,13 @@ export function AuthSessionProvider({ children }: PropsWithChildren) {
         }
       },
       (error) => {
+        reportMonitoringError({
+          domain: 'auth',
+          action: 'observe-auth-state',
+          message: 'Firebase auth state observation failed.',
+          error,
+        })
+
         if (!active) {
           return
         }
@@ -146,6 +161,13 @@ export function AuthSessionProvider({ children }: PropsWithChildren) {
           await setPersistence(auth, browserLocalPersistence)
           await signInWithPopup(auth, getGoogleAuthProvider())
         } catch (error) {
+          reportMonitoringError({
+            domain: 'auth',
+            action: 'sign-in-with-google',
+            message: 'Google sign-in failed.',
+            error,
+          })
+
           setState({
             status: 'unauthenticated',
             user: null,

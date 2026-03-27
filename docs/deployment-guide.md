@@ -26,7 +26,7 @@ This gives the closest local equivalent of the deployed Hosting shell, including
 
 ```bash
 npm run build
-firebase deploy --only hosting
+firebase deploy --only hosting,firestore:rules,firestore:indexes
 ```
 
 Current Hosting expectations:
@@ -35,6 +35,7 @@ Current Hosting expectations:
 - SPA routes rewrite to `/index.html`
 - `sw.js` and `manifest.webmanifest` are intentionally served with `no-cache`
 - hashed JS, CSS, font, and image assets are served with long-lived immutable cache headers
+- Firestore rules and indexes are expected to deploy from the repo-managed `firestore.rules` and `firestore.indexes.json` files
 
 ## Installability Validation Checklist
 
@@ -59,5 +60,7 @@ Current Hosting expectations:
 ## Production Environment Notes
 
 - keep Firebase web config in local environment files and Hosting runtime configuration, never in committed source
+- keep `VITE_FIREBASE_APPCHECK_SITE_KEY` out of committed local `.env` examples with real values; use placeholder-only docs and real deployment environment configuration
 - service-worker behavior is only meaningful on a built preview or deployed origin, not the raw Vite dev server
 - if install/update behavior looks stale during testing, clear the browser’s site data and service-worker registration before rechecking
+- local development intentionally skips App Check on `localhost` and `127.0.0.1`; treat enforcement as a deployed-environment rollout step, not a local prerequisite

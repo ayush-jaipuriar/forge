@@ -15,6 +15,10 @@ The project expects the following variables:
 - `VITE_FIREBASE_MESSAGING_SENDER_ID`
 - `VITE_FIREBASE_APP_ID`
 
+Optional Phase 2 hardening variable:
+
+- `VITE_FIREBASE_APPCHECK_SITE_KEY`
+
 ## Beginner Verification Walkthrough
 
 Use this sequence when you want to verify or re-verify the Milestone 2 Firebase wiring for this repo.
@@ -268,3 +272,71 @@ Milestone 2 has now been verified against a real Firebase project:
 The main remaining Firebase follow-up is not a Milestone 2 blocker anymore. It is a hardening task:
 
 - confirm additional queued post-login writes such as `dayInstances/{dayId}` under normal daily use and then tighten Firestore rules from temporary test-mode defaults
+
+## Phase 2 Hardening Setup
+
+Phase 2 adds repo-managed Firebase security and rollout artifacts:
+
+- [firestore.rules](/Users/ayushjaipuriar/Documents/GitHub/forge/firestore.rules)
+- [firestore.indexes.json](/Users/ayushjaipuriar/Documents/GitHub/forge/firestore.indexes.json)
+
+The `firebase.json` file now points at those artifacts directly, which means Firestore policy is no longer an invisible console-only concern.
+
+### Firestore Rules
+
+The current rules are owner-scoped:
+
+- a signed-in user may read and write only their own `users/{uid}` tree
+- singleton docs such as `settings/default`, `projections/default`, `streaks/default`, and `analyticsMetadata/default` are constrained to the expected ids
+- delete operations are denied by default for the current product surface
+
+Why this matters:
+
+- Phase 1 moved quickly with test-mode convenience
+- Phase 2 starts treating the data model as durable product state, so security policy needs to live in git and be reviewable
+
+### Firestore Indexes
+
+The repo now includes initial index definitions for the planned analytics collections:
+
+- `analyticsSnapshots`
+- `missions`
+- `insights`
+
+These are intentionally the first anticipated indexes, not the final full set. As Command Center queries become real, this file should grow with them rather than relying on ad hoc console-generated indexes.
+
+### App Check Strategy
+
+Forge now includes an App Check initialization boundary in [appCheck.ts](/Users/ayushjaipuriar/Documents/GitHub/forge/src/lib/firebase/appCheck.ts).
+
+Current behavior:
+
+- if `VITE_FIREBASE_APPCHECK_SITE_KEY` is missing, Forge does not try to initialize App Check
+- if the app is running on `localhost` or `127.0.0.1`, Forge skips App Check initialization so local development remains friction-light
+- if a site key is provided on a non-local host, Forge initializes the Firebase App Check client with reCAPTCHA v3
+
+Recommended rollout:
+
+1. leave local development without a site key
+2. create a reCAPTCHA v3 site key for the deployed web origin
+3. add `VITE_FIREBASE_APPCHECK_SITE_KEY` only in the real deployed environment
+4. confirm the deployed app works with App Check in monitoring or console logs before enforcing stricter product-level expectations
+
+This is intentionally a staged rollout. The repo now has the boundary and documented strategy without making local iteration painful.
+
+### Monitoring Boundary
+
+Forge now includes a lightweight monitoring service in [monitoringService.ts](/Users/ayushjaipuriar/Documents/GitHub/forge/src/services/monitoring/monitoringService.ts).
+
+Current behavior:
+
+- auth failures report structured monitoring events
+- sync replay failures report structured monitoring events
+- App Check initialization failures report structured monitoring events
+- in development, warning and error events are echoed to the console
+- in the browser, events are also dispatched through `forge:monitoring` so a future monitoring provider can subscribe without rewriting call sites
+
+Why this matters:
+
+- analytics and derived data become much harder to trust when failures are silent
+- this boundary lets us route the same events to a future provider like Crashlytics, Sentry, or a custom pipeline later without changing domain logic again

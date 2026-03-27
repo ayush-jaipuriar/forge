@@ -773,8 +773,8 @@ Use this section as the live implementation tracker for Phase 2.
 
 ### Overall Status
 
-- [ ] Milestone 0 complete
-- [ ] Milestone 1 complete
+- [x] Milestone 0 complete
+- [x] Milestone 1 complete
 - [ ] Milestone 2 complete
 - [ ] Milestone 3 complete
 - [ ] Milestone 4 complete
@@ -790,3 +790,8 @@ Use this section as the live implementation tracker for Phase 2.
 - Recommended an architecture-first build order so the analytics fact model, snapshot contracts, and projection semantics exist before the Command Center UI starts consuming them.
 - Recommended introducing Firebase Functions selectively for durable analytics snapshots and projection recomputation, while keeping lightweight view derivations in the client for responsiveness.
 - Elevated Firestore rules, App Check, and monitoring into explicit milestones because Phase 2 increases both data value and operational complexity enough that hardening can no longer be treated as side work.
+- Implemented Milestone 0 contracts in code: added a dedicated analytics domain module with rolling-window keys, time-band groupings, versioned analytics snapshot shapes, projection contracts, insight outputs, streak and mission types, plus default factories for honest insufficient-data states.
+- Expanded repository contracts so analytics snapshots, projections, insights, streaks, missions, and metadata now have explicit persistence seams before any Firestore or Functions implementation begins.
+- Added domain tests that lock in the default analytics contract behavior and updated the architecture overview so the repo now documents the Phase 2 contract layer as a real implemented boundary instead of a planning-only idea.
+- Implemented Milestone 1 hardening artifacts: added repo-managed Firestore rules and initial indexes, pointed `firebase.json` at those files, introduced an App Check bootstrap boundary with a local-dev-safe rollout strategy, and added a lightweight monitoring seam for auth, sync, and security failures.
+- Updated Firebase and deployment docs so rules/index deployment, App Check behavior, and monitoring expectations are all visible in the repo rather than buried in console state.

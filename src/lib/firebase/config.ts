@@ -21,5 +21,7 @@ export const missingFirebaseEnvKeys = Object.entries(firebaseConfig)
   .map(([key]) => key)
 
 export const hasFirebaseEnv = missingFirebaseEnvKeys.length === 0
+export const firebaseAppCheckSiteKey = import.meta.env.VITE_FIREBASE_APPCHECK_SITE_KEY ?? ''
+export const hasAppCheckSiteKey = firebaseAppCheckSiteKey.length > 0
 
 export { firebaseConfig }

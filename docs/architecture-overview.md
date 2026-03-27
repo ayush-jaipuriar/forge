@@ -119,6 +119,22 @@ This document captures the Phase 1 architectural baseline that implementation sh
 - recommendation context now accepts typed calendar conflict input, and the top-precedence conflict-protection rule is already wired to respect that future context without changing the surrounding recommendation stack later
 - the Settings screen is now the operational home for this scaffolding, which keeps integration state visible without leaking provider assumptions into Today or Schedule prematurely
 
+## Phase 2 Milestone 0 Analytics Contracts
+
+- a dedicated analytics domain contract layer now exists in [types.ts](/Users/ayushjaipuriar/Documents/GitHub/forge/src/domain/analytics/types.ts) so future charts, projections, Functions, and insight cards all target one shared vocabulary instead of inventing their own shapes
+- the contract set defines rolling-window keys, time bands, versioned analytics snapshots, projection snapshots, insight outputs, streak snapshots, missions, and analytics metadata
+- snapshot shapes are deliberately versioned and source-range-aware because Phase 2 business meaning will evolve more than Phase 1 did, and silent semantic drift would make analytics hard to trust
+- repository interfaces now include analytics snapshots, projections, insights, streaks, missions, and metadata, which creates the seam needed for later Firestore and Functions implementations without forcing infrastructure decisions into the domain layer yet
+- default factories intentionally start projections and momentum in `insufficientData` states rather than pretending precision exists before enough history is available
+
+## Phase 2 Milestone 1 Hardening Boundary
+
+- Firestore policy is now repo-managed through [firestore.rules](/Users/ayushjaipuriar/Documents/GitHub/forge/firestore.rules) and [firestore.indexes.json](/Users/ayushjaipuriar/Documents/GitHub/forge/firestore.indexes.json), which means access control and query posture are no longer hidden in console state alone
+- the current rules keep the data model owner-scoped and deny deletes by default, which is a sensible conservative posture while the product is still single-user and analytics collections are beginning to expand
+- Forge now has an App Check bootstrap boundary in [appCheck.ts](/Users/ayushjaipuriar/Documents/GitHub/forge/src/lib/firebase/appCheck.ts); local development intentionally skips App Check while real deployed environments can opt in via a site key
+- a lightweight monitoring seam now exists in [monitoringService.ts](/Users/ayushjaipuriar/Documents/GitHub/forge/src/services/monitoring/monitoringService.ts), and auth, sync, and App Check failures already route through it so later observability providers can attach without changing failure call sites again
+- the security provider is intentionally a thin app-shell concern rather than a domain concern, because rollout posture belongs near environment bootstrap, not inside execution logic
+
 ### Current Conflict Strategy and Limits
 
 - the current foundation favors predictable local continuity over sophisticated merge behavior

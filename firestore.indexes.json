@@ -1,0 +1,29 @@
+{
+  "indexes": [
+    {
+      "collectionGroup": "analyticsSnapshots",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "granularity", "order": "ASCENDING" },
+        { "fieldPath": "generatedAt", "order": "DESCENDING" }
+      ]
+    },
+    {
+      "collectionGroup": "missions",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "weekKey", "order": "ASCENDING" },
+        { "fieldPath": "status", "order": "ASCENDING" }
+      ]
+    },
+    {
+      "collectionGroup": "insights",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "severity", "order": "ASCENDING" },
+        { "fieldPath": "generatedAt", "order": "DESCENDING" }
+      ]
+    }
+  ],
+  "fieldOverrides": []
+}

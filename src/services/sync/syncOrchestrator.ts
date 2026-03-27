@@ -2,6 +2,7 @@ import { FirestoreDayInstanceRepository } from '@/data/firebase/firestoreDayInst
 import { FirestoreSettingsRepository } from '@/data/firebase/firestoreSettingsRepository'
 import { localSyncQueueRepository } from '@/data/local'
 import type { AnySyncQueueItem } from '@/domain/execution/sync'
+import { reportMonitoringError } from '@/services/monitoring/monitoringService'
 
 const dayInstanceRepository = new FirestoreDayInstanceRepository()
 const settingsRepository = new FirestoreSettingsRepository()
@@ -17,6 +18,17 @@ export async function flushSyncQueue(userId: string) {
       await localSyncQueueRepository.remove(item.id)
     } catch (error) {
       const message = error instanceof Error ? error.message : 'Unknown sync error.'
+      reportMonitoringError({
+        domain: 'sync',
+        action: 'flush-sync-queue-item',
+        message: 'A queued local-first write failed during Firestore replay.',
+        error,
+        metadata: {
+          queueItemId: item.id,
+          actionType: item.actionType,
+          userId,
+        },
+      })
       await localSyncQueueRepository.markFailed(item.id, message)
     }
   }
