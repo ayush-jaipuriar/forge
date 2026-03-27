@@ -8,7 +8,16 @@ export class LocalSettingsRepository implements SettingsRepository {
     const settings = await db.get('settings', 'default')
 
     if (settings) {
-      return settings
+      const normalizedSettings = {
+        ...createDefaultUserSettings(),
+        ...settings,
+        dayModeOverrides: settings.dayModeOverrides ?? {},
+        dailySignals: settings.dailySignals ?? {},
+      }
+
+      await db.put('settings', normalizedSettings)
+
+      return normalizedSettings
     }
 
     const defaultSettings = createDefaultUserSettings()
@@ -19,6 +28,11 @@ export class LocalSettingsRepository implements SettingsRepository {
 
   async upsert(settings: ReturnType<typeof createDefaultUserSettings>) {
     const db = await getForgeDb()
-    await db.put('settings', settings)
+    await db.put('settings', {
+      ...createDefaultUserSettings(),
+      ...settings,
+      dayModeOverrides: settings.dayModeOverrides ?? {},
+      dailySignals: settings.dailySignals ?? {},
+    })
   }
 }

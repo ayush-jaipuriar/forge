@@ -60,6 +60,10 @@ This document captures the Phase 1 architectural baseline that implementation sh
 - failed sync items still count as outstanding local state and remain replayable on future sync attempts instead of being treated as safely settled
 - singleton settings writes are coalesced so the most recent local settings snapshot replaces older queued settings upserts
 - the Today mode-override card now surfaces the active execution stance and mutation lifecycle explicitly so local-first state changes feel intentional instead of invisible
+- day-instance block completion and skip actions now use the same local-first mutation path, with the latest day snapshot replacing older queued day-instance writes
+- Today workspace generation now also produces a projected score preview and derived war-state so the shell can react to execution changes through domain results instead of ad hoc UI math
+- score preview now consumes explicit workout expectation, sleep-status placeholder, and readiness-pressure context, and the first recommendation engine reuses that same workspace context instead of duplicating heuristics in the UI
+- daily sleep and energy signals now persist through the same settings sync path, and the Today screen keeps a lightweight recommendation history so rule shifts stay inspectable instead of feeling arbitrary
 
 ### Current Conflict Strategy and Limits
 

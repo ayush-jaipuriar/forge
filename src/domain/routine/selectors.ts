@@ -1,7 +1,8 @@
 import type { BlockInstance, DayInstance } from '@/domain/routine/types'
 
 export function getCurrentBlock(dayInstance: DayInstance, currentTime = getTimeKey(new Date())) {
-  const timedBlock = dayInstance.blocks.find((block) =>
+  const activeBlocks = getActiveBlocks(dayInstance)
+  const timedBlock = activeBlocks.find((block) =>
     block.startTime && block.endTime ? isTimeWithinRange(currentTime, block.startTime, block.endTime) : false,
   )
 
@@ -9,13 +10,17 @@ export function getCurrentBlock(dayInstance: DayInstance, currentTime = getTimeK
     return timedBlock
   }
 
-  return getTopPriorityBlocks(dayInstance, 1)[0] ?? dayInstance.blocks[0] ?? null
+  return getTopPriorityBlocks(dayInstance, 1)[0] ?? activeBlocks[0] ?? null
 }
 
 export function getTopPriorityBlocks(dayInstance: DayInstance, limit = 3): BlockInstance[] {
-  return [...dayInstance.blocks]
+  return [...getActiveBlocks(dayInstance)]
     .sort((left, right) => scoreBlock(right) - scoreBlock(left))
     .slice(0, limit)
+}
+
+export function getActiveBlocks(dayInstance: DayInstance) {
+  return dayInstance.blocks.filter((block) => block.status === 'planned' || block.status === 'moved')
 }
 
 function scoreBlock(block: BlockInstance) {

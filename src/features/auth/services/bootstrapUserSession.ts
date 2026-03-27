@@ -42,6 +42,8 @@ export async function bootstrapUserSession(user: User) {
     batch.set(settingsRef, {
       notificationsEnabled: true,
       calendarConnected: false,
+      dayModeOverrides: {},
+      dailySignals: {},
       createdAt: serverTimestamp(),
       updatedAt: serverTimestamp(),
     })

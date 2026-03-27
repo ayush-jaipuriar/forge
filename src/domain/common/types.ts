@@ -41,6 +41,10 @@ export type BlockStatus = 'planned' | 'completed' | 'skipped' | 'moved'
 
 export type WorkoutStatus = 'scheduled' | 'done' | 'skipped' | 'rescheduled' | 'optional'
 
+export type SleepStatus = 'unknown' | 'met' | 'missed'
+
+export type EnergyStatus = 'unknown' | 'high' | 'normal' | 'low'
+
 export type ConfidenceLevel = 'low' | 'medium' | 'high'
 
 export type PrepExposureState = 'notStarted' | 'introduced' | 'inProgress' | 'retention' | 'confident'
