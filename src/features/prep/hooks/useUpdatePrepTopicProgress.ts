@@ -1,29 +1,25 @@
 import { useMutation, useQueryClient } from '@tanstack/react-query'
 import { useUiStore } from '@/app/store/uiStore'
 import { useAuthSession } from '@/features/auth/providers/useAuthSession'
-import type { EnergyStatus, SleepStatus } from '@/domain/common/types'
-import { updateDailySignals } from '@/services/settings/dailySignalsService'
+import type { PrepTopicProgressSnapshot } from '@/domain/prep/types'
+import { updatePrepTopicProgress } from '@/services/settings/prepProgressService'
 
-type UpdateDailySignalsVariables = {
-  date: string
-  sleepStatus?: SleepStatus
-  energyStatus?: EnergyStatus
-  sleepDurationHours?: number | null
+type UpdatePrepTopicProgressVariables = {
+  topicId: string
+  patch: Partial<PrepTopicProgressSnapshot>
 }
 
-export function useUpdateDailySignals() {
+export function useUpdatePrepTopicProgress() {
   const queryClient = useQueryClient()
-  const { status, user } = useAuthSession()
+  const { status: authStatus, user } = useAuthSession()
   const setSyncStatus = useUiStore((state) => state.setSyncStatus)
 
   return useMutation({
-    mutationFn: async ({ date, sleepStatus, energyStatus, sleepDurationHours }: UpdateDailySignalsVariables) =>
-      updateDailySignals({
-        date,
-        sleepStatus,
-        energyStatus,
-        sleepDurationHours,
-        userId: status === 'authenticated' && user ? user.uid : undefined,
+    mutationFn: async ({ topicId, patch }: UpdatePrepTopicProgressVariables) =>
+      updatePrepTopicProgress({
+        topicId,
+        patch,
+        userId: authStatus === 'authenticated' && user ? user.uid : undefined,
       }),
     onMutate: async () => {
       const previousState = useUiStore.getState()
@@ -43,10 +39,9 @@ export function useUpdateDailySignals() {
     },
     onSettled: async () => {
       await Promise.all([
-        queryClient.invalidateQueries({ queryKey: ['today-workspace'] }),
-        queryClient.invalidateQueries({ queryKey: ['weekly-workspace'] }),
-        queryClient.invalidateQueries({ queryKey: ['physical-workspace'] }),
+        queryClient.invalidateQueries({ queryKey: ['prep-workspace'] }),
         queryClient.invalidateQueries({ queryKey: ['readiness-workspace'] }),
+        queryClient.invalidateQueries({ queryKey: ['today-workspace'] }),
       ])
     },
   })

@@ -1,4 +1,4 @@
-import type { DayMode } from '@/domain/common/types'
+import type { DayMode, DayType, Weekday } from '@/domain/common/types'
 import { generateDayInstance } from '@/domain/routine/generateDayInstance'
 import type { DayInstance, RoutineTemplate } from '@/domain/routine/types'
 
@@ -6,6 +6,7 @@ type GenerateWeekInstancesInput = {
   anchorDate?: string
   routine: RoutineTemplate
   dayModesByDate?: Partial<Record<string, DayMode>>
+  dayTypesByDate?: Partial<Record<string, DayType>>
 }
 
 export function getDateKey(date: Date) {
@@ -20,6 +21,7 @@ export function generateWeekInstances({
   anchorDate = getDateKey(new Date()),
   routine,
   dayModesByDate = {},
+  dayTypesByDate = {},
 }: GenerateWeekInstancesInput): DayInstance[] {
   const start = getStartOfWeek(anchorDate)
 
@@ -31,6 +33,7 @@ export function generateWeekInstances({
       date: dateKey,
       routine,
       dayMode: dayModesByDate[dateKey] ?? 'normal',
+      overrideDayType: dayTypesByDate[dateKey],
     })
   })
 }
@@ -50,6 +53,22 @@ export function formatWeekdayLabel(dateKey: string) {
   return new Intl.DateTimeFormat('en-US', {
     weekday: 'long',
   }).format(date)
+}
+
+export function getWeekdayFromDateKey(dateKey: string): Weekday {
+  const day = new Date(`${dateKey}T00:00:00`).getDay()
+
+  const weekdayMap: Record<number, Weekday> = {
+    0: 'sunday',
+    1: 'monday',
+    2: 'tuesday',
+    3: 'wednesday',
+    4: 'thursday',
+    5: 'friday',
+    6: 'saturday',
+  }
+
+  return weekdayMap[day]
 }
 
 function getStartOfWeek(dateKey: string) {

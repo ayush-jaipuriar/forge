@@ -1,7 +1,7 @@
 import type { ReadinessLevel } from '@/domain/common/types'
-import { prepDomainLabels } from '@/domain/prep/selectors'
+import { getPrepDomainSummaries } from '@/domain/prep/selectors'
 import type { PrepDomainSummary } from '@/domain/prep/selectors'
-import type { PrepTopicSeed } from '@/domain/prep/types'
+import type { PrepTopicRecord, PrepTopicSeed } from '@/domain/prep/types'
 import type { ReadinessSnapshot } from '@/domain/readiness/types'
 
 const FORGE_TARGET_DATE = '2026-05-31'
@@ -13,20 +13,31 @@ export function calculateReadinessSnapshot({
 }: {
   date: string
   focusedDomains: PrepDomainSummary[]
-  topics: PrepTopicSeed[]
+  topics: Array<PrepTopicSeed | PrepTopicRecord>
 }): ReadinessSnapshot {
   const daysRemaining = getDaysRemaining(date, FORGE_TARGET_DATE)
   const pressureLevel = getPressureLevel(daysRemaining)
+  const domainStates = getPrepDomainSummaries(topics).map((domain) => ({
+    domain: domain.domain,
+    label: domain.label,
+    readinessLevel: domain.readinessLevel,
+    touchedTopicCount: domain.touchedTopicCount,
+    totalTopicCount: domain.topicCount,
+    highConfidenceCount: domain.highConfidenceCount,
+    hoursSpent: Number(domain.hoursSpent.toFixed(1)),
+  }))
 
   return {
     targetDate: FORGE_TARGET_DATE,
     daysRemaining,
     pressureLabel: getPressureLabel(pressureLevel),
     pressureLevel,
+    paceSnapshot: getPaceSnapshot(daysRemaining, domainStates),
+    domainStates,
     focusedDomains: focusedDomains.map((domain) => ({
       domain: domain.domain,
       label: domain.label,
-      readinessLevel: getDomainReadinessLevel(domain.domain, topics),
+      readinessLevel: domainStates.find((state) => state.domain === domain.domain)?.readinessLevel ?? 'building',
     })),
   }
 }
@@ -69,28 +80,42 @@ function getPressureLabel(level: ReadinessLevel) {
   }
 }
 
-function getDomainReadinessLevel(domain: keyof typeof prepDomainLabels, topics: PrepTopicSeed[]) {
-  const domainTopics = topics.filter((topic) => topic.domain === domain)
-  const levelScores: Record<ReadinessLevel, number> = {
-    critical: 0,
-    behind: 1,
-    building: 2,
-    onTrack: 3,
-  }
-  const averageScore =
-    domainTopics.reduce((sum, topic) => sum + levelScores[topic.readinessLevel], 0) / Math.max(domainTopics.length, 1)
+function getPaceSnapshot(
+  daysRemaining: number,
+  domainStates: ReadinessSnapshot['domainStates'],
+): ReadinessSnapshot['paceSnapshot'] {
+  const touchedTopicCount = domainStates.reduce((sum, domain) => sum + domain.touchedTopicCount, 0)
+  const totalTopicCount = domainStates.reduce((sum, domain) => sum + domain.totalTopicCount, 0)
+  const highConfidenceTopicCount = domainStates.reduce((sum, domain) => sum + domain.highConfidenceCount, 0)
+  const untouchedTopics = Math.max(0, totalTopicCount - touchedTopicCount)
+  const weeksRemaining = Math.max(1, Math.ceil(daysRemaining / 7))
+  const requiredTopicsPerWeek = Math.ceil(untouchedTopics / weeksRemaining)
+  const coveragePercent = Math.round((touchedTopicCount / Math.max(totalTopicCount, 1)) * 100)
+  const paceLevel =
+    requiredTopicsPerWeek > 10 ? 'critical' : requiredTopicsPerWeek > 6 ? 'behind' : requiredTopicsPerWeek > 3 ? 'building' : 'onTrack'
 
-  if (averageScore < 0.75) {
-    return 'critical'
+  return {
+    touchedTopicCount,
+    totalTopicCount,
+    highConfidenceTopicCount,
+    coveragePercent,
+    requiredTopicsPerWeek,
+    paceLevel,
+    paceLabel: getPaceLabel(paceLevel, requiredTopicsPerWeek),
   }
+}
 
-  if (averageScore < 1.5) {
-    return 'behind'
+function getPaceLabel(level: ReadinessLevel, requiredTopicsPerWeek: number) {
+  switch (level) {
+    case 'critical':
+      return `Coverage pace is critical. You still need roughly ${requiredTopicsPerWeek} untouched topics per week.`
+    case 'behind':
+      return `Coverage pace is behind. You still need roughly ${requiredTopicsPerWeek} untouched topics per week.`
+    case 'building':
+      return `Coverage pace is building, but the remaining load is still around ${requiredTopicsPerWeek} topics per week.`
+    case 'onTrack':
+      return `Coverage pace is manageable at roughly ${requiredTopicsPerWeek} untouched topics per week.`
+    default:
+      return `Coverage pace implies roughly ${requiredTopicsPerWeek} untouched topics per week.`
   }
-
-  if (averageScore < 2.5) {
-    return 'building'
-  }
-
-  return 'onTrack'
 }

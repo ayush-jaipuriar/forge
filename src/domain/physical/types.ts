@@ -15,3 +15,12 @@ export type WorkoutScheduleEntry = {
   label: string
   status: WorkoutStatus
 }
+
+export type WorkoutLogEntry = {
+  date: string
+  workoutType: WorkoutType
+  label: string
+  status: WorkoutStatus
+  note?: string
+  missReason?: string
+}

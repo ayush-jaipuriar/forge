@@ -11,6 +11,16 @@ const readinessSnapshot: ReadinessSnapshot = {
   daysRemaining: 50,
   pressureLabel: 'Target pressure is rising.',
   pressureLevel: 'behind',
+  paceSnapshot: {
+    touchedTopicCount: 0,
+    totalTopicCount: 10,
+    highConfidenceTopicCount: 0,
+    coveragePercent: 0,
+    requiredTopicsPerWeek: 2,
+    paceLevel: 'behind',
+    paceLabel: 'Coverage pace is behind.',
+  },
+  domainStates: [],
   focusedDomains: [],
 }
 

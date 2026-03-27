@@ -75,6 +75,23 @@ This document captures the Phase 1 architectural baseline that implementation sh
 - note capture remains optional and inline because the product goal is operational clarity, not forcing the user into post-hoc documentation during the day
 - Today-focused component tests now cover the explicit fallback interaction and the lightweight note-capture flow so the primary execution loop has regression protection
 
+## Milestone 6 Schedule Guardrails
+
+- Schedule now operates as a week-level control surface, not a routine editor: it can reclassify a date into an allowed seeded day type, activate fallback modes, and apply sanctioned block-state changes
+- day-type overrides are persisted in settings by date and validated against weekday-specific rules before they are accepted
+- weekday overrides can only move within weekday-compatible shapes plus fallback types, and weekend overrides stay inside weekend shapes plus fallback types
+- choosing the seeded day type again clears the override instead of storing redundant override state
+- Schedule exposes block actions only through allowed transition helpers, which keeps operational recovery visible without opening arbitrary editing
+- the explicit boundary is: users may reclassify a date and mutate execution state, but they may not change template structure, reorder seeded blocks globally, or author new routine shapes from the UI
+
+## Milestone 7 Support-Surface Assumptions
+
+- Prep, workout, and sleep state now ride on the same local-first settings snapshot used for other lightweight Phase 1 operational state, which keeps the persistence model simple while the product still has one operator and a narrow set of write paths
+- Prep progress is modeled per topic with confidence, exposure state, revision count, solved count, hours spent, and lightweight notes; readiness is derived from those signals instead of being manually edited
+- Readiness remains a Phase 1 heuristic, not a predictive model: it combines topic confidence, coverage, and effort into domain states plus a pace estimate, and it should be treated as honest directional pressure rather than a precise forecast
+- Physical tracking is intentionally lightweight: workout logging supports done, skipped, and rescheduled states plus a quick note or miss reason, but does not drift into set/rep detail
+- Manual sleep logging now uses duration as the primary input, and target-met status is derived against a temporary 7.5-hour Phase 1 threshold so the UI stays fast while leaving room for future device sync and smarter personalization
+
 ### Current Conflict Strategy and Limits
 
 - the current foundation favors predictable local continuity over sophisticated merge behavior

@@ -12,7 +12,10 @@ export class LocalSettingsRepository implements SettingsRepository {
         ...createDefaultUserSettings(),
         ...settings,
         dayModeOverrides: settings.dayModeOverrides ?? {},
+        dayTypeOverrides: settings.dayTypeOverrides ?? {},
         dailySignals: settings.dailySignals ?? {},
+        prepTopicProgress: settings.prepTopicProgress ?? {},
+        workoutLogs: settings.workoutLogs ?? {},
       }
 
       await db.put('settings', normalizedSettings)
@@ -32,7 +35,10 @@ export class LocalSettingsRepository implements SettingsRepository {
       ...createDefaultUserSettings(),
       ...settings,
       dayModeOverrides: settings.dayModeOverrides ?? {},
+      dayTypeOverrides: settings.dayTypeOverrides ?? {},
       dailySignals: settings.dailySignals ?? {},
+      prepTopicProgress: settings.prepTopicProgress ?? {},
+      workoutLogs: settings.workoutLogs ?? {},
     })
   }
 }

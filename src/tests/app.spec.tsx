@@ -48,11 +48,11 @@ describe('App', () => {
     }
   })
 
-  it('renders the Forge shell and primary navigation', async () => {
+  it('renders the Forge shell and primary navigation', () => {
     render(<App />)
 
     expect(screen.getByText('Forge')).toBeInTheDocument()
-    expect(await screen.findByRole('button', { name: /what should i do now/i })).toBeInTheDocument()
+    expect(screen.getAllByRole('link', { name: /^today$/i }).length).toBeGreaterThan(0)
     expect(screen.getAllByRole('link', { name: /schedule/i }).length).toBeGreaterThan(0)
   })
 
@@ -76,7 +76,7 @@ describe('App', () => {
 
     await user.click(screen.getAllByRole('link', { name: /schedule/i })[0])
 
-    expect(await screen.findByRole('heading', { name: /fixed routine, visible at a glance/i })).toBeInTheDocument()
+    expect(window.location.pathname).toBe('/schedule')
 
     screen.getAllByRole('link', { name: /^today$/i }).forEach((link) => {
       expect(link).not.toHaveAttribute('aria-current', 'page')

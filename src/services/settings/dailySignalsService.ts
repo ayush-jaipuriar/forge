@@ -1,5 +1,6 @@
 import type { EnergyStatus, SleepStatus } from '@/domain/common/types'
 import { localSettingsRepository, localSyncQueueRepository } from '@/data/local'
+import { deriveSleepStatusFromDuration } from '@/domain/physical/selectors'
 import { createSyncQueueItem } from '@/services/sync/syncQueue'
 import { flushSyncQueue } from '@/services/sync/syncOrchestrator'
 
@@ -7,6 +8,7 @@ type UpdateDailySignalsInput = {
   date: string
   sleepStatus?: SleepStatus
   energyStatus?: EnergyStatus
+  sleepDurationHours?: number | null
   userId?: string
 }
 
@@ -18,19 +20,30 @@ export async function updateDailySignals({
   date,
   sleepStatus,
   energyStatus,
+  sleepDurationHours,
   userId,
 }: UpdateDailySignalsInput): Promise<UpdateDailySignalsResult> {
   const currentSettings = await localSettingsRepository.getDefault()
   const currentSignals = currentSettings.dailySignals[date] ?? {
     sleepStatus: 'unknown' as const,
     energyStatus: 'unknown' as const,
+    sleepDurationHours: undefined,
   }
+  const nextSleepDurationHours =
+    sleepDurationHours === null ? undefined : sleepDurationHours ?? currentSignals.sleepDurationHours
   const nextSignals = {
-    sleepStatus: sleepStatus ?? currentSignals.sleepStatus,
+    sleepStatus:
+      sleepStatus ??
+      (sleepDurationHours !== undefined ? deriveSleepStatusFromDuration(nextSleepDurationHours) : currentSignals.sleepStatus),
     energyStatus: energyStatus ?? currentSignals.energyStatus,
+    sleepDurationHours: nextSleepDurationHours,
   }
 
-  if (currentSignals.sleepStatus === nextSignals.sleepStatus && currentSignals.energyStatus === nextSignals.energyStatus) {
+  if (
+    currentSignals.sleepStatus === nextSignals.sleepStatus &&
+    currentSignals.energyStatus === nextSignals.energyStatus &&
+    currentSignals.sleepDurationHours === nextSignals.sleepDurationHours
+  ) {
     return {
       pendingCount: await localSyncQueueRepository.countOutstanding(),
     }

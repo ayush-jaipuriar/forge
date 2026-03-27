@@ -22,8 +22,24 @@ describe('updateDailySignals', () => {
     expect(settings?.dailySignals['2026-03-27']).toEqual({
       sleepStatus: 'met',
       energyStatus: 'high',
+      sleepDurationHours: undefined,
     })
     expect(queueItems).toHaveLength(1)
     expect(queueItems[0].actionType).toBe('upsertSettings')
+  })
+
+  it('derives sleep target status from manual duration input', async () => {
+    await updateDailySignals({
+      date: '2026-03-27',
+      sleepDurationHours: 8,
+    })
+
+    const settings = await localSettingsRepository.getDefault()
+
+    expect(settings?.dailySignals['2026-03-27']).toEqual({
+      sleepStatus: 'met',
+      energyStatus: 'unknown',
+      sleepDurationHours: 8,
+    })
   })
 })

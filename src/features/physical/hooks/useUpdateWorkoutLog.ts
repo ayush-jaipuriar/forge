@@ -1,29 +1,25 @@
 import { useMutation, useQueryClient } from '@tanstack/react-query'
 import { useUiStore } from '@/app/store/uiStore'
 import { useAuthSession } from '@/features/auth/providers/useAuthSession'
-import type { EnergyStatus, SleepStatus } from '@/domain/common/types'
-import { updateDailySignals } from '@/services/settings/dailySignalsService'
+import type { WorkoutLogEntry } from '@/domain/physical/types'
+import { updateWorkoutLog } from '@/services/settings/workoutLogService'
 
-type UpdateDailySignalsVariables = {
+type UpdateWorkoutLogVariables = {
   date: string
-  sleepStatus?: SleepStatus
-  energyStatus?: EnergyStatus
-  sleepDurationHours?: number | null
+  patch: WorkoutLogEntry
 }
 
-export function useUpdateDailySignals() {
+export function useUpdateWorkoutLog() {
   const queryClient = useQueryClient()
-  const { status, user } = useAuthSession()
+  const { status: authStatus, user } = useAuthSession()
   const setSyncStatus = useUiStore((state) => state.setSyncStatus)
 
   return useMutation({
-    mutationFn: async ({ date, sleepStatus, energyStatus, sleepDurationHours }: UpdateDailySignalsVariables) =>
-      updateDailySignals({
+    mutationFn: async ({ date, patch }: UpdateWorkoutLogVariables) =>
+      updateWorkoutLog({
         date,
-        sleepStatus,
-        energyStatus,
-        sleepDurationHours,
-        userId: status === 'authenticated' && user ? user.uid : undefined,
+        patch,
+        userId: authStatus === 'authenticated' && user ? user.uid : undefined,
       }),
     onMutate: async () => {
       const previousState = useUiStore.getState()
@@ -43,8 +39,6 @@ export function useUpdateDailySignals() {
     },
     onSettled: async () => {
       await Promise.all([
-        queryClient.invalidateQueries({ queryKey: ['today-workspace'] }),
-        queryClient.invalidateQueries({ queryKey: ['weekly-workspace'] }),
         queryClient.invalidateQueries({ queryKey: ['physical-workspace'] }),
         queryClient.invalidateQueries({ queryKey: ['readiness-workspace'] }),
       ])

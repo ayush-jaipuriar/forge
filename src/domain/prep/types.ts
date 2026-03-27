@@ -11,3 +11,23 @@ export type PrepTopicSeed = {
   defaultExposureState: PrepExposureState
   readinessLevel: ReadinessLevel
 }
+
+export type PrepTopicProgressSnapshot = {
+  confidence?: ConfidenceLevel
+  exposureState?: PrepExposureState
+  revisionCount: number
+  solvedCount: number
+  exposureCount: number
+  hoursSpent: number
+  notes?: string
+}
+
+export type PrepTopicRecord = PrepTopicSeed & {
+  confidence: ConfidenceLevel
+  exposureState: PrepExposureState
+  revisionCount: number
+  solvedCount: number
+  exposureCount: number
+  hoursSpent: number
+  notes?: string
+}

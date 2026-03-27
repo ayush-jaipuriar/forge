@@ -638,17 +638,17 @@ Expose routine visibility and limited operational control without turning Forge 
 
 ### Checklist
 
-- [ ] Build a week-view schedule screen with strong day-type visibility.
-- [ ] Show day templates, major blocks, and focused intent by weekday.
-- [ ] Allow manual day-type override within V1 rules.
-- [ ] Allow block actions for skip, move-later, and fallback activation.
-- [ ] Show limited operational changes without exposing full routine editing.
-- [ ] Prepare visual placeholders for future calendar mirror status.
+- [x] Build a week-view schedule screen with strong day-type visibility.
+- [x] Show day templates, major blocks, and focused intent by weekday.
+- [x] Allow manual day-type override within V1 rules.
+- [x] Allow block actions for skip, move-later, and fallback activation.
+- [x] Show limited operational changes without exposing full routine editing.
+- [x] Prepare visual placeholders for future calendar mirror status.
 
 ### Testing and Documentation
 
-- [ ] Add tests for override rule helpers and allowed state transitions.
-- [ ] Document the line between operational overrides and forbidden routine editing.
+- [x] Add tests for override rule helpers and allowed state transitions.
+- [x] Document the line between operational overrides and forbidden routine editing.
 
 ### Exit Criteria
 
@@ -670,18 +670,18 @@ Implement the supporting product surfaces that complete the Phase 1 execution sy
 
 ### Checklist
 
-- [ ] Build the Prep screen with top-level domains and topic drill-down.
-- [ ] Support confidence updates, revision counts, solved counts where relevant, and notes hooks.
-- [ ] Display readiness contribution cues for major prep domains.
-- [ ] Build the Physical screen with scheduled workout state, quick completion, skip, reschedule, and note support.
-- [ ] Add fast manual sleep logging with target-met derivation.
-- [ ] Build the Readiness screen with seeded target date of May 31, 2026 and major domain readiness states.
-- [ ] Show current pace vs target in a basic but honest way.
+- [x] Build the Prep screen with top-level domains and topic drill-down.
+- [x] Support confidence updates, revision counts, solved counts where relevant, and notes hooks.
+- [x] Display readiness contribution cues for major prep domains.
+- [x] Build the Physical screen with scheduled workout state, quick completion, skip, reschedule, and note support.
+- [x] Add fast manual sleep logging with target-met derivation.
+- [x] Build the Readiness screen with seeded target date of May 31, 2026 and major domain readiness states.
+- [x] Show current pace vs target in a basic but honest way.
 
 ### Testing and Documentation
 
-- [ ] Add tests for prep progress calculations, workout state helpers, and readiness utility functions.
-- [ ] Document the readiness model assumptions and known simplifications for Phase 1.
+- [x] Add tests for prep progress calculations, workout state helpers, and readiness utility functions.
+- [x] Document the readiness model assumptions and known simplifications for Phase 1.
 
 ### Exit Criteria
 
@@ -961,8 +961,8 @@ Use this section as the live implementation tracker.
 - [x] Milestone 3 complete
 - [x] Milestone 4 complete
 - [x] Milestone 5 complete
-- [ ] Milestone 6 complete
-- [ ] Milestone 7 complete
+- [x] Milestone 6 complete
+- [x] Milestone 7 complete
 - [ ] Milestone 8 complete
 - [ ] Milestone 9 complete
 - [ ] Milestone 10 complete
@@ -1007,4 +1007,15 @@ Use this section as the live implementation tracker.
 - Added Today-focused regression coverage for fallback interaction, lightweight note capture, fallback-suggestion domain logic, and day-instance note persistence through the queued local-first mutation path.
 - Local verification passed again with `npm run lint`, `npm run test:run`, `npm run typecheck`, and `npm run build`.
 - Milestone 5 is now complete from the implementation-plan perspective: the Today screen supports the core execution loop, visible state transitions, quick salvage actions, low-friction note capture, and dedicated interaction coverage.
-- Next implementation step: move into Milestone 6 while keeping Milestone 2 live verification as a separate environment-validation task.
+- Added the Milestone 6 schedule control surface: the week view now shows base versus active day type, exposes sanctioned day-type override controls, surfaces fallback activation buttons, and allows limited block-state actions without crossing into routine editing.
+- Added weekday-aware day-type override guardrails plus tests for allowed override sets and schedule block transition rules, then backed the override itself with the same local-first settings sync path used elsewhere.
+- Documented the operational boundary clearly: Schedule may reclassify dates and mutate execution state, but it may not rewrite templates or create custom routine structures from the UI.
+- Local verification passed again with `npm run lint`, `npm run test:run`, `npm run typecheck`, and `npm run build`.
+- Milestone 6 is now complete from the implementation-plan perspective.
+- Added persisted prep progress to the Phase 1 settings snapshot so confidence, exposure state, revision count, solved count, hours, and lightweight notes can drive both Prep and Readiness without introducing a second local storage model yet.
+- Added persisted workout logging and manual sleep duration tracking to Physical, with sleep target status derived from a 7.5-hour Phase 1 threshold instead of being logged as a separate truth value.
+- Rebuilt the Prep, Physical, and Readiness screens around workspace hooks so they now render real progress, real workout state, and a derived pace-vs-target readiness view instead of seed-only placeholders.
+- Documented the main Phase 1 readiness simplifications honestly: readiness is still a heuristic derived from confidence, coverage, and effort signals, and prep/physical state is intentionally stored inside the broader settings snapshot until the dedicated repositories become necessary.
+- Local verification passed again with `npm run lint`, `npm run test:run`, `npm run typecheck`, and `npm run build`.
+- Milestone 7 is now complete from the implementation-plan perspective.
+- Next implementation step: move into Milestone 8 while keeping Milestone 2 live verification as a separate environment-validation task.

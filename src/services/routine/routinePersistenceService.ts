@@ -1,31 +1,37 @@
 import { forgePrepTaxonomy, forgeRoutine, forgeWorkoutSchedule } from '@/data/seeds'
 import { localDayInstanceRepository, localSettingsRepository } from '@/data/local'
 import { getCurrentBlock, getTopPriorityBlocks } from '@/domain/routine/selectors'
-import { getFocusedPrepDomains } from '@/domain/prep/selectors'
+import { getFocusedPrepDomains, mergePrepTopicProgress } from '@/domain/prep/selectors'
 import { generateDayInstance } from '@/domain/routine/generateDayInstance'
 import { formatDateLabel, formatWeekdayLabel, generateWeekInstances, getDateKey } from '@/domain/routine/week'
 import { calculateDayScorePreview } from '@/domain/scoring/calculateDayScorePreview'
 import { calculateReadinessSnapshot } from '@/domain/readiness/calculateReadinessSnapshot'
 import { getFallbackModeSuggestion } from '@/domain/recommendation/getFallbackModeSuggestion'
 import { getNextActionRecommendation } from '@/domain/recommendation/getNextActionRecommendation'
+import { dayTypeLabels, getAllowedDayTypeOverrides, getScheduledDayTypeForDate } from '@/domain/schedule/overrideRules'
 import type { DayInstance } from '@/domain/routine/types'
 
 export async function getOrCreateTodayWorkspace(date = new Date()) {
   const dateKey = getDateKey(date)
   const settings = await localSettingsRepository.getDefault()
   const dayMode = settings?.dayModeOverrides[dateKey] ?? 'normal'
+  const dayTypeOverride = settings?.dayTypeOverrides[dateKey]
   const dailySignals = settings?.dailySignals[dateKey] ?? {
     sleepStatus: 'unknown' as const,
     energyStatus: 'unknown' as const,
+    sleepDurationHours: undefined,
   }
+  const scheduledDayType = getScheduledDayTypeForDate(dateKey, forgeRoutine)
+  const effectiveDayType = dayTypeOverride ?? scheduledDayType
 
   let dayInstance = await localDayInstanceRepository.getByDate(dateKey)
 
-  if (!dayInstance || dayInstance.dayMode !== dayMode) {
+  if (!dayInstance || dayInstance.dayMode !== dayMode || dayInstance.dayType !== effectiveDayType) {
     dayInstance = generateDayInstance({
       date: dateKey,
       routine: forgeRoutine,
       dayMode,
+      overrideDayType: dayTypeOverride,
     })
 
     await localDayInstanceRepository.upsert(dayInstance)
@@ -36,12 +42,13 @@ export async function getOrCreateTodayWorkspace(date = new Date()) {
     null
   const topPriorities = getTopPriorityBlocks(dayInstance)
   const focusAreas = [...new Set(dayInstance.blocks.flatMap((block) => block.focusAreas))]
-  const focusedPrepDomains = getFocusedPrepDomains(forgePrepTaxonomy, [...focusAreas, ...topPriorities.flatMap((block) => block.focusAreas)])
+  const prepTopics = mergePrepTopicProgress(forgePrepTaxonomy, settings?.prepTopicProgress ?? {})
+  const focusedPrepDomains = getFocusedPrepDomains(prepTopics, [...focusAreas, ...topPriorities.flatMap((block) => block.focusAreas)])
   const currentBlock = getCurrentBlock(dayInstance)
   const readinessSnapshot = calculateReadinessSnapshot({
     date: dateKey,
     focusedDomains: focusedPrepDomains,
-    topics: forgePrepTaxonomy,
+    topics: prepTopics,
   })
   const scorePreview = calculateDayScorePreview(dayInstance, {
     scheduledWorkout,
@@ -60,6 +67,8 @@ export async function getOrCreateTodayWorkspace(date = new Date()) {
     dateLabel: formatDateLabel(dateKey),
     weekdayLabel: formatWeekdayLabel(dateKey),
     dayInstance,
+    baseDayType: scheduledDayType,
+    isDayTypeOverridden: effectiveDayType !== scheduledDayType,
     currentBlock,
     topPriorities,
     scheduledWorkout,
@@ -67,6 +76,7 @@ export async function getOrCreateTodayWorkspace(date = new Date()) {
     readinessSnapshot,
     sleepStatus: dailySignals.sleepStatus,
     energyStatus: dailySignals.energyStatus,
+    sleepDurationHours: dailySignals.sleepDurationHours,
     scorePreview,
     fallbackSuggestion,
     recommendation: getNextActionRecommendation({
@@ -86,10 +96,12 @@ export async function getOrCreateWeeklyWorkspace(anchorDate = new Date()) {
   const anchorDateKey = getDateKey(anchorDate)
   const settings = await localSettingsRepository.getDefault()
   const dayModesByDate = settings?.dayModeOverrides ?? {}
+  const dayTypesByDate = settings?.dayTypeOverrides ?? {}
   const generatedWeek = generateWeekInstances({
     anchorDate: anchorDateKey,
     routine: forgeRoutine,
     dayModesByDate,
+    dayTypesByDate,
   })
 
   const existingInstances = await localDayInstanceRepository.getByDates(generatedWeek.map((instance) => instance.date))
@@ -110,6 +122,12 @@ export async function getOrCreateWeeklyWorkspace(anchorDate = new Date()) {
     ...instance,
     dateLabel: formatDateLabel(instance.date),
     weekdayLabel: formatWeekdayLabel(instance.date),
+    baseDayType: getScheduledDayTypeForDate(instance.date, forgeRoutine),
+    isDayTypeOverridden: (dayTypesByDate[instance.date] ?? getScheduledDayTypeForDate(instance.date, forgeRoutine)) !== getScheduledDayTypeForDate(instance.date, forgeRoutine),
+    allowedDayTypes: getAllowedDayTypeOverrides(instance.date).map((dayType) => ({
+      value: dayType,
+      label: dayTypeLabels[dayType],
+    })),
   }))
 }
 

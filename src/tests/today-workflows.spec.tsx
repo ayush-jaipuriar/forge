@@ -1,4 +1,4 @@
-import { render, screen } from '@testing-library/react'
+import { fireEvent, render, screen } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { AppProviders } from '@/app/providers/AppProviders'
 import { BlockNoteComposer } from '@/features/today/components/BlockNoteComposer'
@@ -35,17 +35,16 @@ describe('Today workflows', () => {
   it('captures a lightweight execution note without forcing a heavy form', async () => {
     const user = userEvent.setup()
     const onSave = vi.fn()
+    const note = 'Meeting overran. Resume with a 30-minute push.'
 
-    render(
-      <AppProviders>
-        <BlockNoteComposer onSave={onSave} />
-      </AppProviders>,
-    )
+    render(<BlockNoteComposer onSave={onSave} />)
 
     await user.click(screen.getByRole('button', { name: /add note/i }))
-    await user.type(screen.getByLabelText('Execution note'), 'Meeting overran the first block. Resume with the shortest meaningful push.')
+    fireEvent.change(screen.getByLabelText('Execution note'), {
+      target: { value: note },
+    })
     await user.click(screen.getByRole('button', { name: /save note/i }))
 
-    expect(onSave).toHaveBeenCalledWith('Meeting overran the first block. Resume with the shortest meaningful push.')
+    expect(onSave).toHaveBeenCalledWith(note)
   })
 })

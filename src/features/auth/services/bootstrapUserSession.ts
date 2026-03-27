@@ -43,7 +43,10 @@ export async function bootstrapUserSession(user: User) {
       notificationsEnabled: true,
       calendarConnected: false,
       dayModeOverrides: {},
+      dayTypeOverrides: {},
       dailySignals: {},
+      prepTopicProgress: {},
+      workoutLogs: {},
       createdAt: serverTimestamp(),
       updatedAt: serverTimestamp(),
     })
