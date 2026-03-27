@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest'
 import { forgeRoutine } from '@/data/seeds'
 import { generateDayInstance } from '@/domain/routine/generateDayInstance'
-import { updateBlockStatus } from '@/domain/routine/mutations'
+import { updateBlockExecutionNote, updateBlockStatus } from '@/domain/routine/mutations'
 import { calculateDayScorePreview } from '@/domain/scoring/calculateDayScorePreview'
 import type { ReadinessSnapshot } from '@/domain/readiness/types'
 
@@ -25,6 +25,7 @@ const readinessSnapshot: ReadinessSnapshot = {
 
 const baseContext = {
   scheduledWorkout: null,
+  workoutState: null,
   sleepStatus: 'unknown' as const,
   readinessSnapshot,
 }
@@ -39,7 +40,7 @@ describe('calculateDayScorePreview', () => {
     const preview = calculateDayScorePreview(dayInstance, baseContext)
 
     expect(preview.projectedScore).toBe(100)
-    expect(preview.earnedScore).toBe(0)
+    expect(preview.earnedScore).toBe(7)
     expect(preview.warState).toBe('dominant')
   })
 
@@ -56,10 +57,11 @@ describe('calculateDayScorePreview', () => {
     const preview = calculateDayScorePreview(degradedDay, baseContext)
 
     expect(preview.projectedScore).toBeLessThan(70)
-    expect(preview.warState).toBe('slipping')
+    expect(preview.warState).toBe('critical')
+    expect(preview.constraints.length).toBeGreaterThan(0)
   })
 
-  it('rewards completed deep work immediately while keeping the remaining ceiling visible', () => {
+  it('requires meaningful output capture to unlock the full deep-work weight', () => {
     const dayInstance = generateDayInstance({
       date: '2026-03-26',
       routine: forgeRoutine,
@@ -68,12 +70,15 @@ describe('calculateDayScorePreview', () => {
 
     expect(primeDeepBlock).toBeDefined()
 
-    const updatedDay = updateBlockStatus(dayInstance, primeDeepBlock!.id, 'completed')
-    const preview = calculateDayScorePreview(updatedDay, baseContext)
+    const completedWithoutOutput = updateBlockStatus(dayInstance, primeDeepBlock!.id, 'completed')
+    const previewWithoutOutput = calculateDayScorePreview(completedWithoutOutput, baseContext)
+    const updatedDay = updateBlockExecutionNote(completedWithoutOutput, primeDeepBlock!.id, 'Solved the target graph traversal set with clean reasoning.')
+    const previewWithOutput = calculateDayScorePreview(updatedDay, baseContext)
 
-    expect(preview.earnedScore).toBeGreaterThanOrEqual(35)
-    expect(preview.projectedScore).toBe(100)
-    expect(preview.warState).toBe('dominant')
+    expect(previewWithoutOutput.earnedScore).toBeLessThan(previewWithOutput.earnedScore)
+    expect(previewWithOutput.earnedScore).toBeGreaterThanOrEqual(35)
+    expect(previewWithOutput.projectedScore).toBe(100)
+    expect(previewWithOutput.warState).toBe('dominant')
   })
 
   it('keeps continuity days fair by treating the primary expected prep block as the anchor work', () => {
@@ -99,5 +104,50 @@ describe('calculateDayScorePreview', () => {
 
     expect(preview.subscores.physical).toBeGreaterThan(0)
     expect(preview.subscores.consistency).toBeGreaterThan(15)
+  })
+
+  it('uses actual workout completion state instead of only the seeded schedule', () => {
+    const dayInstance = generateDayInstance({
+      date: '2026-03-23',
+      routine: forgeRoutine,
+    })
+
+    const preview = calculateDayScorePreview(dayInstance, {
+      ...baseContext,
+      scheduledWorkout: {
+        weekday: 'monday',
+        dayTypes: ['wfhHighOutput'],
+        workoutType: 'upperA',
+        label: 'Upper A',
+        status: 'scheduled',
+      },
+      workoutState: {
+        date: '2026-03-23',
+        workoutType: 'upperA',
+        label: 'Upper A',
+        status: 'done',
+      },
+    })
+
+    const physicalExecutionItems = preview.breakdown.filter((item) => item.key === 'physicalExecution')
+    expect(physicalExecutionItems[0]?.earned).toBe(10)
+  })
+
+  it('caps earned score when low-value completions try to mask a missed prime block', () => {
+    const dayInstance = generateDayInstance({
+      date: '2026-03-26',
+      routine: forgeRoutine,
+    })
+    const primeDeepBlock = dayInstance.blocks.find((block) => block.kind === 'deepWork' && block.requiredOutput)
+    const activationBlock = dayInstance.blocks.find((block) => block.kind === 'activation')
+
+    expect(primeDeepBlock).toBeDefined()
+    expect(activationBlock).toBeDefined()
+
+    const degradedDay = updateBlockStatus(updateBlockStatus(dayInstance, activationBlock!.id, 'completed'), primeDeepBlock!.id, 'skipped')
+    const preview = calculateDayScorePreview(degradedDay, baseContext)
+
+    expect(preview.earnedScore).toBeLessThanOrEqual(54)
+    expect(preview.constraints.some((constraint) => /cannot mask/i.test(constraint))).toBe(true)
   })
 })

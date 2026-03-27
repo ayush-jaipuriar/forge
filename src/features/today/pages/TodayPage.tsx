@@ -59,7 +59,7 @@ export function TodayPage() {
     )
   }
 
-  const { currentBlock, dateLabel, dayInstance, energyStatus, fallbackSuggestion, focusedPrepDomains, recommendation, readinessSnapshot, scheduledWorkout, scorePreview, sleepStatus, topPriorities, weekdayLabel } = data
+  const { currentBlock, dateLabel, dayInstance, energyStatus, fallbackSuggestion, focusedPrepDomains, recommendation, readinessSnapshot, scorePreview, sleepStatus, topPriorities, weekdayLabel, workoutState } = data
   const activeMode = dayModeDetails[currentDayMode]
   const fallbackKey = fallbackSuggestion
     ? getFallbackKey(dayInstance.date, fallbackSuggestion.suggestedDayMode, fallbackSuggestion.explanation)
@@ -156,8 +156,8 @@ export function TodayPage() {
         <Grid size={{ xs: 12, sm: 6, lg: 3 }}>
           <MetricTile
             eyebrow="Workout"
-            value={scheduledWorkout?.label ?? 'Recovery / Flex'}
-            detail="Physical execution is read from the seeded workout schedule."
+            value={workoutState.label}
+            detail={`Current workout state: ${workoutState.status}.`}
             tone="success"
           />
         </Grid>
@@ -188,7 +188,7 @@ export function TodayPage() {
               Why this rule fired: {recommendation.explanation}
             </Typography>
             <Typography variant="body2" color="primary.light">
-              This rule is using score pressure, day mode, readiness pressure, workout expectation, sleep, energy, and the current live block queue.
+              This rule is using score pressure, day mode, readiness pace, workout state, sleep, energy, fallback posture, and the current live block queue.
             </Typography>
           </Stack>
         </SurfaceCard>
@@ -456,11 +456,11 @@ export function TodayPage() {
             <SurfaceCard
               eyebrow="Score Pressure"
               title="Projected score and war-state"
-              description="This preview stays fair early in the day by treating still-planned work as recoverable potential, while skipped blocks immediately reduce the ceiling."
+              description="This preview stays fair early in the day by treating still-planned work as recoverable potential, while missed prime work now applies explicit ceiling constraints so easy tasks cannot fake a strong day."
             >
               <Stack spacing={1.25}>
                 {scorePreview.breakdown.map((item) => (
-                  <Stack key={item.key} direction="row" justifyContent="space-between" spacing={2}>
+                  <Stack key={`${item.key}-${item.label}`} direction="row" justifyContent="space-between" spacing={2}>
                     <Typography color="text.secondary">{item.label}</Typography>
                     <Typography color="primary.light">
                       {item.earned}/{item.projected}/{item.max}
@@ -470,6 +470,11 @@ export function TodayPage() {
                 <Typography variant="body2" color="text.secondary">
                   Format: earned / projected / max
                 </Typography>
+                {scorePreview.constraints.map((constraint) => (
+                  <Typography key={constraint} variant="body2" color="warning.main">
+                    Constraint: {constraint}
+                  </Typography>
+                ))}
               </Stack>
             </SurfaceCard>
             <SurfaceCard

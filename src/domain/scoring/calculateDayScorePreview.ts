@@ -1,92 +1,123 @@
-import type { BlockInstance, DayInstance } from '@/domain/routine/types'
 import type { SleepStatus } from '@/domain/common/types'
-import type { WorkoutScheduleEntry } from '@/domain/physical/types'
+import type { WorkoutLogEntry, WorkoutScheduleEntry } from '@/domain/physical/types'
 import type { ReadinessSnapshot } from '@/domain/readiness/types'
+import type { BlockInstance, DayInstance } from '@/domain/routine/types'
 import type { DayScorePreview, ScoreBreakdownItem } from '@/domain/scoring/types'
 
-export function calculateDayScorePreview(
-  dayInstance: DayInstance,
-  context: {
-    scheduledWorkout: WorkoutScheduleEntry | null
-    sleepStatus: SleepStatus
-    readinessSnapshot: ReadinessSnapshot
-  },
-): DayScorePreview {
+type ScoreContext = {
+  scheduledWorkout: WorkoutScheduleEntry | null
+  workoutState?: WorkoutLogEntry | null
+  sleepStatus: SleepStatus
+  readinessSnapshot: ReadinessSnapshot
+}
+
+export function calculateDayScorePreview(dayInstance: DayInstance, context: ScoreContext): DayScorePreview {
   const primaryExecutionBlock = getPrimaryExecutionBlock(dayInstance)
+  const primaryBlockCompleted = primaryExecutionBlock?.status === 'completed'
+  const primaryBlockRecoverable = primaryExecutionBlock ? isRecoverableBlockStatus(primaryExecutionBlock.status) : false
+  const primaryOutputCaptured = primaryBlockCompleted && hasMeaningfulOutput(primaryExecutionBlock)
   const prepTargetMinutes = getPrepTargetMinutes(dayInstance)
-  const fullDayPrepCapacity = getPrepMinutes(dayInstance.blocks, ['completed', 'planned', 'moved', 'skipped'])
+  const totalRecoverablePrepMinutes = getPrepMinutes(dayInstance.blocks, ['completed', 'planned', 'moved'])
   const completedPrepMinutes = getPrepMinutes(dayInstance.blocks, ['completed'])
-  const possiblePrepMinutes = getPrepMinutes(dayInstance.blocks, ['completed', 'planned', 'moved'])
   const hasSecondaryPrepCompleted = dayInstance.blocks.some(
     (block) => block.id !== primaryExecutionBlock?.id && isSecondaryPrepBlock(block) && block.status === 'completed',
   )
   const hasSecondaryPrepPotential = dayInstance.blocks.some(
-    (block) => block.id !== primaryExecutionBlock?.id && isSecondaryPrepBlock(block) && isReplayableBlockStatus(block.status),
+    (block) => block.id !== primaryExecutionBlock?.id && isSecondaryPrepBlock(block) && isRecoverableBlockStatus(block.status),
   )
-  const workoutBlocks = dayInstance.blocks.filter((block) => block.kind === 'workout')
-  const hasWorkoutExpectation = context.scheduledWorkout?.status === 'scheduled' || workoutBlocks.some((block) => !block.optional)
-  const hasWorkoutCompleted = workoutBlocks.some((block) => block.status === 'completed')
-  const hasWorkoutPotential = workoutBlocks.some((block) => isReplayableBlockStatus(block.status))
-  const planningBlocks = dayInstance.blocks.filter((block) => block.kind === 'planning')
-  const hasPlanningCompleted = planningBlocks.some((block) => block.status === 'completed')
-  const hasPlanningPotential = planningBlocks.some((block) => isReplayableBlockStatus(block.status))
-  const planningIsExpected = planningBlocks.length > 0
-  const hasLoggingCompliance = dayInstance.blocks.some((block) => block.status !== 'planned')
+  const planningBlock = dayInstance.blocks.find((block) => block.kind === 'planning') ?? null
+  const planningCompleted = planningBlock?.status === 'completed'
+  const planningRecoverable = planningBlock ? isRecoverableBlockStatus(planningBlock.status) : false
+  const workoutState = context.workoutState ?? getFallbackWorkoutState(dayInstance, context.scheduledWorkout)
+  const workoutExpected = workoutState.status === 'scheduled'
+  const workoutCompleted = workoutState.status === 'done' || dayInstance.blocks.some((block) => block.kind === 'workout' && block.status === 'completed')
+  const workoutRecoverable = workoutCompleted || workoutState.status === 'scheduled' || workoutState.status === 'optional'
+  const lowValueCompletions = dayInstance.blocks.filter(
+    (block) => ['activation', 'analytics'].includes(block.kind) && block.status === 'completed',
+  ).length
+  const trackingCompliance = hasTrackingCompliance(dayInstance, context.sleepStatus, workoutState)
   const requiredBlocks = dayInstance.blocks.filter((block) => !block.optional)
   const completedRequiredBlocks = requiredBlocks.filter((block) => block.status === 'completed').length
-  const replayableRequiredBlocks = requiredBlocks.filter((block) => isReplayableBlockStatus(block.status)).length
+  const recoverableRequiredBlocks = requiredBlocks.filter((block) => isRecoverableBlockStatus(block.status)).length
 
   const breakdown: ScoreBreakdownItem[] = [
     {
       key: 'deepWork',
-      label: 'Primary Execution',
-      max: 35,
-      earned: primaryExecutionBlock?.status === 'completed' ? 35 : 0,
-      projected:
-        primaryExecutionBlock?.status === 'completed'
-          ? 35
-          : primaryExecutionBlock && isReplayableBlockStatus(primaryExecutionBlock.status)
-            ? 35
-            : 0,
+      label: 'Prime block completed',
+      max: 25,
+      earned: primaryBlockCompleted ? 25 : 0,
+      projected: primaryBlockCompleted ? 25 : primaryBlockRecoverable ? 25 : 0,
+    },
+    {
+      key: 'deepWork',
+      label: 'Meaningful output captured',
+      max: 10,
+      earned: primaryOutputCaptured ? 10 : 0,
+      projected: primaryBlockRecoverable ? 10 : 0,
     },
     {
       key: 'prepExecution',
-      label: 'Prep Execution',
-      max: 20,
-      earned: (hasSecondaryPrepCompleted ? 10 : 0) + (completedPrepMinutes >= Math.min(prepTargetMinutes, fullDayPrepCapacity) ? 10 : 0),
-      projected:
-        (hasSecondaryPrepCompleted || hasSecondaryPrepPotential ? 10 : 0) +
-        (possiblePrepMinutes >= Math.min(prepTargetMinutes, fullDayPrepCapacity) ? 10 : 0),
+      label: 'Secondary prep block landed',
+      max: 10,
+      earned: hasSecondaryPrepCompleted ? 10 : 0,
+      projected: hasSecondaryPrepCompleted || hasSecondaryPrepPotential ? 10 : 0,
+    },
+    {
+      key: 'prepExecution',
+      label: 'Prep time target met',
+      max: 10,
+      earned: completedPrepMinutes >= prepTargetMinutes ? 10 : 0,
+      projected: totalRecoverablePrepMinutes >= prepTargetMinutes ? 10 : 0,
     },
     {
       key: 'physicalExecution',
-      label: 'Physical Execution',
-      max: 15,
-      earned:
-        (hasWorkoutExpectation ? (hasWorkoutCompleted ? 10 : 0) : 10) +
-        (context.sleepStatus === 'met' ? 5 : 0),
-      projected:
-        (hasWorkoutExpectation ? (hasWorkoutCompleted || hasWorkoutPotential ? 10 : 0) : 10) +
-        (context.sleepStatus === 'missed' ? 0 : 5),
+      label: 'Scheduled workout completed',
+      max: 10,
+      earned: workoutExpected ? (workoutCompleted ? 10 : 0) : 10,
+      projected: workoutExpected ? (workoutRecoverable ? 10 : 0) : 10,
+    },
+    {
+      key: 'physicalExecution',
+      label: 'Sleep target met',
+      max: 5,
+      earned: context.sleepStatus === 'met' ? 5 : 0,
+      projected: context.sleepStatus === 'missed' ? 0 : 5,
     },
     {
       key: 'discipline',
-      label: 'Discipline',
-      max: 15,
-      earned: (planningIsExpected ? (hasPlanningCompleted ? 4 : 0) : 4) + (hasLoggingCompliance ? 4 : 0),
-      projected: 7 + (planningIsExpected ? (hasPlanningCompleted || hasPlanningPotential ? 4 : 0) : 4) + 4,
+      label: 'No major rabbit hole',
+      max: 7,
+      earned: getRabbitHoleDisciplineScore({ primaryExecutionBlock, lowValueCompletions, projected: false }),
+      projected: getRabbitHoleDisciplineScore({ primaryExecutionBlock, lowValueCompletions, projected: true }),
+    },
+    {
+      key: 'discipline',
+      label: 'Planning / day hygiene',
+      max: 4,
+      earned: planningBlock ? (planningCompleted ? 4 : 0) : 4,
+      projected: planningBlock ? (planningRecoverable ? 4 : 0) : 4,
+    },
+    {
+      key: 'discipline',
+      label: 'Tracking / logging compliance',
+      max: 4,
+      earned: trackingCompliance ? 4 : 0,
+      projected: trackingCompliance ? 4 : 4,
     },
     {
       key: 'dayTypeCompliance',
-      label: 'Day-Type Compliance',
+      label: 'Day-type expectations met',
       max: 15,
       earned: scoreCompliance(completedRequiredBlocks, requiredBlocks.length, 15),
-      projected: scoreCompliance(replayableRequiredBlocks, requiredBlocks.length, 15),
+      projected: scoreCompliance(recoverableRequiredBlocks, requiredBlocks.length, 15),
     },
   ]
 
-  const earnedScore = breakdown.reduce((sum, item) => sum + item.earned, 0)
-  const projectedScore = breakdown.reduce((sum, item) => sum + item.projected, 0)
+  const earnedBeforeConstraints = breakdown.reduce((sum, item) => sum + item.earned, 0)
+  const projectedBeforeConstraints = breakdown.reduce((sum, item) => sum + item.projected, 0)
+  const constraints = getScoreConstraints({ dayInstance, primaryExecutionBlock, lowValueCompletions })
+  const earnedScore = applyScoreConstraints(earnedBeforeConstraints, constraints)
+  const projectedScore = applyScoreConstraints(projectedBeforeConstraints, constraints)
   const warState = getWarState(projectedScore)
 
   return {
@@ -94,16 +125,12 @@ export function calculateDayScorePreview(
     projectedScore,
     warState,
     label: getWarStateLabel(warState),
+    constraints: constraints.map((constraint) => constraint.reason),
     subscores: {
-      interviewPrep: clampScore(
-        breakdown.find((item) => item.key === 'deepWork')!.projected + breakdown.find((item) => item.key === 'prepExecution')!.projected,
-      ),
-      physical: clampScore(breakdown.find((item) => item.key === 'physicalExecution')!.projected),
-      discipline: clampScore(breakdown.find((item) => item.key === 'discipline')!.projected),
-      consistency: clampScore(
-        breakdown.find((item) => item.key === 'dayTypeCompliance')!.projected +
-          getReadinessConsistencyBonus(context.readinessSnapshot),
-      ),
+      interviewPrep: clampScore(sumProjected(breakdown, ['deepWork', 'prepExecution'])),
+      physical: clampScore(sumProjected(breakdown, ['physicalExecution'])),
+      discipline: clampScore(sumProjected(breakdown, ['discipline'])),
+      consistency: clampScore(sumProjected(breakdown, ['dayTypeCompliance']) + getReadinessConsistencyBonus(context.readinessSnapshot)),
       master: projectedScore,
     },
     breakdown,
@@ -123,8 +150,12 @@ function isSecondaryPrepBlock(block: BlockInstance) {
   return block.kind === 'prep' || block.kind === 'review'
 }
 
-function isReplayableBlockStatus(status: BlockInstance['status']) {
+function isRecoverableBlockStatus(status: BlockInstance['status']) {
   return status === 'planned' || status === 'moved' || status === 'completed'
+}
+
+function hasMeaningfulOutput(block: BlockInstance | null) {
+  return Boolean(block?.executionNote?.trim())
 }
 
 function getPrepMinutes(blocks: BlockInstance[], eligibleStatuses: BlockInstance['status'][]) {
@@ -145,7 +176,15 @@ function getBlockMinutes(block: BlockInstance) {
     return endHours * 60 + endMinutes - (startHours * 60 + startMinutes)
   }
 
-  return 0
+  switch (block.kind) {
+    case 'deepWork':
+      return 75
+    case 'prep':
+    case 'review':
+      return 30
+    default:
+      return 0
+  }
 }
 
 function getPrepTargetMinutes(dayInstance: DayInstance) {
@@ -166,12 +205,84 @@ function getPrepTargetMinutes(dayInstance: DayInstance) {
   }
 }
 
+function getFallbackWorkoutState(dayInstance: DayInstance, scheduledWorkout: WorkoutScheduleEntry | null): WorkoutLogEntry {
+  const workoutBlock = dayInstance.blocks.find((block) => block.kind === 'workout')
+
+  return {
+    date: dayInstance.date,
+    workoutType: scheduledWorkout?.workoutType ?? 'rest',
+    label: scheduledWorkout?.label ?? workoutBlock?.title ?? 'Recovery / Flex',
+    status: scheduledWorkout?.status ?? (workoutBlock && !workoutBlock.optional ? 'scheduled' : 'optional'),
+  }
+}
+
+function hasTrackingCompliance(dayInstance: DayInstance, sleepStatus: SleepStatus, workoutState: WorkoutLogEntry) {
+  return (
+    dayInstance.blocks.some((block) => block.status !== 'planned' || Boolean(block.executionNote?.trim())) ||
+    sleepStatus !== 'unknown' ||
+    workoutState.status !== 'scheduled'
+  )
+}
+
+function getRabbitHoleDisciplineScore({
+  primaryExecutionBlock,
+  lowValueCompletions,
+  projected,
+}: {
+  primaryExecutionBlock: BlockInstance | null
+  lowValueCompletions: number
+  projected: boolean
+}) {
+  if (!primaryExecutionBlock) {
+    return 7
+  }
+
+  if (primaryExecutionBlock.status === 'skipped') {
+    return lowValueCompletions > 0 ? 0 : projected ? 3 : 2
+  }
+
+  return 7
+}
+
 function scoreCompliance(completedOrRecoverable: number, total: number, max: number) {
   if (total === 0) {
     return max
   }
 
   return Math.round((completedOrRecoverable / total) * max)
+}
+
+function getScoreConstraints({
+  dayInstance,
+  primaryExecutionBlock,
+  lowValueCompletions,
+}: {
+  dayInstance: DayInstance
+  primaryExecutionBlock: BlockInstance | null
+  lowValueCompletions: number
+}) {
+  const constraints: Array<{ maxScore: number; reason: string }> = []
+  const deepWorkWeightedDay = ['wfhHighOutput', 'weekendDeepWork', 'weekendConsolidation'].includes(dayInstance.dayType)
+
+  if (deepWorkWeightedDay && primaryExecutionBlock?.requiredOutput && primaryExecutionBlock.status === 'skipped') {
+    constraints.push({
+      maxScore: 69,
+      reason: 'Prime execution was missed, so low-value completions cannot push the day above slipping.',
+    })
+  }
+
+  if (deepWorkWeightedDay && primaryExecutionBlock?.requiredOutput && primaryExecutionBlock.status === 'skipped' && lowValueCompletions > 0) {
+    constraints.push({
+      maxScore: 54,
+      reason: 'Low-value completions cannot mask a missed prime block on a deep-work-weighted day.',
+    })
+  }
+
+  return constraints
+}
+
+function applyScoreConstraints(score: number, constraints: Array<{ maxScore: number }>) {
+  return constraints.reduce((current, constraint) => Math.min(current, constraint.maxScore), score)
 }
 
 function getWarState(score: number) {
@@ -206,7 +317,7 @@ function getWarStateLabel(warState: DayScorePreview['warState']) {
 }
 
 function getReadinessConsistencyBonus(snapshot: ReadinessSnapshot) {
-  switch (snapshot.pressureLevel) {
+  switch (snapshot.paceSnapshot.paceLevel) {
     case 'critical':
       return 0
     case 'behind':
@@ -218,6 +329,10 @@ function getReadinessConsistencyBonus(snapshot: ReadinessSnapshot) {
     default:
       return 0
   }
+}
+
+function sumProjected(items: ScoreBreakdownItem[], keys: ScoreBreakdownItem['key'][]) {
+  return items.filter((item) => keys.includes(item.key)).reduce((sum, item) => sum + item.projected, 0)
 }
 
 function clampScore(value: number) {

@@ -92,6 +92,16 @@ This document captures the Phase 1 architectural baseline that implementation sh
 - Physical tracking is intentionally lightweight: workout logging supports done, skipped, and rescheduled states plus a quick note or miss reason, but does not drift into set/rep detail
 - Manual sleep logging now uses duration as the primary input, and target-met status is derived against a temporary 7.5-hour Phase 1 threshold so the UI stays fast while leaving room for future device sync and smarter personalization
 
+## Milestone 8 Scoring and Recommendation Principles
+
+- projected score now uses weighted categories rather than flat completion counting: prime execution, prep continuity, physical execution, discipline, and day-type compliance are all intentionally separate so low-value tasks cannot wash out strategic misses
+- deep-work-weighted days now apply explicit score ceilings when the prime required-output block is skipped, and an even lower ceiling applies if low-value completions are used to pad the day afterward
+- block-duration fallback defaults are now part of the score model because several seeded deep-work and prep blocks are intentionally flexible; without that fallback, the score engine would undercount realistic prep capacity
+- earned score is no longer required to start at zero: a fresh day can hold a small discipline baseline before execution lands, which reflects preserved focus rather than fake accomplishment
+- recommendation rules now run in explicit precedence order and return a `ruleKey` so the Today surface, tests, and future analytics can all inspect why a recommendation fired
+- the current precedence is: protect conflict boundary, missed-prime salvage, critical stabilization, fallback downgrades, closing workout window, stale low-value move-later, morning prime execution, WFO recovery shift, finish current block, then advance top priority
+- recommendation context now includes actual workout state, readiness pace, fallback posture, sleep, energy, and score pressure from the same workspace generation path, which keeps the engine strict without duplicating UI-only heuristics
+
 ### Current Conflict Strategy and Limits
 
 - the current foundation favors predictable local continuity over sophisticated merge behavior

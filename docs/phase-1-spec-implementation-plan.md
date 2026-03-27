@@ -704,20 +704,20 @@ Implement the strict behavioral logic that differentiates Forge from a normal tr
 
 ### Checklist
 
-- [ ] Implement the master daily score model with weighted categories from the product spec.
-- [ ] Implement subscores for interview prep, physical, discipline, consistency, and master score.
-- [ ] Ensure the prime morning deep block carries the strongest score weight.
-- [ ] Normalize expectations fairly across WFH, WFO, weekend, low-energy, and survival contexts.
-- [ ] Prevent low-value completion from masking deep-work failure.
-- [ ] Implement a recommendation engine that accepts current time, day type, completion state, energy, workout state, schedule pressure, conflict state, and fallback state.
-- [ ] Return recommendation results with action label, rationale, urgency, and optional alternative path.
-- [ ] Surface the recommendation through the Today screen's "What should I do now?" interaction.
+- [x] Implement the master daily score model with weighted categories from the product spec.
+- [x] Implement subscores for interview prep, physical, discipline, consistency, and master score.
+- [x] Ensure the prime morning deep block carries the strongest score weight.
+- [x] Normalize expectations fairly across WFH, WFO, weekend, low-energy, and survival contexts.
+- [x] Prevent low-value completion from masking deep-work failure.
+- [x] Implement a recommendation engine that accepts current time, day type, completion state, energy, workout state, schedule pressure, conflict state, and fallback state.
+- [x] Return recommendation results with action label, rationale, urgency, and optional alternative path.
+- [x] Surface the recommendation through the Today screen's "What should I do now?" interaction.
 
 ### Testing and Documentation
 
-- [ ] Add thorough unit tests for scoring rules and edge cases.
-- [ ] Add thorough unit tests for recommendation priorities and fallback behavior.
-- [ ] Document rule precedence and score philosophy so future changes remain intentional.
+- [x] Add thorough unit tests for scoring rules and edge cases.
+- [x] Add thorough unit tests for recommendation priorities and fallback behavior.
+- [x] Document rule precedence and score philosophy so future changes remain intentional.
 
 ### Exit Criteria
 
@@ -963,7 +963,7 @@ Use this section as the live implementation tracker.
 - [x] Milestone 5 complete
 - [x] Milestone 6 complete
 - [x] Milestone 7 complete
-- [ ] Milestone 8 complete
+- [x] Milestone 8 complete
 - [ ] Milestone 9 complete
 - [ ] Milestone 10 complete
 - [ ] Milestone 11 complete
@@ -1018,4 +1018,10 @@ Use this section as the live implementation tracker.
 - Documented the main Phase 1 readiness simplifications honestly: readiness is still a heuristic derived from confidence, coverage, and effort signals, and prep/physical state is intentionally stored inside the broader settings snapshot until the dedicated repositories become necessary.
 - Local verification passed again with `npm run lint`, `npm run test:run`, `npm run typecheck`, and `npm run build`.
 - Milestone 7 is now complete from the implementation-plan perspective.
-- Next implementation step: move into Milestone 8 while keeping Milestone 2 live verification as a separate environment-validation task.
+- Tightened the Milestone 8 score engine so weighted categories now reflect real prep potential, actual workout state, explicit output capture, and hard score ceilings when a prime block is missed.
+- Reworked the next-action engine into named rule precedence with explicit `ruleKey` outputs, making salvage, workout-window, fallback, and stabilization behavior inspectable and testable instead of implicit.
+- Updated the Today screen to surface the stricter score philosophy more honestly, including constraint messaging and workout-state-aware recommendation context.
+- Added and refreshed domain tests to lock in score constraints, meaningful-output scoring, workout-state scoring, and recommendation precedence.
+- Local verification passed again with `npm run lint`, `npm run test:run`, `npm run typecheck`, and `npm run build`.
+- Milestone 8 is now complete from the implementation-plan perspective.
+- Next implementation step: move into Milestone 9 while keeping Milestone 2 live verification as a separate environment-validation task.

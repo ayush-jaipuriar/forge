@@ -20,6 +20,7 @@ export type DayScorePreview = {
   projectedScore: number
   warState: WarState
   label: string
+  constraints: string[]
   subscores: {
     interviewPrep: number
     physical: number

@@ -49,6 +49,7 @@ describe('getNextActionRecommendation', () => {
       currentTime: '08:15',
     })
 
+    expect(recommendation.ruleKey).toBe('morning-primary-execution')
     expect(recommendation.actionLabel).toMatch(/prime deep block/i)
     expect(recommendation.urgency).toBe('high')
     expect(recommendation.explanation).toMatch(/before noon/i)
@@ -72,6 +73,7 @@ describe('getNextActionRecommendation', () => {
       projectedScore: 42,
       warState: 'critical' as const,
       label: 'Critical',
+      constraints: ['Prime execution was missed and the day is in a hard stabilization posture.'],
       subscores: {
         interviewPrep: 18,
         physical: 0,
@@ -89,11 +91,13 @@ describe('getNextActionRecommendation', () => {
       scorePreview,
       readinessSnapshot: criticalReadiness,
       scheduledWorkout: null,
+      workoutState: null,
       sleepStatus: 'missed',
       energyStatus: 'low',
       currentTime: '21:00',
     })
 
+    expect(recommendation.ruleKey).toBe('critical-stabilization')
     expect(recommendation.urgency).toBe('critical')
     expect(recommendation.actionLabel).toMatch(/stabilize/i)
   })
@@ -117,12 +121,96 @@ describe('getNextActionRecommendation', () => {
       scorePreview,
       readinessSnapshot,
       scheduledWorkout: null,
+      workoutState: null,
       sleepStatus: 'unknown',
       energyStatus: 'low',
       currentTime: '09:30',
     })
 
+    expect(recommendation.ruleKey).toBe('downgrade-low-energy')
     expect(recommendation.actionLabel).toMatch(/low energy mode/i)
     expect(recommendation.urgency).toBe('high')
+  })
+
+  it('moves to salvage guidance when the prime block is already missed', () => {
+    const baseDay = generateDayInstance({
+      date: '2026-03-26',
+      routine: forgeRoutine,
+    })
+    const primeDeepBlock = baseDay.blocks.find((block) => block.kind === 'deepWork' && block.requiredOutput)
+    const dayInstance = updateBlockStatus(baseDay, primeDeepBlock!.id, 'skipped')
+    const scorePreview = calculateDayScorePreview(dayInstance, {
+      scheduledWorkout: null,
+      workoutState: null,
+      sleepStatus: 'unknown',
+      readinessSnapshot,
+    })
+
+    const recommendation = getNextActionRecommendation({
+      dayInstance,
+      currentBlock: null,
+      topPriorities: dayInstance.blocks.filter((block) => block.status === 'planned'),
+      scorePreview,
+      readinessSnapshot,
+      scheduledWorkout: null,
+      workoutState: null,
+      sleepStatus: 'unknown',
+      energyStatus: 'normal',
+      currentTime: '11:30',
+    })
+
+    expect(recommendation.ruleKey).toBe('missed-prime-salvage')
+    expect(recommendation.actionLabel).toMatch(/missed prime work/i)
+  })
+
+  it('can elevate the workout when the closing window is real', () => {
+    const dayInstance = generateDayInstance({
+      date: '2026-03-27',
+      routine: forgeRoutine,
+    })
+    const scorePreview = calculateDayScorePreview(dayInstance, {
+      scheduledWorkout: {
+        weekday: 'friday',
+        dayTypes: ['wfhHighOutput'],
+        workoutType: 'upperB',
+        label: 'Upper B',
+        status: 'scheduled',
+      },
+      workoutState: {
+        date: '2026-03-27',
+        workoutType: 'upperB',
+        label: 'Upper B',
+        status: 'scheduled',
+      },
+      sleepStatus: 'met',
+      readinessSnapshot,
+    })
+
+    const recommendation = getNextActionRecommendation({
+      dayInstance,
+      currentBlock: null,
+      topPriorities: dayInstance.blocks.filter((block) => block.status === 'planned'),
+      scorePreview,
+      readinessSnapshot,
+      scheduledWorkout: {
+        weekday: 'friday',
+        dayTypes: ['wfhHighOutput'],
+        workoutType: 'upperB',
+        label: 'Upper B',
+        status: 'scheduled',
+      },
+      workoutState: {
+        date: '2026-03-27',
+        workoutType: 'upperB',
+        label: 'Upper B',
+        status: 'scheduled',
+      },
+      sleepStatus: 'met',
+      energyStatus: 'normal',
+      currentTime: '18:15',
+    })
+
+    expect(recommendation.ruleKey).toBe('closing-workout-window')
+    expect(recommendation.actionLabel).toMatch(/train/i)
   })
 })

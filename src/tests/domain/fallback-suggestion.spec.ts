@@ -9,6 +9,7 @@ const stableScorePreview: DayScorePreview = {
   projectedScore: 76,
   warState: 'onTrack',
   label: 'On Track',
+  constraints: [],
   subscores: {
     interviewPrep: 30,
     physical: 12,

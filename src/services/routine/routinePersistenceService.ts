@@ -1,5 +1,6 @@
 import { forgePrepTaxonomy, forgeRoutine, forgeWorkoutSchedule } from '@/data/seeds'
 import { localDayInstanceRepository, localSettingsRepository } from '@/data/local'
+import { getWorkoutForDate } from '@/domain/physical/selectors'
 import { getCurrentBlock, getTopPriorityBlocks } from '@/domain/routine/selectors'
 import { getFocusedPrepDomains, mergePrepTopicProgress } from '@/domain/prep/selectors'
 import { generateDayInstance } from '@/domain/routine/generateDayInstance'
@@ -40,6 +41,11 @@ export async function getOrCreateTodayWorkspace(date = new Date()) {
   const scheduledWorkout =
     forgeWorkoutSchedule.find((entry) => entry.weekday === dayInstance.weekday && entry.dayTypes.includes(dayInstance.dayType)) ??
     null
+  const workoutState = getWorkoutForDate({
+    date: dateKey,
+    scheduledWorkout,
+    workoutLogs: settings?.workoutLogs ?? {},
+  })
   const topPriorities = getTopPriorityBlocks(dayInstance)
   const focusAreas = [...new Set(dayInstance.blocks.flatMap((block) => block.focusAreas))]
   const prepTopics = mergePrepTopicProgress(forgePrepTaxonomy, settings?.prepTopicProgress ?? {})
@@ -52,6 +58,7 @@ export async function getOrCreateTodayWorkspace(date = new Date()) {
   })
   const scorePreview = calculateDayScorePreview(dayInstance, {
     scheduledWorkout,
+    workoutState,
     sleepStatus: dailySignals.sleepStatus,
     readinessSnapshot,
   })
@@ -72,6 +79,7 @@ export async function getOrCreateTodayWorkspace(date = new Date()) {
     currentBlock,
     topPriorities,
     scheduledWorkout,
+    workoutState,
     focusedPrepDomains,
     readinessSnapshot,
     sleepStatus: dailySignals.sleepStatus,
@@ -86,8 +94,12 @@ export async function getOrCreateTodayWorkspace(date = new Date()) {
       scorePreview,
       readinessSnapshot,
       scheduledWorkout,
+      workoutState,
       sleepStatus: dailySignals.sleepStatus,
       energyStatus: dailySignals.energyStatus,
+      schedulePressureLevel: readinessSnapshot.paceSnapshot.paceLevel,
+      conflictState: 'clear',
+      fallbackState: fallbackSuggestion ? 'suggested' : dayInstance.dayMode === 'normal' || dayInstance.dayMode === 'ideal' ? 'stable' : 'active',
     }),
   }
 }
