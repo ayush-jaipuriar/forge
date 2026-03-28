@@ -1,17 +1,21 @@
 import { localSettingsRepository } from '@/data/local'
 import { evaluateNotificationRules } from '@/domain/notifications/rules'
-import { getOperationalAnalyticsSummary } from '@/services/analytics/operationalAnalyticsService'
 import { getBrowserNotificationPermissionState } from '@/services/notifications/browserNotificationService'
 import { getNotificationStateWorkspace, updateNotificationPermission } from '@/services/notifications/notificationStateService'
-import { getOrCreateTodayWorkspace } from '@/services/routine/routinePersistenceService'
+import { buildNotificationEvaluationWorkspace } from '@/services/notifications/notificationWorkspaceService'
+import { localDayInstanceRepository } from '@/data/local'
 
 export async function evaluateCurrentNotificationCandidate(anchorDate = new Date()) {
-  const [settings, summary, today, notificationWorkspace] = await Promise.all([
+  const [settings, dayInstances, notificationWorkspace] = await Promise.all([
     localSettingsRepository.getDefault(),
-    getOperationalAnalyticsSummary(anchorDate),
-    getOrCreateTodayWorkspace(anchorDate),
+    localDayInstanceRepository.listAll(),
     getNotificationStateWorkspace(),
   ])
+  const workspace = buildNotificationEvaluationWorkspace({
+    settings,
+    dayInstances,
+    anchorDate,
+  })
 
   const permission = getBrowserNotificationPermissionState()
   if (permission !== notificationWorkspace.state.permission) {
@@ -20,8 +24,8 @@ export async function evaluateCurrentNotificationCandidate(anchorDate = new Date
   }
 
   return evaluateNotificationRules({
-    today,
-    summary,
+    today: workspace.today,
+    summary: workspace.summary,
     notificationState: notificationWorkspace.state,
     notificationsEnabled: settings?.notificationsEnabled ?? true,
     recentLogs: notificationWorkspace.recentLogs,

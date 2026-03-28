@@ -28,6 +28,7 @@ ui-debug.log*
 functions/.env
 functions/.env.*
 !functions/.env.example
+functions/lib/
 
 # Secret-bearing keys and certificates
 *.pem

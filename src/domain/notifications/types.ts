@@ -1,4 +1,5 @@
 export const FORGE_NOTIFICATION_DAILY_CAP = 3
+export const FORGE_NOTIFICATION_RULE_VERSION = 1
 
 export const notificationRuleKeys = [
   'missed-critical-block',
@@ -24,6 +25,9 @@ export const notificationDeliveryStatuses = [
   'failed',
 ] as const
 export type NotificationDeliveryStatus = (typeof notificationDeliveryStatuses)[number]
+
+export const notificationRunStatuses = ['scheduled', 'skipped', 'duplicate', 'failed'] as const
+export type NotificationRunStatus = (typeof notificationRunStatuses)[number]
 
 export const notificationSuppressionReasons = [
   'notifications-disabled',
@@ -76,6 +80,20 @@ export type NotificationLogRecord = {
   sourceWeekKey?: string
   suppressionReason?: NotificationSuppressionReason
   deliveryWindow?: NotificationDeliveryWindow
+}
+
+export type NotificationRunRecord = {
+  id: string
+  ruleVersion: number
+  status: NotificationRunStatus
+  evaluatedAt: string
+  sourceWindow: 'daily' | 'weekly'
+  candidateId?: string
+  ruleKey?: NotificationRuleKey
+  suppressionReason?: NotificationSuppressionReason
+  sourceDate?: string
+  sourceWeekKey?: string
+  summary: string
 }
 
 export function createDefaultNotificationStateSnapshot(): NotificationStateSnapshot {

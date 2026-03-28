@@ -1,17 +1,21 @@
 {
   "compilerOptions": {
     "target": "ES2022",
-    "module": "NodeNext",
-    "moduleResolution": "NodeNext",
-    "outDir": "lib",
-    "rootDir": "..",
+    "lib": ["ES2023"],
+    "module": "ESNext",
+    "moduleResolution": "bundler",
+    "allowImportingTsExtensions": true,
+    "verbatimModuleSyntax": true,
+    "moduleDetection": "force",
+    "noEmit": true,
     "strict": true,
     "esModuleInterop": true,
     "skipLibCheck": true,
-    "baseUrl": ".",
+    "types": ["node"],
+    "baseUrl": "..",
     "paths": {
-      "@/*": ["../src/*"]
+      "@/*": ["src/*"]
     }
   },
-  "include": ["src/**/*.ts", "../src/**/*.ts"]
+  "include": ["src/**/*.ts"]
 }

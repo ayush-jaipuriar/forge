@@ -518,16 +518,17 @@ Move notification eligibility and recurring summary generation into reliable sch
 
 ### Checklist
 
-- [ ] Add Functions job structure for evaluating notification eligibility on a schedule.
-- [ ] Implement weekly summary notification generation using persisted execution and analytics context.
-- [ ] Persist notification-run metadata including rule version, evaluated window, and skip reason.
-- [ ] Add idempotency protections so the same notification is not delivered repeatedly by retries.
-- [ ] Add monitoring for failed scheduled runs and delivery drift.
+- [x] Add Functions job structure for evaluating notification eligibility on a schedule.
+- [x] Implement weekly summary notification generation using persisted execution and analytics context.
+- [x] Persist notification-run metadata including rule version, evaluated window, and skip reason.
+- [x] Add idempotency protections so the same notification is not delivered repeatedly by retries.
+- [x] Add monitoring for failed scheduled runs and delivery drift.
 
 ### Testing and Documentation
 
-- [ ] Add tests for scheduled eligibility helpers and idempotent run behavior.
-- [ ] Document scheduled-run cadence, retry expectations, and failure handling.
+- [x] Add tests for scheduled eligibility helpers and idempotent run behavior.
+- [x] Document scheduled-run cadence, retry expectations, and failure handling.
+- [x] Verify the `functions/` workspace locally with dedicated typecheck, lint, and build steps after introducing scheduled notification orchestration.
 
 ### Exit Criteria
 
@@ -719,7 +720,7 @@ Close Phase 3 with an operationally credible release posture across notification
 - [x] Milestone 0 complete
 - [x] Milestone 1 complete
 - [x] Milestone 2 complete
-- [ ] Milestone 3 complete
+- [x] Milestone 3 complete
 - [ ] Milestone 4 complete
 - [ ] Milestone 5 complete
 - [ ] Milestone 6 complete

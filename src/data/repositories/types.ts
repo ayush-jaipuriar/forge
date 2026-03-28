@@ -22,7 +22,7 @@ import type {
 } from '@/domain/calendar/types'
 import type { AnySyncQueueItem } from '@/domain/execution/sync'
 import type { HealthIntegrationSnapshot } from '@/domain/health/types'
-import type { NotificationLogRecord, NotificationStateSnapshot } from '@/domain/notifications/types'
+import type { NotificationLogRecord, NotificationRunRecord, NotificationStateSnapshot } from '@/domain/notifications/types'
 import type { WorkoutScheduleEntry } from '@/domain/physical/types'
 import type { PrepTopicSeed } from '@/domain/prep/types'
 import type { DayInstance } from '@/domain/routine/types'
@@ -98,6 +98,11 @@ export interface NotificationStateRepository {
 export interface NotificationLogRepository {
   listRecent(limit?: number): Promise<NotificationLogRecord[]>
   upsert(record: NotificationLogRecord): Promise<void>
+}
+
+export interface NotificationRunRepository {
+  listRecent(limit?: number): Promise<NotificationRunRecord[]>
+  upsert(record: NotificationRunRecord): Promise<void>
 }
 
 export interface SyncDiagnosticsRepository {

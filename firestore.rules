@@ -71,6 +71,24 @@ service cloud.firestore {
           && request.resource.data.id == 'default';
         allow delete: if false;
       }
+
+      match /notificationState/{stateId} {
+        allow read: if isOwner(userId);
+        allow create, update: if isOwner(userId)
+          && isDefaultDoc(stateId)
+          && request.resource.data.id == 'default';
+        allow delete: if false;
+      }
+
+      match /notificationLog/{notificationId} {
+        allow read, create, update: if isOwner(userId);
+        allow delete: if false;
+      }
+
+      match /notificationRuns/{runId} {
+        allow read, create, update: if isOwner(userId);
+        allow delete: if false;
+      }
     }
 
     match /{document=**} {

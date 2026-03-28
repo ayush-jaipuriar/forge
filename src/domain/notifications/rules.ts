@@ -1,8 +1,7 @@
 import { getDateKey, getWeekdayFromDateKey } from '@/domain/routine/week'
 import type { NotificationCategory, NotificationDeliveryWindow, NotificationLogRecord, NotificationRuleKey, NotificationStateSnapshot, NotificationSuppressionReason } from '@/domain/notifications/types'
 import type { RecommendationUrgency } from '@/domain/recommendation/types'
-import type { OperationalAnalyticsSummary } from '@/services/analytics/operationalAnalyticsService'
-import type { ReturnTypeGetOrCreateTodayWorkspace } from '@/services/notifications/types'
+import type { NotificationOperationalSummary, NotificationTodayWorkspace } from '@/services/notifications/notificationWorkspaceService'
 
 export type NotificationCandidate = {
   id: string
@@ -22,8 +21,8 @@ export type NotificationEvaluation = {
 }
 
 type NotificationRuleContext = {
-  today: ReturnTypeGetOrCreateTodayWorkspace
-  summary: OperationalAnalyticsSummary
+  today: NotificationTodayWorkspace
+  summary: NotificationOperationalSummary
   notificationState: NotificationStateSnapshot
   notificationsEnabled: boolean
   recentLogs: NotificationLogRecord[]

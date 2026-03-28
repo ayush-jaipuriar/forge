@@ -1,6 +1,7 @@
 import { onCall } from 'firebase-functions/v2/https'
 import { onSchedule } from 'firebase-functions/v2/scheduler'
 import { generateAnalyticsSnapshotsForAllUsers, generateAnalyticsSnapshotsForUser } from './analytics/pipeline.js'
+import { evaluateNotificationsForAllUsers, evaluateNotificationsForUser } from './notifications/pipeline.js'
 
 export const generateUserAnalyticsSnapshots = onCall(
   {
@@ -22,6 +23,30 @@ export const generateScheduledAnalyticsSnapshots = onSchedule(
     timeZone: 'Asia/Kolkata',
   },
   async () => {
-    return generateAnalyticsSnapshotsForAllUsers()
+    await generateAnalyticsSnapshotsForAllUsers()
+  },
+)
+
+export const evaluateUserNotifications = onCall(
+  {
+    region: 'asia-south1',
+  },
+  async (request) => {
+    if (!request.auth?.uid) {
+      throw new Error('Authentication is required to evaluate notifications.')
+    }
+
+    return evaluateNotificationsForUser(request.auth.uid)
+  },
+)
+
+export const evaluateScheduledNotifications = onSchedule(
+  {
+    region: 'asia-south1',
+    schedule: '*/30 * * * *',
+    timeZone: 'Asia/Kolkata',
+  },
+  async () => {
+    await evaluateNotificationsForAllUsers()
   },
 )
