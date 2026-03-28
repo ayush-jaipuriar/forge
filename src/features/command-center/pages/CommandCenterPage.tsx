@@ -6,10 +6,14 @@ import ErrorOutlineRoundedIcon from '@mui/icons-material/ErrorOutlineRounded'
 import { SectionHeader } from '@/components/common/SectionHeader'
 import { SurfaceCard } from '@/components/common/SurfaceCard'
 import { analyticsRollingWindowKeys, type AnalyticsRollingWindowKey } from '@/domain/analytics/types'
+import { hasMeaningfulSleepPerformanceComparison } from '@/domain/analytics/chartData'
 import { AnalyticsMetricTile } from '@/features/command-center/components/AnalyticsMetricTile'
 import { AnalyticsStateNotice } from '@/features/command-center/components/AnalyticsStateNotice'
 import { ChartCard } from '@/features/command-center/components/ChartCard'
+import { ComparisonBars } from '@/features/command-center/components/ComparisonBars'
+import { CurveChart } from '@/features/command-center/components/CurveChart'
 import { DistributionBars } from '@/features/command-center/components/DistributionBars'
+import { HeatmapCalendar } from '@/features/command-center/components/HeatmapCalendar'
 import { InsightCard } from '@/features/command-center/components/InsightCard'
 import { MiniTrendChart } from '@/features/command-center/components/MiniTrendChart'
 import { ProjectionPanel } from '@/features/command-center/components/ProjectionPanel'
@@ -35,6 +39,7 @@ export function CommandCenterPage() {
 
     return { label: 'Pattern window ready', color: 'success' as const }
   }, [data])
+  const sleepComparisonReady = hasMeaningfulSleepPerformanceComparison(data?.sleepPerformanceCorrelation ?? [])
 
   if (isError) {
     return (
@@ -135,6 +140,17 @@ export function CommandCenterPage() {
             <Grid container spacing={2.5}>
               <Grid size={{ xs: 12, lg: 7 }}>
                 <ChartCard
+                  eyebrow="Projection"
+                  title="Projected readiness curve"
+                  description="This is the lead chart in the Command Center because pace toward the target date is the main strategic question."
+                  tone="gold"
+                  state={data.readinessCurve.length === 0 ? 'insufficientData' : isStale ? 'stale' : 'ready'}
+                >
+                  <CurveChart data={data.readinessCurve} tone="gold" />
+                </ChartCard>
+              </Grid>
+              <Grid size={{ xs: 12, lg: 5 }}>
+                <ChartCard
                   eyebrow="Trend"
                   title="Daily score rhythm"
                   description="Projected score bars with earned-score markers, so drift and recoverability stay visible at the same time."
@@ -144,6 +160,9 @@ export function CommandCenterPage() {
                   <MiniTrendChart data={data.scoreTrend} tone="gold" secondaryLabel="earned score" />
                 </ChartCard>
               </Grid>
+            </Grid>
+
+            <Grid container spacing={2.5}>
               <Grid size={{ xs: 12, lg: 5 }}>
                 <ChartCard
                   eyebrow="Trend"
@@ -155,18 +174,81 @@ export function CommandCenterPage() {
                   <MiniTrendChart data={data.deepWorkTrend} tone="ember" secondaryLabel="prep hours" />
                 </ChartCard>
               </Grid>
+              <Grid size={{ xs: 12, lg: 7 }}>
+                <ChartCard
+                  eyebrow="Prep"
+                  title="Prep hours by topic"
+                  description="Cumulative tracked topic hours from the current prep-progress model. This is honest about being topic-state-driven rather than fully event-timestamped history."
+                  tone="ember"
+                  state={data.prepTopicHours.length === 0 ? 'insufficientData' : isStale ? 'stale' : 'ready'}
+                >
+                  <DistributionBars
+                    data={data.prepTopicHours.map((entry) => ({
+                      key: entry.key,
+                      label: `${entry.label} · ${entry.domain}`,
+                      value: entry.hours,
+                      secondaryValue: undefined,
+                      percent: undefined,
+                    }))}
+                    tone="ember"
+                    valueLabel="hours"
+                  />
+                </ChartCard>
+              </Grid>
+            </Grid>
+
+            <Grid container spacing={2.5}>
+              <Grid size={{ xs: 12, lg: 6 }}>
+                <ChartCard
+                  eyebrow="Sleep"
+                  title="Sleep vs performance"
+                  description="Average prep and projected score grouped by logged sleep outcomes. This only becomes a true comparison once both met and missed sleep buckets exist."
+                  tone="steel"
+                  state={sleepComparisonReady ? (isStale ? 'stale' : 'ready') : 'insufficientData'}
+                  emptyTitle="Need both sleep-met and sleep-missed days"
+                  emptyDescription="Logged sleep data is still too one-sided to support a meaningful comparison. Unknown sleep entries can add context, but they should not stand in for a real comparison bucket."
+                >
+                  <ComparisonBars
+                    data={data.sleepPerformanceCorrelation}
+                    tone="steel"
+                    primaryLabel="prep"
+                    secondaryLabel="score"
+                  />
+                </ChartCard>
+              </Grid>
+              <Grid size={{ xs: 12, lg: 6 }}>
+                <ChartCard
+                  eyebrow="Context"
+                  title="WFO vs WFH comparison"
+                  description="This view compares execution quality across the two canonical workday shapes where Phase 1 data is actually structured enough to support it."
+                  tone="gold"
+                  state={data.wfoWfhComparison.length < 2 ? 'insufficientData' : isStale ? 'stale' : 'ready'}
+                >
+                  <ComparisonBars
+                    data={data.wfoWfhComparison}
+                    tone="gold"
+                    primaryLabel="score"
+                    secondaryLabel="deep"
+                  />
+                </ChartCard>
+              </Grid>
             </Grid>
 
             <Grid container spacing={2.5}>
               <Grid size={{ xs: 12, lg: 6 }}>
                 <ChartCard
                   eyebrow="Pressure"
-                  title="Most-missed time windows"
-                  description="Higher bars mean more skipped blocks in that time band. This is one of the first places hidden schedule friction should surface."
+                  title="Time-window execution reliability"
+                  description="This is currently a completion-stability view by time band. It highlights where blocks are most likely to land or drift without claiming deeper cognitive-performance scoring yet."
                   tone="critical"
-                  state={data.timeBandPressure.length === 0 ? 'insufficientData' : isStale ? 'stale' : 'ready'}
+                  state={data.timeWindowPerformance.length === 0 ? 'insufficientData' : isStale ? 'stale' : 'ready'}
                 >
-                  <DistributionBars data={data.timeBandPressure} tone="critical" valueLabel="skips" />
+                  <ComparisonBars
+                    data={data.timeWindowPerformance}
+                    tone="critical"
+                    primaryLabel="% complete"
+                    secondaryLabel="% skipped"
+                  />
                 </ChartCard>
               </Grid>
               <Grid size={{ xs: 12, lg: 6 }}>
@@ -178,6 +260,73 @@ export function CommandCenterPage() {
                   state={data.prepDomainBalance.length === 0 ? 'insufficientData' : isStale ? 'stale' : 'ready'}
                 >
                   <DistributionBars data={data.prepDomainBalance} tone="steel" valueLabel="hours" />
+                </ChartCard>
+              </Grid>
+            </Grid>
+
+            <Grid container spacing={2.5}>
+              <Grid size={{ xs: 12, lg: 6 }}>
+                <ChartCard
+                  eyebrow="Recovery"
+                  title="Gym vs productivity"
+                  description="Workout-complete days versus workout-expected days that drifted. This is correlation framing, not causal proof."
+                  tone="success"
+                  state={
+                    data.workoutProductivityCorrelation.length < 2 ? 'insufficientData' : isStale ? 'stale' : 'ready'
+                  }
+                >
+                  <ComparisonBars
+                    data={data.workoutProductivityCorrelation}
+                    tone="success"
+                    primaryLabel="prep"
+                    secondaryLabel="score"
+                  />
+                </ChartCard>
+              </Grid>
+              <Grid size={{ xs: 12, lg: 6 }}>
+                <ChartCard
+                  eyebrow="Density"
+                  title="Daily completion heatmap"
+                  description="A six-week execution-density view for seeing clumps of drift, strong recovery runs, and dead zones at a glance."
+                  tone="ember"
+                  state={
+                    data.completionHeatmap.every((cell) => cell.intensity === 0)
+                      ? 'insufficientData'
+                      : isStale
+                        ? 'stale'
+                        : 'ready'
+                  }
+                >
+                  <HeatmapCalendar cells={data.completionHeatmap} tone="ember" />
+                </ChartCard>
+              </Grid>
+            </Grid>
+
+            <Grid container spacing={2.5}>
+              <Grid size={{ xs: 12, lg: 6 }}>
+                <ChartCard
+                  eyebrow="Streak"
+                  title="Execution streak calendar"
+                  description="This is a Milestone 5 precursor to the formal streak engine: it shows strong execution days using a clear temporary threshold instead of pretending the full streak system already exists."
+                  tone="gold"
+                  state={
+                    data.streakCalendar.cells.every((cell) => cell.status === 'none')
+                      ? 'insufficientData'
+                      : isStale
+                        ? 'stale'
+                        : 'ready'
+                  }
+                >
+                  <Stack spacing={1.5}>
+                    <HeatmapCalendar cells={data.streakCalendar.cells} tone="gold" />
+                    <Stack direction="row" spacing={1} useFlexGap flexWrap="wrap">
+                      <Chip label={`Current streak ${data.streakCalendar.currentStreak}`} size="small" />
+                      <Chip label={`Longest streak ${data.streakCalendar.longestStreak}`} size="small" />
+                    </Stack>
+                    <Typography variant="body2" color="text.secondary">
+                      {data.streakCalendar.thresholdLabel}
+                    </Typography>
+                  </Stack>
                 </ChartCard>
               </Grid>
             </Grid>

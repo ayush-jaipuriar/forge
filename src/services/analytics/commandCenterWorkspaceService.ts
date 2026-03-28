@@ -1,6 +1,25 @@
+import { forgePrepTaxonomy } from '@/data/seeds'
 import type { AnalyticsBreakdownDatum } from '@/domain/analytics/types'
 import { analyticsRollingWindowKeys, type AnalyticsRollingWindowKey } from '@/domain/analytics/types'
+import {
+  buildCompletionHeatmap,
+  buildDeepBlockTrendChart,
+  buildExecutionStreakCalendar,
+  buildPrepTopicHoursChart,
+  buildProjectionCurveChart,
+  buildScoreTrendChart,
+  buildSleepPerformanceCorrelation,
+  buildTimeWindowPerformance,
+  buildWfoWfhComparison,
+  buildWorkoutProductivityCorrelation,
+  type AnalyticsComparisonDatum,
+  type AnalyticsCurveDatum,
+  type AnalyticsHeatmapCell,
+  type AnalyticsStreakCalendar,
+  type AnalyticsTopicHoursDatum,
+} from '@/domain/analytics/chartData'
 import { localDayInstanceRepository, localSettingsRepository } from '@/data/local'
+import { mergePrepTopicProgress } from '@/domain/prep/selectors'
 import type { PrepDomainKey } from '@/domain/prep/types'
 import { generateAnalyticsSnapshotBundle } from '@/services/analytics/snapshotGeneration'
 import { getDateKey } from '@/domain/routine/week'
@@ -45,6 +64,14 @@ export type CommandCenterWorkspace = {
   trackedDays: number
   sourceLabel: string
   metrics: CommandCenterMetricCard[]
+  readinessCurve: AnalyticsCurveDatum[]
+  prepTopicHours: AnalyticsTopicHoursDatum[]
+  sleepPerformanceCorrelation: AnalyticsComparisonDatum[]
+  wfoWfhComparison: AnalyticsComparisonDatum[]
+  timeWindowPerformance: AnalyticsComparisonDatum[]
+  completionHeatmap: AnalyticsHeatmapCell[]
+  streakCalendar: AnalyticsStreakCalendar
+  workoutProductivityCorrelation: AnalyticsComparisonDatum[]
   scoreTrend: CommandCenterTrendPoint[]
   deepWorkTrend: CommandCenterTrendPoint[]
   timeBandPressure: AnalyticsBreakdownDatum[]
@@ -61,6 +88,7 @@ export async function getCommandCenterWorkspace(
   const anchorDateKey = getDateKey(anchorDate)
   const settings = await localSettingsRepository.getDefault()
   const dayInstances = await localDayInstanceRepository.listAll()
+  const topicRecords = mergePrepTopicProgress(forgePrepTaxonomy, settings.prepTopicProgress)
   const bundle = generateAnalyticsSnapshotBundle({
     dayInstances,
     settings,
@@ -97,15 +125,23 @@ export async function getCommandCenterWorkspace(
       projectionStatusLabel: bundle.projection.statusLabel,
       dataState,
     }),
-    scoreTrend: factsInWindow.slice(-10).map((fact) => ({
-      label: fact.date.slice(5),
-      value: fact.projectedScore,
-      secondaryValue: fact.earnedScore,
+    readinessCurve: buildProjectionCurveChart(bundle.projection),
+    prepTopicHours: buildPrepTopicHoursChart(topicRecords),
+    sleepPerformanceCorrelation: buildSleepPerformanceCorrelation(factsInWindow),
+    wfoWfhComparison: buildWfoWfhComparison(factsInWindow),
+    timeWindowPerformance: buildTimeWindowPerformance(factsInWindow),
+    completionHeatmap: buildCompletionHeatmap(factsInWindow, anchorDateKey),
+    streakCalendar: buildExecutionStreakCalendar(factsInWindow, anchorDateKey),
+    workoutProductivityCorrelation: buildWorkoutProductivityCorrelation(factsInWindow),
+    scoreTrend: buildScoreTrendChart(factsInWindow).map((point) => ({
+      label: point.label,
+      value: point.value,
+      secondaryValue: point.target,
     })),
-    deepWorkTrend: factsInWindow.slice(-10).map((fact) => ({
-      label: fact.date.slice(5),
-      value: fact.completedDeepBlocks,
-      secondaryValue: fact.prepMinutes / 60,
+    deepWorkTrend: buildDeepBlockTrendChart(factsInWindow).map((point) => ({
+      label: point.label,
+      value: point.value,
+      secondaryValue: point.target,
     })),
     timeBandPressure: [...snapshot.breakdowns.byTimeBand].sort((left, right) => right.value - left.value),
     prepDomainBalance,

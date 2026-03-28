@@ -160,6 +160,14 @@ This document captures the Phase 1 architectural baseline that implementation sh
 - the route is now wired directly into the main shell and navigation, which means analytics is no longer only a future document topic; it is a real operator-facing surface with a desktop-first information architecture
 - the first review pass tightened two important trust boundaries: query failures now render as explicit error states instead of infinite loading, and the prep-domain panel now derives a window-scoped approximation from historical facts instead of presenting global current-state prep totals as if they were rolling-window history
 
+## Phase 2 Milestone 5 Core Charts
+
+- the Command Center now renders the PRS-priority chart stack in a real form instead of only a shell: projected readiness curve, prep topic hours, sleep-performance comparison, WFO vs WFH comparison, best-performing time-window view, completion heatmap, deep-block trend, gym-productivity comparison, streak calendar, and score trend
+- the semantic chart-derivation layer now lives in [chartData.ts](/Users/ayushjaipuriar/Documents/GitHub/forge/src/domain/analytics/chartData.ts), which matters because chart meaning is now testable and reusable instead of being hidden in ad hoc page code
+- Milestone 5 is intentionally mixed in its data sources: some charts are truly rolling-window fact views, while prep topic hours still come from cumulative topic progress; the repo now documents that distinction explicitly instead of flattening both into one “hours” story
+- the heatmap and streak calendar deliberately avoid pretending the full disciplined gamification system already exists; they provide a clear operational precursor while leaving the formal streak engine for Milestone 7
+- the first Milestone 5 review pass also tightened three trust boundaries: unknown sleep logging no longer qualifies as a meaningful sleep-performance comparison on its own, the time-window chart is now framed explicitly as execution reliability rather than deeper cognitive scoring, and streak-cell emphasis now uses the same threshold as streak counting
+
 ### Current Conflict Strategy and Limits
 
 - the current foundation favors predictable local continuity over sophisticated merge behavior

@@ -127,3 +127,5 @@ Desktop is the native mode for Command Center. Mobile may stack panels, but it s
 ## Why This Matters
 
 Milestone 5 will add deeper charts and projection surfaces. The Command Center will stay coherent only if later work reuses these primitives and tone rules instead of inventing a fresh layout for every card.
+
+For the actual metric semantics behind the current chart stack, see [docs/command-center-metric-definitions.md](/Users/ayushjaipuriar/Documents/GitHub/forge/docs/command-center-metric-definitions.md).

@@ -778,7 +778,7 @@ Use this section as the live implementation tracker for Phase 2.
 - [x] Milestone 2 complete
 - [x] Milestone 3 complete
 - [x] Milestone 4 complete
-- [ ] Milestone 5 complete
+- [x] Milestone 5 complete
 - [ ] Milestone 6 complete
 - [ ] Milestone 7 complete
 - [ ] Milestone 8 complete
@@ -802,3 +802,6 @@ Use this section as the live implementation tracker for Phase 2.
 - Implemented Milestone 4 Command Center shell: added the real `/command-center` route, a dedicated workspace hook and application service, desktop-first analytics layout, reusable visualization primitives, and honest loading/insufficient-data/stale states that make the analytics cockpit usable before the heavier chart milestone begins.
 - Documented the visualization rules in a dedicated Command Center doc so future chart work reuses the same tone system, state handling, and panel hierarchy instead of inventing a new dashboard style card by card.
 - Tightened the first Milestone 4 review findings: Command Center query errors now surface explicitly instead of masquerading as loading, the projection panel no longer uses a success tone for insufficient-data states, and the prep-domain attention panel is now window-scoped and labeled honestly.
+- Implemented Milestone 5 core chart surfaces: added a dedicated analytics chart-data derivation layer, expanded the Command Center workspace with projected readiness, sleep/performance, WFO/WFH, time-window, heatmap, streak, workout-productivity, and topic-hour datasets, and rebuilt the page around the PRS chart priority order instead of generic panel filling.
+- Added chart-data tests and a dedicated metric-definition doc so the semantics behind terms like “strong day,” “prep topic hours,” “sleep vs performance,” and “best-performing time window” stay stable as later insight and gamification milestones build on top of them.
+- Tightened the Milestone 5 review findings: sleep comparison now requires both logged met and missed buckets before the chart is treated as meaningful, the time-window panel is framed as execution reliability instead of overclaiming deeper performance semantics, and streak-cell visuals now match the documented streak threshold exactly.
