@@ -1,6 +1,11 @@
 import { forgePrepTaxonomy, forgeRoutine, forgeWorkoutSchedule } from '@/data/seeds'
 import { localDayInstanceRepository, localSettingsRepository } from '@/data/local'
 import { googleCalendarScaffoldingService } from '@/services/calendar/calendarIntegrationService'
+import {
+  buildScheduleOperationalSignals,
+  buildTodayOperationalSignals,
+  getOperationalAnalyticsSummary,
+} from '@/services/analytics/operationalAnalyticsService'
 import { getWorkoutForDate } from '@/domain/physical/selectors'
 import { getCurrentBlock, getTopPriorityBlocks } from '@/domain/routine/selectors'
 import { getFocusedPrepDomains, mergePrepTopicProgress } from '@/domain/prep/selectors'
@@ -73,6 +78,7 @@ export async function getOrCreateTodayWorkspace(date = new Date()) {
     sleepStatus: dailySignals.sleepStatus,
     energyStatus: dailySignals.energyStatus,
   })
+  const operationalAnalytics = await getOperationalAnalyticsSummary(date)
 
   return {
     dateKey,
@@ -92,6 +98,12 @@ export async function getOrCreateTodayWorkspace(date = new Date()) {
     sleepDurationHours: dailySignals.sleepDurationHours,
     scorePreview,
     fallbackSuggestion,
+    operationalSignals: buildTodayOperationalSignals({
+      summary: operationalAnalytics,
+      dayInstance,
+      currentBlock,
+      scorePreview,
+    }),
     calendarContext,
     recommendation: getNextActionRecommendation({
       dayInstance,
@@ -136,17 +148,32 @@ export async function getOrCreateWeeklyWorkspace(anchorDate = new Date()) {
 
   await localDayInstanceRepository.upsertMany(mergedWeek)
 
-  return mergedWeek.map((instance) => ({
-    ...instance,
-    dateLabel: formatDateLabel(instance.date),
-    weekdayLabel: formatWeekdayLabel(instance.date),
-    baseDayType: getScheduledDayTypeForDate(instance.date, forgeRoutine),
-    isDayTypeOverridden: (dayTypesByDate[instance.date] ?? getScheduledDayTypeForDate(instance.date, forgeRoutine)) !== getScheduledDayTypeForDate(instance.date, forgeRoutine),
-    allowedDayTypes: getAllowedDayTypeOverrides(instance.date).map((dayType) => ({
-      value: dayType,
-      label: dayTypeLabels[dayType],
+  const operationalAnalytics = await getOperationalAnalyticsSummary(anchorDate)
+  const scheduleSignals = buildScheduleOperationalSignals({
+    summary: operationalAnalytics,
+    weekDays: mergedWeek.map((instance) => ({
+      date: instance.date,
+      dayType: instance.dayType,
+      weekday: instance.weekday,
+      dayMode: instance.dayMode,
     })),
-  }))
+  })
+
+  return {
+    globalSignals: scheduleSignals.globalSignals,
+    days: mergedWeek.map((instance) => ({
+      ...instance,
+      dateLabel: formatDateLabel(instance.date),
+      weekdayLabel: formatWeekdayLabel(instance.date),
+      baseDayType: getScheduledDayTypeForDate(instance.date, forgeRoutine),
+      isDayTypeOverridden: (dayTypesByDate[instance.date] ?? getScheduledDayTypeForDate(instance.date, forgeRoutine)) !== getScheduledDayTypeForDate(instance.date, forgeRoutine),
+      allowedDayTypes: getAllowedDayTypeOverrides(instance.date).map((dayType) => ({
+        value: dayType,
+        label: dayTypeLabels[dayType],
+      })),
+      operationalSignals: scheduleSignals.daySignalsByDate[instance.date] ?? [],
+    })),
+  }
 }
 
 export async function persistDayInstanceLocally(instance: DayInstance) {

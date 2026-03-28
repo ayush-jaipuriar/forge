@@ -1,6 +1,7 @@
 import CalendarMonthRoundedIcon from '@mui/icons-material/CalendarMonthRounded'
 import EventRepeatRoundedIcon from '@mui/icons-material/EventRepeatRounded'
 import { Button, Chip, CircularProgress, Grid, Stack, Typography } from '@mui/material'
+import { OperationalSignalCard } from '@/components/common/OperationalSignalCard'
 import { SectionHeader } from '@/components/common/SectionHeader'
 import { SurfaceCard } from '@/components/common/SurfaceCard'
 import { StatusBadge } from '@/components/status/StatusBadge'
@@ -13,13 +14,13 @@ import { useWeeklyWorkspace } from '@/features/schedule/hooks/useWeeklyWorkspace
 import { useUpdateDayTypeOverride } from '@/features/schedule/hooks/useUpdateDayTypeOverride'
 
 export function SchedulePage() {
-  const { data: weekInstances, isLoading } = useWeeklyWorkspace()
+  const { data: weekWorkspace, isLoading } = useWeeklyWorkspace()
   const syncStatus = useUiStore((state) => state.syncStatus)
   const updateDayTypeOverrideMutation = useUpdateDayTypeOverride()
   const updateDayModeMutation = useUpdateDayMode()
   const updateBlockStatusMutation = useUpdateBlockStatus()
 
-  if (isLoading || !weekInstances) {
+  if (isLoading || !weekWorkspace) {
     return (
       <SurfaceCard title="Loading weekly routine" description="Forge is restoring the locally cached week view.">
         <Stack alignItems="center" py={2}>
@@ -28,6 +29,8 @@ export function SchedulePage() {
       </SurfaceCard>
     )
   }
+
+  const { days: weekInstances, globalSignals } = weekWorkspace
 
   return (
     <Stack spacing={3}>
@@ -47,6 +50,25 @@ export function SchedulePage() {
           When calendar scaffolding becomes real, this area should show whether outside commitments are mirrored into the operational week without letting external events rewrite the routine itself.
         </Typography>
       </SurfaceCard>
+      {globalSignals.length > 0 ? (
+        <SurfaceCard
+          eyebrow="Planning Pressure"
+          title="What this week needs from the schedule"
+          description="These are the highest-value planning signals from the analytics layer, translated into schedule language instead of dashboard language."
+        >
+          <Stack spacing={1.25}>
+            {globalSignals.map((signal) => (
+              <OperationalSignalCard
+                key={signal.id}
+                title={signal.title}
+                detail={signal.detail}
+                tone={signal.tone}
+                badge={signal.badge}
+              />
+            ))}
+          </Stack>
+        </SurfaceCard>
+      ) : null}
       <Grid container spacing={2}>
         {weekInstances.map((day) => (
           <Grid key={day.id} size={{ xs: 12, md: 6, xl: 4 }}>
@@ -140,6 +162,19 @@ export function SchedulePage() {
                   <Typography variant="overline" color="primary.light">
                     Expectations
                   </Typography>
+                  {day.operationalSignals.length > 0 ? (
+                    <Stack spacing={1}>
+                      {day.operationalSignals.map((signal) => (
+                        <OperationalSignalCard
+                          key={signal.id}
+                          title={signal.title}
+                          detail={signal.detail}
+                          tone={signal.tone}
+                          badge={signal.badge}
+                        />
+                      ))}
+                    </Stack>
+                  ) : null}
                   {day.expectationSummary.slice(0, 2).map((expectation) => (
                     <Typography key={expectation} variant="body2" color="text.secondary">
                       {expectation}

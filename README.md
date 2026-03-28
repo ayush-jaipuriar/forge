@@ -14,6 +14,7 @@ Phase 1 now exists across the core domain, UI, persistence, scoring, recommendat
 - Phase 2 Command Center with PRS-priority charts, projection framing, and risk/insight panels
 - Phase 2 modular pattern-detection engine with confidence-aware warnings, insights, and coach summaries
 - Phase 2 disciplined gamification layer with formal streaks, deficit-driven missions, and anti-padding momentum
+- Phase 2 operational analytics surfacing across Today, Readiness, and Schedule with shared pressure signals
 - future-ready Google Calendar scaffolding with typed boundaries but no live Calendar sync yet
 
 ## Setup
@@ -55,6 +56,7 @@ npm run preview -- --host 127.0.0.1 --port 4173
 - [Command Center Metric Definitions](/Users/ayushjaipuriar/Documents/GitHub/forge/docs/command-center-metric-definitions.md)
 - [Analytics Insight Rules](/Users/ayushjaipuriar/Documents/GitHub/forge/docs/analytics-insight-rules.md)
 - [Analytics Gamification Rules](/Users/ayushjaipuriar/Documents/GitHub/forge/docs/analytics-gamification-rules.md)
+- [Analytics Operational Signals](/Users/ayushjaipuriar/Documents/GitHub/forge/docs/analytics-operational-signals.md)
 - [Firebase Setup](/Users/ayushjaipuriar/Documents/GitHub/forge/docs/firebase-setup.md)
 - [Deployment Guide](/Users/ayushjaipuriar/Documents/GitHub/forge/docs/deployment-guide.md)
 - [Google Calendar Scaffolding](/Users/ayushjaipuriar/Documents/GitHub/forge/docs/google-calendar-scaffolding.md)

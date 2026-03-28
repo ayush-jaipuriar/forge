@@ -641,16 +641,16 @@ Push the most important analytics back into operational surfaces so insights cha
 
 ### Checklist
 
-- [ ] Surface behind-target risk on Readiness.
-- [ ] Surface major drift or streak-break risk on Today without overwhelming execution flow.
-- [ ] Surface WFO/WFH and weekend utilization pressure where it affects planning decisions.
-- [ ] Add “you are behind” and “protect this window” style alerts with serious tone.
-- [ ] Ensure Command Center remains the source of depth while operational screens receive only the highest-value signals.
+- [x] Surface behind-target risk on Readiness.
+- [x] Surface major drift or streak-break risk on Today without overwhelming execution flow.
+- [x] Surface WFO/WFH and weekend utilization pressure where it affects planning decisions.
+- [x] Add “you are behind” and “protect this window” style alerts with serious tone.
+- [x] Ensure Command Center remains the source of depth while operational screens receive only the highest-value signals.
 
 ### Testing and Documentation
 
-- [ ] Add integration tests for shared warning consumers where feasible.
-- [ ] Document which warnings are global versus Command-Center-only.
+- [x] Add integration tests for shared warning consumers where feasible.
+- [x] Document which warnings are global versus Command-Center-only.
 
 ### Exit Criteria
 
@@ -781,7 +781,7 @@ Use this section as the live implementation tracker for Phase 2.
 - [x] Milestone 5 complete
 - [x] Milestone 6 complete
 - [x] Milestone 7 complete
-- [ ] Milestone 8 complete
+- [x] Milestone 8 complete
 - [ ] Milestone 9 complete
 
 ### Current Iteration Notes
@@ -811,3 +811,6 @@ Use this section as the live implementation tracker for Phase 2.
 - Implemented Milestone 7 disciplined gamification: added a dedicated derivation engine for formal streak categories, break reasons, deficit-driven weekly missions, momentum scoring, and operating-posture framing in the analytics domain instead of treating Command Center as a one-off dashboard surface.
 - Expanded the Command Center workspace and page so streaks, momentum, and missions are rendered from shared derived state, with explicit anti-padding copy and no toy-like reward framing.
 - Added gamification tests plus dedicated guardrail documentation so the repo now explains how momentum avoids low-value inflation and why missions are chosen from deficits rather than easy completions.
+- Implemented Milestone 8 operational surfacing: added a shared operational analytics service that reuses the same projection, insight, and gamification semantics as Command Center, then pushed compact pressure signals into Today, Readiness, and Schedule instead of leaving analytics as a passive desktop-only report.
+- Added a reusable operational signal card and wired Today to show behind-target, protect-this-window, streak-break, and mission pressure; wired Readiness to show pace and breadth intervention signals; and wired Schedule to show week-level planning pressure plus date-specific protection tags.
+- Added focused operational-signal tests and a dedicated signal-boundary doc so the repo now states clearly which alerts belong globally, which belong on operational screens, and which should stay inside Command Center depth.

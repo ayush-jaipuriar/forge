@@ -187,6 +187,15 @@ This document captures the Phase 1 architectural baseline that implementation sh
 - the Command Center workspace in [commandCenterWorkspaceService.ts](/Users/ayushjaipuriar/Documents/GitHub/forge/src/services/analytics/commandCenterWorkspaceService.ts) now exposes `momentum`, `streaks`, `missions`, and an operating-posture summary, while the page consumes them through reusable presentation components instead of embedding derivation logic into React
 - the old “precursor” streak calendar is now tied to the formal streak engine, and Milestone 7 adds dedicated components for momentum, mission progress, and category streak summaries so the visual layer can deepen without inventing new business meaning card by card
 
+## Phase 2 Milestone 8 Operational Analytics Surfacing
+
+- the shared cross-screen analytics seam now lives in [operationalAnalyticsService.ts](/Users/ayushjaipuriar/Documents/GitHub/forge/src/services/analytics/operationalAnalyticsService.ts), which matters because Today, Readiness, and Schedule are now consuming the same projection, warning, and mission meaning instead of inventing their own screen-local interpretations
+- Today now receives compact execution-layer pressure through [TodayPage.tsx](/Users/ayushjaipuriar/Documents/GitHub/forge/src/features/today/pages/TodayPage.tsx): behind-target risk, protect-this-window prompts, streak-break risk where relevant, and the top weekly mission when it changes immediate behavior
+- Readiness now surfaces intervention-layer signals through [ReadinessPage.tsx](/Users/ayushjaipuriar/Documents/GitHub/forge/src/features/readiness/pages/ReadinessPage.tsx), which is the right place for pace-risk and breadth-risk alerts because that page already owns the target-date interpretation
+- Schedule now carries week-level planning pressure and date-scoped protection tags through [SchedulePage.tsx](/Users/ayushjaipuriar/Documents/GitHub/forge/src/features/schedule/pages/SchedulePage.tsx), which keeps WFO continuity and weekend utilization warnings close to the planning decisions they should influence
+- the reusable [OperationalSignalCard.tsx](/Users/ayushjaipuriar/Documents/GitHub/forge/src/components/common/OperationalSignalCard.tsx) intentionally keeps the UI layer small and serious; the design goal is to make these warnings feel like operational pressure, not like mini dashboard widgets
+- this milestone is disciplined about scope: operational pages get compressed, high-value signals only, while Command Center remains the place for deeper chart context and broader pattern explanation
+
 ### Current Conflict Strategy and Limits
 
 - the current foundation favors predictable local continuity over sophisticated merge behavior

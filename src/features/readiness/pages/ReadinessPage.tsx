@@ -1,6 +1,7 @@
 import TrendingUpRoundedIcon from '@mui/icons-material/TrendingUpRounded'
 import { CircularProgress, Grid, Stack, Typography } from '@mui/material'
 import { MetricTile } from '@/components/common/MetricTile'
+import { OperationalSignalCard } from '@/components/common/OperationalSignalCard'
 import { SectionHeader } from '@/components/common/SectionHeader'
 import { SurfaceCard } from '@/components/common/SurfaceCard'
 import { useReadinessWorkspace } from '@/features/readiness/hooks/useReadinessWorkspace'
@@ -18,7 +19,7 @@ export function ReadinessPage() {
     )
   }
 
-  const { readinessSnapshot } = data
+  const { operationalSignals, readinessSnapshot } = data
 
   return (
     <Stack spacing={3}>
@@ -49,6 +50,26 @@ export function ReadinessPage() {
           <Typography color="text.secondary">{readinessSnapshot.paceSnapshot.paceLabel}</Typography>
         </Stack>
       </SurfaceCard>
+
+      {operationalSignals.length > 0 ? (
+        <SurfaceCard
+          eyebrow="Intervention Layer"
+          title="Where readiness is actually under pressure"
+          description="This page should make target risk and domain weakness visible enough to act on, without forcing you back into the full Command Center every time."
+        >
+          <Stack spacing={1.25}>
+            {operationalSignals.map((signal) => (
+              <OperationalSignalCard
+                key={signal.id}
+                title={signal.title}
+                detail={signal.detail}
+                tone={signal.tone}
+                badge={signal.badge}
+              />
+            ))}
+          </Stack>
+        </SurfaceCard>
+      ) : null}
 
       <Grid container spacing={2}>
         {readinessSnapshot.domainStates.map((domain) => (

@@ -6,6 +6,7 @@ import { useEffect, useState } from 'react'
 import { Box, Button, Chip, CircularProgress, Grid, Stack, Typography } from '@mui/material'
 import { SectionHeader } from '@/components/common/SectionHeader'
 import { MetricTile } from '@/components/common/MetricTile'
+import { OperationalSignalCard } from '@/components/common/OperationalSignalCard'
 import { SurfaceCard } from '@/components/common/SurfaceCard'
 import { StatusBadge } from '@/components/status/StatusBadge'
 import { SyncIndicator } from '@/components/status/SyncIndicator'
@@ -59,7 +60,7 @@ export function TodayPage() {
     )
   }
 
-  const { currentBlock, dateLabel, dayInstance, energyStatus, fallbackSuggestion, focusedPrepDomains, recommendation, readinessSnapshot, scorePreview, sleepStatus, topPriorities, weekdayLabel, workoutState } = data
+  const { currentBlock, dateLabel, dayInstance, energyStatus, fallbackSuggestion, focusedPrepDomains, operationalSignals, recommendation, readinessSnapshot, scorePreview, sleepStatus, topPriorities, weekdayLabel, workoutState } = data
   const activeMode = dayModeDetails[currentDayMode]
   const fallbackKey = fallbackSuggestion
     ? getFallbackKey(dayInstance.date, fallbackSuggestion.suggestedDayMode, fallbackSuggestion.explanation)
@@ -206,6 +207,26 @@ export function TodayPage() {
             }
           }}
         />
+      ) : null}
+
+      {operationalSignals.length > 0 ? (
+        <SurfaceCard
+          eyebrow="Operational Alerts"
+          title="What deserves protection right now"
+          description="These are the highest-value cross-screen analytics signals pushed back into execution mode, so the day changes because of the analytics instead of merely being reported by them."
+        >
+          <Stack spacing={1.25}>
+            {operationalSignals.map((signal) => (
+              <OperationalSignalCard
+                key={signal.id}
+                title={signal.title}
+                detail={signal.detail}
+                tone={signal.tone}
+                badge={signal.badge}
+              />
+            ))}
+          </Stack>
+        </SurfaceCard>
       ) : null}
 
       <SurfaceCard
