@@ -23,6 +23,9 @@ export type BackupStatus = (typeof backupStatuses)[number]
 export const restoreStatuses = ['pending', 'validated', 'applied', 'partial', 'failed'] as const
 export type RestoreStatus = (typeof restoreStatuses)[number]
 
+export const backupHealthStates = ['unknown', 'healthy', 'stale', 'degraded'] as const
+export type BackupHealthState = (typeof backupHealthStates)[number]
+
 export type BackupRetentionPolicy = {
   keepDaily: number
   keepWeekly: number
@@ -40,6 +43,20 @@ export type BackupSnapshotRecord = {
   checksum?: string
   byteSize?: number
   sourceRecordCount: number
+}
+
+export type BackupOperationsSnapshot = {
+  id: 'default'
+  healthState: BackupHealthState
+  retentionPolicy: BackupRetentionPolicy
+  scheduledCadenceHours: number
+  latestBackupId?: string
+  latestSuccessfulBackupAt?: string
+  latestFailureAt?: string
+  latestFailureMessage?: string
+  staleAfterHours: number
+  pendingDeletionCount: number
+  updatedAt: string
 }
 
 export type RestoreCounts = {
@@ -102,6 +119,18 @@ export function createDefaultBackupRetentionPolicy(): BackupRetentionPolicy {
     keepDaily: 7,
     keepWeekly: 8,
     keepManual: 20,
+  }
+}
+
+export function createDefaultBackupOperationsSnapshot(): BackupOperationsSnapshot {
+  return {
+    id: 'default',
+    healthState: 'unknown',
+    retentionPolicy: createDefaultBackupRetentionPolicy(),
+    scheduledCadenceHours: 24,
+    staleAfterHours: 36,
+    pendingDeletionCount: 0,
+    updatedAt: new Date().toISOString(),
   }
 }
 

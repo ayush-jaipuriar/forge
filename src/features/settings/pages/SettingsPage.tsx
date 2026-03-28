@@ -21,7 +21,7 @@ import { parseRestorePayloadText, type RestoreStage } from '@/services/backup/re
 export function SettingsPage() {
   const { status, user } = useAuthSession()
   const { canInstall, isInstalled, isOnline, needRefresh, offlineReady } = usePwaState()
-  const { data, isLoading } = useSettingsWorkspace()
+  const { data, isLoading } = useSettingsWorkspace(user?.uid)
   const updateNotificationPreference = useUpdateNotificationPreference()
   const requestNotificationPermission = useRequestNotificationPermission()
   const createManualBackup = useCreateManualBackup(user)
@@ -41,7 +41,18 @@ export function SettingsPage() {
     )
   }
 
-  const { calendarConnection, featureFlags, mirroredBlockPreview, notificationState, recentBackups, recentNotificationLogs, recentRestoreJobs, settings } = data
+  const {
+    backupOperations,
+    backupSource,
+    calendarConnection,
+    featureFlags,
+    mirroredBlockPreview,
+    notificationState,
+    recentBackups,
+    recentNotificationLogs,
+    recentRestoreJobs,
+    settings,
+  } = data
 
   async function handleRestoreFileSelected(event: ChangeEvent<HTMLInputElement>) {
     const file = event.target.files?.[0]
@@ -167,14 +178,33 @@ export function SettingsPage() {
                 label={recentBackups[0]?.status ?? 'No backups yet'}
                 size="small"
                 variant="outlined"
-                color={recentBackups[0]?.status === 'ready' ? 'success' : 'default'}
+                color={
+                  backupOperations.healthState === 'healthy'
+                    ? 'success'
+                    : backupOperations.healthState === 'stale' || backupOperations.healthState === 'degraded'
+                      ? 'warning'
+                      : 'default'
+                }
               />
             }
           >
             <Stack spacing={1.25}>
               <Typography variant="body2" color="text.secondary">
-                Latest manual backup: {recentBackups[0] ? `${recentBackups[0].createdAt} · ${recentBackups[0].sourceRecordCount} records` : 'None yet.'}
+                Latest backup record: {recentBackups[0] ? `${recentBackups[0].createdAt} · ${recentBackups[0].sourceRecordCount} records` : 'None yet.'}
               </Typography>
+              <Typography variant="body2" color="text.secondary">
+                Scheduled backup health: {backupOperations.healthState}. Last successful backup:{' '}
+                {backupOperations.latestSuccessfulBackupAt ?? 'None yet'}.
+              </Typography>
+              <Typography variant="body2" color="text.secondary">
+                Retention: keep {backupOperations.retentionPolicy.keepDaily} daily, {backupOperations.retentionPolicy.keepWeekly} weekly, and {backupOperations.retentionPolicy.keepManual} manual backups.
+                Source: {backupSource}.
+              </Typography>
+              {backupOperations.latestFailureMessage ? (
+                <Alert severity="warning" variant="outlined">
+                  Latest scheduled-backup issue: {backupOperations.latestFailureMessage}
+                </Alert>
+              ) : null}
               <Stack direction={{ xs: 'column', sm: 'row' }} spacing={1} flexWrap="wrap">
                 <Button
                   variant="contained"

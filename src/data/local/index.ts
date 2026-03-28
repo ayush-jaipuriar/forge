@@ -1,3 +1,4 @@
+import { LocalBackupOperationsRepository } from '@/data/local/localBackupOperationsRepository'
 import { LocalBackupRepository } from '@/data/local/localBackupRepository'
 import { LocalDayInstanceRepository } from '@/data/local/localDayInstanceRepository'
 import { LocalExportPayloadRepository } from '@/data/local/localExportPayloadRepository'
@@ -9,6 +10,7 @@ import { LocalSyncConflictRepository } from '@/data/local/localSyncConflictRepos
 import { LocalSyncDiagnosticsRepository } from '@/data/local/localSyncDiagnosticsRepository'
 import { LocalSyncQueueRepository } from '@/data/local/localSyncQueueRepository'
 
+export const localBackupOperationsRepository = new LocalBackupOperationsRepository()
 export const localBackupRepository = new LocalBackupRepository()
 export const localDayInstanceRepository = new LocalDayInstanceRepository()
 export const localExportPayloadRepository = new LocalExportPayloadRepository()

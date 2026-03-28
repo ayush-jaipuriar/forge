@@ -11,6 +11,7 @@ import type {
   WeeklyMission,
 } from '@/domain/analytics/types'
 import type {
+  BackupOperationsSnapshot,
   BackupSnapshotRecord,
   ForgeExportPayload,
   RestoreJobRecord,
@@ -118,6 +119,11 @@ export interface SyncConflictRepository {
 export interface BackupRepository {
   listRecent(limit?: number): Promise<BackupSnapshotRecord[]>
   upsert(snapshot: BackupSnapshotRecord): Promise<void>
+}
+
+export interface BackupOperationsRepository {
+  getDefault(): Promise<BackupOperationsSnapshot | null>
+  upsert(snapshot: BackupOperationsSnapshot): Promise<void>
 }
 
 export interface RestoreJobRepository {

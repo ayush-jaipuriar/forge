@@ -1,6 +1,6 @@
 import { openDB } from 'idb'
 import type { DBSchema, IDBPDatabase } from 'idb'
-import type { BackupSnapshotRecord, ForgeExportPayload, RestoreJobRecord } from '@/domain/backup/types'
+import type { BackupOperationsSnapshot, BackupSnapshotRecord, ForgeExportPayload, RestoreJobRecord } from '@/domain/backup/types'
 import type { AnySyncQueueItem } from '@/domain/execution/sync'
 import type { NotificationLogRecord, NotificationStateSnapshot } from '@/domain/notifications/types'
 import type { DayInstance } from '@/domain/routine/types'
@@ -58,6 +58,10 @@ type ForgeDbSchema = DBSchema & {
       byCreatedAt: string
     }
   }
+  backupOperations: {
+    key: string
+    value: BackupOperationsSnapshot
+  }
   restoreJobs: {
     key: string
     value: RestoreJobRecord
@@ -79,7 +83,7 @@ const FORGE_DB_NAME = 'forge-db'
 
 export function getForgeDb() {
   if (!dbPromise) {
-    dbPromise = openDB<ForgeDbSchema>(FORGE_DB_NAME, 4, {
+    dbPromise = openDB<ForgeDbSchema>(FORGE_DB_NAME, 5, {
       upgrade(db) {
         if (!db.objectStoreNames.contains('dayInstances')) {
           const dayInstances = db.createObjectStore('dayInstances', {
@@ -135,6 +139,12 @@ export function getForgeDb() {
             keyPath: 'id',
           })
           backups.createIndex('byCreatedAt', 'createdAt')
+        }
+
+        if (!db.objectStoreNames.contains('backupOperations')) {
+          db.createObjectStore('backupOperations', {
+            keyPath: 'id',
+          })
         }
 
         if (!db.objectStoreNames.contains('restoreJobs')) {

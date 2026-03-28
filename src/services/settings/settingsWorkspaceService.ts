@@ -1,12 +1,13 @@
-import { localBackupRepository, localRestoreJobRepository, localSettingsRepository } from '@/data/local'
+import { localRestoreJobRepository, localSettingsRepository } from '@/data/local'
+import { getBackupOperationsWorkspace } from '@/services/backup/backupOperationsService'
 import { googleCalendarScaffoldingService } from '@/services/calendar/calendarIntegrationService'
 import { getNotificationStateWorkspace } from '@/services/notifications/notificationStateService'
 
-export async function getSettingsWorkspace() {
-  const [settings, notificationWorkspace, recentBackups, recentRestoreJobs] = await Promise.all([
+export async function getSettingsWorkspace(userId?: string | null) {
+  const [settings, notificationWorkspace, backupWorkspace, recentRestoreJobs] = await Promise.all([
     localSettingsRepository.getDefault(),
     getNotificationStateWorkspace(),
-    localBackupRepository.listRecent(3),
+    getBackupOperationsWorkspace(userId),
     localRestoreJobRepository.listRecent(3),
   ])
   const calendarConnection = await googleCalendarScaffoldingService.getConnectionSnapshot(settings?.calendarIntegration)
@@ -23,7 +24,9 @@ export async function getSettingsWorkspace() {
     calendarConnection,
     notificationState: notificationWorkspace.state,
     recentNotificationLogs: notificationWorkspace.recentLogs,
-    recentBackups,
+    backupOperations: backupWorkspace.operations,
+    backupSource: backupWorkspace.source,
+    recentBackups: backupWorkspace.recentBackups,
     recentRestoreJobs,
     mirroredBlockPreview,
     featureFlags: {

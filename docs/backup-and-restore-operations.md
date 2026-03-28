@@ -2,7 +2,10 @@
 
 ## Purpose
 
-This document records the Phase 3 Milestone 4 manual backup and restore foundation.
+This document records the Phase 3 backup durability model across:
+
+- Milestone 4 manual backup and restore foundation
+- Milestone 5 scheduled backups, retention, and recovery operations
 
 The key boundary is simple:
 
@@ -141,6 +144,71 @@ Current Milestone 4 intentionally does not provide:
 - restore-from-backup browser picker fed from server-side backup history
 
 Those are Milestone 5 responsibilities.
+
+## Scheduled Backup Model
+
+Forge now also has a server-orchestrated scheduled backup path through Firebase Functions.
+
+Current default behavior:
+
+- cadence: once per day at `03:30 Asia/Kolkata`
+- trigger type recorded as `scheduled`
+- full payload persisted separately from metadata so retention can prune heavy payloads without losing audit visibility
+
+The important boundary is:
+
+- scheduled backups are the continuity system
+- manual exports are still the user-controlled escape hatch
+- backup health is judged from scheduled protection, not from whether the user happened to click export recently
+
+## Current Retention Policy
+
+Default retention keeps:
+
+- `7` most recent scheduled daily backup dates
+- `8` most recent scheduled weekly backup windows beyond those daily keeps
+- `20` most recent manual backups
+
+When a backup falls outside retention:
+
+- its metadata record is marked `expired`
+- its `retentionExpiresAt` timestamp is recorded
+- its stored payload document is deleted
+
+This keeps recovery history inspectable while preventing old payload storage from growing forever.
+
+## Backup Health and Freshness
+
+Forge now tracks backup health through a dedicated backup-operations snapshot.
+
+Current default rules:
+
+- `healthy`: a successful scheduled backup exists within the freshness window
+- `stale`: the most recent successful scheduled backup is older than `36` hours
+- `degraded`: the latest scheduled run failed or no trustworthy scheduled protection exists yet
+- `unknown`: no real scheduled backup state has been established yet
+
+Settings now surfaces:
+
+- latest successful backup time
+- backup health state
+- retention-policy counts
+- latest failure message when a scheduled backup run fails
+
+When the app observes `stale` or `degraded` scheduled backup protection, it now also emits backup-domain monitoring events. That gives future operational tooling and debug subscribers a concrete signal instead of forcing them to infer risk only from stored state.
+
+## Recovery and Operational Notes
+
+Current recovery posture is:
+
+- manual restore still restores from user-provided backup JSON
+- scheduled backups create durable remote recovery records and payloads for later recovery tooling
+- restore safety still clears local queued sync items before completion so stale pre-restore writes cannot replay
+
+Current limitation:
+
+- the app does not yet expose a browser picker for server-side scheduled backup history
+- scheduled backup records are available to support later recovery UI and admin workflows, but recovery selection remains a future milestone
 
 ## Schema Compatibility
 

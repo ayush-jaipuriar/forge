@@ -580,16 +580,16 @@ Turn backups from a manual escape hatch into a durable safety system.
 
 ### Checklist
 
-- [ ] Implement scheduled backup generation through Firebase Functions or equivalent Firebase-native orchestration.
-- [ ] Define and enforce retention policy for automatic backups.
-- [ ] Surface latest backup health, freshness, and failure status in settings or operations surfaces.
-- [ ] Add restore-from-backup guidance and operational recovery notes.
-- [ ] Add monitoring for missed backup jobs, stale backups, and retention cleanup failures.
+- [x] Implement scheduled backup generation through Firebase Functions or equivalent Firebase-native orchestration.
+- [x] Define and enforce retention policy for automatic backups.
+- [x] Surface latest backup health, freshness, and failure status in settings or operations surfaces.
+- [x] Add restore-from-backup guidance and operational recovery notes.
+- [x] Add monitoring for missed backup jobs, stale backups, and retention cleanup failures.
 
 ### Testing and Documentation
 
-- [ ] Add tests for backup generation metadata and retention pruning helpers.
-- [ ] Document scheduled-backup cadence, retention window, and failure handling.
+- [x] Add tests for backup generation metadata and retention pruning helpers.
+- [x] Document scheduled-backup cadence, retention window, and failure handling.
 
 ### Exit Criteria
 
@@ -723,7 +723,7 @@ Close Phase 3 with an operationally credible release posture across notification
 - [x] Milestone 2 complete
 - [x] Milestone 3 complete
 - [x] Milestone 4 complete
-- [ ] Milestone 5 complete
+- [x] Milestone 5 complete
 - [ ] Milestone 6 complete
 - [ ] Milestone 7 complete
 - [ ] Milestone 8 complete
