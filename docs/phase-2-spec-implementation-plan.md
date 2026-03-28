@@ -671,17 +671,17 @@ Stabilize the analytics system so it is performant, explainable, and ready for s
 
 ### Checklist
 
-- [ ] Run a full quality pass across Command Center, projections, streaks, missions, and warnings.
-- [ ] Review analytics performance on realistic data windows and identify expensive derivation paths.
-- [ ] Confirm stale snapshot and insufficient-data states are honest and understandable.
-- [ ] Finalize architecture and operations documentation for analytics and Functions.
-- [ ] Add known limitations for Phase 2 honestly, especially where projections remain heuristic.
-- [ ] Confirm no Phase 3 integration scope leaked into Phase 2 implementation.
+- [x] Run a full quality pass across Command Center, projections, streaks, missions, and warnings.
+- [x] Review analytics performance on realistic data windows and identify expensive derivation paths.
+- [x] Confirm stale snapshot and insufficient-data states are honest and understandable.
+- [x] Finalize architecture and operations documentation for analytics and Functions.
+- [x] Add known limitations for Phase 2 honestly, especially where projections remain heuristic.
+- [x] Confirm no Phase 3 integration scope leaked into Phase 2 implementation.
 
 ### Testing and Documentation
 
-- [ ] Run and verify the full test suite including Phase 2 logic.
-- [ ] Add a Phase 2 release-readiness checklist or expand the existing one.
+- [x] Run and verify the full test suite including Phase 2 logic.
+- [x] Add a Phase 2 release-readiness checklist or expand the existing one.
 
 ### Exit Criteria
 
@@ -782,7 +782,7 @@ Use this section as the live implementation tracker for Phase 2.
 - [x] Milestone 6 complete
 - [x] Milestone 7 complete
 - [x] Milestone 8 complete
-- [ ] Milestone 9 complete
+- [x] Milestone 9 complete
 
 ### Current Iteration Notes
 
@@ -814,3 +814,6 @@ Use this section as the live implementation tracker for Phase 2.
 - Implemented Milestone 8 operational surfacing: added a shared operational analytics service that reuses the same projection, insight, and gamification semantics as Command Center, then pushed compact pressure signals into Today, Readiness, and Schedule instead of leaving analytics as a passive desktop-only report.
 - Added a reusable operational signal card and wired Today to show behind-target, protect-this-window, streak-break, and mission pressure; wired Readiness to show pace and breadth intervention signals; and wired Schedule to show week-level planning pressure plus date-specific protection tags.
 - Added focused operational-signal tests and a dedicated signal-boundary doc so the repo now states clearly which alerts belong globally, which belong on operational screens, and which should stay inside Command Center depth.
+- Implemented Milestone 9 hardening: extracted a shared analytics interpretation seam so Command Center and operational surfaces stop recomputing the same chart, rule, and gamification state independently, which improves both supportability and the risk of semantic drift.
+- Added Phase 2 release and performance docs so the repo now records the current analytics performance posture, honest heuristic limits, and the release gate for the full Phase 2 system rather than only the original Phase 1 checklist.
+- Closed the roadmap boundary explicitly in docs: Phase 2 now covers analytics depth plus cross-screen surfacing, while real Calendar sync, notifications, export, and deeper orchestration extraction remain deferred to Phase 3.

@@ -19,8 +19,23 @@ Phase 1 should leave clean extension points for:
 
 ## What Should Stay Deferred
 
-- full analytics or Command Center pattern mining
 - bidirectional Calendar sync
 - health wearable or device ingestion
 - dedicated backend extraction for orchestration or merge conflict resolution
 - AI-generated planning or coaching features
+
+## Phase Boundary After Milestone 9
+
+Phase 2 now covers:
+
+- analytics contracts and snapshot generation
+- Command Center charts, projections, warnings, insights, streaks, missions, and momentum
+- operational analytics surfacing back into Today, Readiness, and Schedule
+- Firebase hardening work needed to sustain those analytics surfaces
+
+Phase 3 still begins at:
+
+- real bidirectional Calendar sync
+- notifications and reminder delivery
+- export and backup features
+- deeper sync or orchestration extraction beyond the current Firebase-plus-Functions posture

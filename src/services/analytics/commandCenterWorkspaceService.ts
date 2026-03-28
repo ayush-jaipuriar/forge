@@ -2,16 +2,7 @@ import { forgePrepTaxonomy } from '@/data/seeds'
 import type { AnalyticsBreakdownDatum } from '@/domain/analytics/types'
 import { analyticsRollingWindowKeys, type AnalyticsRollingWindowKey } from '@/domain/analytics/types'
 import {
-  buildCompletionHeatmap,
-  buildDeepBlockTrendChart,
-  buildExecutionStreakCalendar,
   buildPrepTopicHoursChart,
-  buildProjectionCurveChart,
-  buildScoreTrendChart,
-  buildSleepPerformanceCorrelation,
-  buildTimeWindowPerformance,
-  buildWfoWfhComparison,
-  buildWorkoutProductivityCorrelation,
   type AnalyticsComparisonDatum,
   type AnalyticsCurveDatum,
   type AnalyticsHeatmapCell,
@@ -19,10 +10,9 @@ import {
   type AnalyticsTopicHoursDatum,
 } from '@/domain/analytics/chartData'
 import { localDayInstanceRepository, localSettingsRepository } from '@/data/local'
-import { deriveAnalyticsGamification, type DisciplinePosture } from '@/domain/analytics/gamification'
-import { evaluateAnalyticsInsights } from '@/domain/analytics/insights'
+import type { DisciplinePosture } from '@/domain/analytics/gamification'
 import { mergePrepTopicProgress } from '@/domain/prep/selectors'
-import type { PrepDomainKey } from '@/domain/prep/types'
+import { deriveAnalyticsInterpretation } from '@/services/analytics/analyticsInterpretationService'
 import { generateAnalyticsSnapshotBundle } from '@/services/analytics/snapshotGeneration'
 import { getDateKey } from '@/domain/routine/week'
 import type { MomentumSnapshot, StreakEntry, WeeklyMission } from '@/domain/analytics/types'
@@ -112,32 +102,26 @@ export async function getCommandCenterWorkspace(
     settings,
     anchorDate,
   })
-  const snapshot =
-    bundle.rollingSnapshots.find((entry) => entry.windowKey === windowKey) ??
-    bundle.rollingSnapshots.find((entry) => entry.windowKey === '30d') ??
-    bundle.rollingSnapshots[0]
-  const factsInWindow = bundle.facts.filter(
-    (fact) => fact.date >= snapshot.sourceRange.startDate && fact.date <= snapshot.sourceRange.endDate,
-  )
-  const dataState = getCommandCenterDataState(snapshot.summaryMetrics.trackedDays)
-
-  const prepDomainBalance = buildPrepDomainBalance({
-    factsInWindow,
-    prepDomainReference: snapshot.breakdowns.byPrepDomain,
-    trackedDays: snapshot.summaryMetrics.trackedDays,
-  })
-  const insightEvaluation = evaluateAnalyticsInsights({
-    windowKey,
-    facts: factsInWindow,
+  const {
+    snapshot,
     prepDomainBalance,
-    sleepPerformanceCorrelation: buildSleepPerformanceCorrelation(factsInWindow),
-    workoutProductivityCorrelation: buildWorkoutProductivityCorrelation(factsInWindow),
-    wfoWfhComparison: buildWfoWfhComparison(factsInWindow),
-    timeWindowPerformance: buildTimeWindowPerformance(factsInWindow),
-    projection: bundle.projection,
-    scoreTrend: buildScoreTrendChart(factsInWindow),
-    deepWorkTrend: buildDeepBlockTrendChart(factsInWindow),
+    sleepPerformanceCorrelation,
+    workoutProductivityCorrelation,
+    wfoWfhComparison,
+    timeWindowPerformance,
+    scoreTrend,
+    deepWorkTrend,
+    readinessCurve,
+    completionHeatmap,
+    streakCalendar,
+    insightEvaluation,
+    gamification,
+  } = deriveAnalyticsInterpretation({
+    bundle,
+    windowKey,
+    anchorDateKey,
   })
+  const dataState = getCommandCenterDataState(snapshot.summaryMetrics.trackedDays)
   const mappedWarnings = insightEvaluation.insights
     .filter((insight) => insight.severity !== 'info')
     .map(mapInsightToWarning)
@@ -167,13 +151,6 @@ export async function getCommandCenterWorkspace(
       : dataState === 'limited'
         ? [limitedHistoryWarning, ...mappedWarnings].slice(0, 4)
         : mappedWarnings
-  const gamification = deriveAnalyticsGamification({
-    facts: factsInWindow,
-    insights: insightEvaluation.insights,
-    projection: bundle.projection,
-    prepDomainBalance,
-    anchorDate: anchorDateKey,
-  })
 
   return {
     anchorDate: anchorDateKey,
@@ -200,20 +177,20 @@ export async function getCommandCenterWorkspace(
     momentum: gamification.streakSnapshot.momentum,
     streaks: gamification.streakSnapshot.activeStreaks,
     missions: gamification.missions,
-    readinessCurve: buildProjectionCurveChart(bundle.projection),
+    readinessCurve,
     prepTopicHours: buildPrepTopicHoursChart(topicRecords),
-    sleepPerformanceCorrelation: buildSleepPerformanceCorrelation(factsInWindow),
-    wfoWfhComparison: buildWfoWfhComparison(factsInWindow),
-    timeWindowPerformance: buildTimeWindowPerformance(factsInWindow),
-    completionHeatmap: buildCompletionHeatmap(factsInWindow, anchorDateKey),
-    streakCalendar: buildExecutionStreakCalendar(factsInWindow, anchorDateKey),
-    workoutProductivityCorrelation: buildWorkoutProductivityCorrelation(factsInWindow),
-    scoreTrend: buildScoreTrendChart(factsInWindow).map((point) => ({
+    sleepPerformanceCorrelation,
+    wfoWfhComparison,
+    timeWindowPerformance,
+    completionHeatmap,
+    streakCalendar,
+    workoutProductivityCorrelation,
+    scoreTrend: scoreTrend.map((point) => ({
       label: point.label,
       value: point.value,
       secondaryValue: point.target,
     })),
-    deepWorkTrend: buildDeepBlockTrendChart(factsInWindow).map((point) => ({
+    deepWorkTrend: deepWorkTrend.map((point) => ({
       label: point.label,
       value: point.value,
       secondaryValue: point.target,
@@ -286,71 +263,6 @@ function getCommandCenterDataState(trackedDays: number): CommandCenterDataState 
   }
 
   return 'ready'
-}
-
-function buildPrepDomainBalance({
-  factsInWindow,
-  prepDomainReference,
-  trackedDays,
-}: {
-  factsInWindow: Array<{
-    focusedPrepDomains: PrepDomainKey[]
-    prepMinutes: number
-  }>
-  prepDomainReference: AnalyticsBreakdownDatum[]
-  trackedDays: number
-}) {
-  const labels = new Map(prepDomainReference.map((entry) => [entry.key, entry.label]))
-  const stats = new Map<
-    PrepDomainKey,
-    {
-      minutes: number
-      touchedDays: number
-    }
-  >()
-
-  for (const fact of factsInWindow) {
-    const uniqueDomains = [...new Set(fact.focusedPrepDomains)]
-
-    if (uniqueDomains.length === 0) {
-      continue
-    }
-
-    const allocatedMinutes = fact.prepMinutes > 0 ? fact.prepMinutes / uniqueDomains.length : 0
-
-    for (const domain of uniqueDomains) {
-      const current = stats.get(domain) ?? {
-        minutes: 0,
-        touchedDays: 0,
-      }
-
-      stats.set(domain, {
-        minutes: current.minutes + allocatedMinutes,
-        touchedDays: current.touchedDays + 1,
-      })
-    }
-  }
-
-  return [...stats.entries()]
-    .map(([key, value]) => ({
-      key,
-      label: labels.get(key) ?? keyLabel(key),
-      value: round(value.minutes / 60),
-      secondaryValue: value.touchedDays,
-      percent: trackedDays === 0 ? 0 : round((value.touchedDays / trackedDays) * 100),
-    }))
-    .filter((entry) => entry.value > 0 || (entry.secondaryValue ?? 0) > 0)
-    .sort((left, right) => right.value - left.value)
-}
-
-function round(value: number) {
-  return Number(value.toFixed(1))
-}
-
-function keyLabel(key: string) {
-  return key
-    .replace(/([A-Z])/g, ' $1')
-    .replace(/(^\w|-\w)/g, (match) => match.replace('-', '').toUpperCase())
 }
 
 function mapInsightToWarning(insight: {

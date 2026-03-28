@@ -1,17 +1,14 @@
 import { localDayInstanceRepository, localSettingsRepository } from '@/data/local'
-import {
-  buildDeepBlockTrendChart,
-  buildScoreTrendChart,
-  buildSleepPerformanceCorrelation,
-  buildTimeWindowPerformance,
-  buildWfoWfhComparison,
-  buildWorkoutProductivityCorrelation,
-} from '@/domain/analytics/chartData'
-import { deriveAnalyticsGamification } from '@/domain/analytics/gamification'
-import { evaluateAnalyticsInsights } from '@/domain/analytics/insights'
-import type { AnalyticsInsight, StreakEntry, WeeklyMission } from '@/domain/analytics/types'
+import type {
+  AnalyticsInsight,
+  MomentumSnapshot,
+  StreakEntry,
+  WeeklyMission,
+} from '@/domain/analytics/types'
+import type { DisciplinePosture } from '@/domain/analytics/gamification'
 import type { PrepDomainSummary } from '@/domain/prep/selectors'
 import type { DayInstance } from '@/domain/routine/types'
+import { deriveAnalyticsInterpretation } from '@/services/analytics/analyticsInterpretationService'
 import { generateAnalyticsSnapshotBundle } from '@/services/analytics/snapshotGeneration'
 import type { ReadinessSnapshot } from '@/domain/readiness/types'
 import type { DayScorePreview } from '@/domain/scoring/types'
@@ -36,8 +33,8 @@ export type OperationalAnalyticsSummary = {
   projection: ReturnType<typeof generateAnalyticsSnapshotBundle>['projection']
   topWarnings: AnalyticsInsight[]
   infoInsights: AnalyticsInsight[]
-  momentum: ReturnType<typeof deriveAnalyticsGamification>['streakSnapshot']['momentum']
-  posture: ReturnType<typeof deriveAnalyticsGamification>['posture']
+  momentum: MomentumSnapshot
+  posture: DisciplinePosture
   streaks: StreakEntry[]
   missions: WeeklyMission[]
 }
@@ -50,32 +47,10 @@ export async function getOperationalAnalyticsSummary(anchorDate = new Date()): P
     settings,
     anchorDate,
   })
-  const snapshot =
-    bundle.rollingSnapshots.find((entry) => entry.windowKey === '30d') ??
-    bundle.rollingSnapshots.at(-1) ??
-    bundle.rollingSnapshots[0]
-  const factsInWindow = bundle.facts.filter(
-    (fact) => fact.date >= snapshot.sourceRange.startDate && fact.date <= snapshot.sourceRange.endDate,
-  )
-  const prepDomainBalance = snapshot.breakdowns.byPrepDomain
-  const insightEvaluation = evaluateAnalyticsInsights({
+  const { snapshot, insightEvaluation, gamification } = deriveAnalyticsInterpretation({
+    bundle,
     windowKey: '30d',
-    facts: factsInWindow,
-    prepDomainBalance,
-    sleepPerformanceCorrelation: buildSleepPerformanceCorrelation(factsInWindow),
-    workoutProductivityCorrelation: buildWorkoutProductivityCorrelation(factsInWindow),
-    wfoWfhComparison: buildWfoWfhComparison(factsInWindow),
-    timeWindowPerformance: buildTimeWindowPerformance(factsInWindow),
-    projection: bundle.projection,
-    scoreTrend: buildScoreTrendChart(factsInWindow),
-    deepWorkTrend: buildDeepBlockTrendChart(factsInWindow),
-  })
-  const gamification = deriveAnalyticsGamification({
-    facts: factsInWindow,
-    insights: insightEvaluation.insights,
-    projection: bundle.projection,
-    prepDomainBalance,
-    anchorDate: bundle.projection.lastEvaluatedDate,
+    anchorDateKey: bundle.projection.lastEvaluatedDate,
   })
 
   return {

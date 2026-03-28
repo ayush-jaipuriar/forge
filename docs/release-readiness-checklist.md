@@ -2,6 +2,8 @@
 
 Use this as the final operator-facing QA and release gate for Phase 1.
 
+Phase 2 has its own analytics-focused release gate in [docs/phase-2-release-readiness-checklist.md](/Users/ayushjaipuriar/Documents/GitHub/forge/docs/phase-2-release-readiness-checklist.md).
+
 ## Code Health
 
 - [ ] `npm run lint`

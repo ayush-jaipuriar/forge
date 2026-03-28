@@ -57,11 +57,13 @@ npm run preview -- --host 127.0.0.1 --port 4173
 - [Analytics Insight Rules](/Users/ayushjaipuriar/Documents/GitHub/forge/docs/analytics-insight-rules.md)
 - [Analytics Gamification Rules](/Users/ayushjaipuriar/Documents/GitHub/forge/docs/analytics-gamification-rules.md)
 - [Analytics Operational Signals](/Users/ayushjaipuriar/Documents/GitHub/forge/docs/analytics-operational-signals.md)
+- [Analytics Performance Notes](/Users/ayushjaipuriar/Documents/GitHub/forge/docs/analytics-performance-notes.md)
 - [Firebase Setup](/Users/ayushjaipuriar/Documents/GitHub/forge/docs/firebase-setup.md)
 - [Deployment Guide](/Users/ayushjaipuriar/Documents/GitHub/forge/docs/deployment-guide.md)
 - [Google Calendar Scaffolding](/Users/ayushjaipuriar/Documents/GitHub/forge/docs/google-calendar-scaffolding.md)
 - [Future Extension Notes](/Users/ayushjaipuriar/Documents/GitHub/forge/docs/future-extension-notes.md)
 - [Release Readiness Checklist](/Users/ayushjaipuriar/Documents/GitHub/forge/docs/release-readiness-checklist.md)
+- [Phase 2 Release Readiness Checklist](/Users/ayushjaipuriar/Documents/GitHub/forge/docs/phase-2-release-readiness-checklist.md)
 
 ## Verification Status
 

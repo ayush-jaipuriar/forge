@@ -196,6 +196,13 @@ This document captures the Phase 1 architectural baseline that implementation sh
 - the reusable [OperationalSignalCard.tsx](/Users/ayushjaipuriar/Documents/GitHub/forge/src/components/common/OperationalSignalCard.tsx) intentionally keeps the UI layer small and serious; the design goal is to make these warnings feel like operational pressure, not like mini dashboard widgets
 - this milestone is disciplined about scope: operational pages get compressed, high-value signals only, while Command Center remains the place for deeper chart context and broader pattern explanation
 
+## Phase 2 Milestone 9 Hardening and Supportability
+
+- analytics interpretation now has a shared service boundary in [analyticsInterpretationService.ts](/Users/ayushjaipuriar/Documents/GitHub/forge/src/services/analytics/analyticsInterpretationService.ts), which consolidates rolling-window chart semantics, rule evaluation, and gamification derivation so multiple analytics consumers do not duplicate the same heavy work
+- [commandCenterWorkspaceService.ts](/Users/ayushjaipuriar/Documents/GitHub/forge/src/services/analytics/commandCenterWorkspaceService.ts) and [operationalAnalyticsService.ts](/Users/ayushjaipuriar/Documents/GitHub/forge/src/services/analytics/operationalAnalyticsService.ts) now both consume that shared interpretation seam, which reduces immediate duplicate work and gives future performance tuning one obvious place to target
+- the repo now carries explicit hardening docs for Phase 2 performance, release gating, and heuristic limits, which matters because analytics products become hard to trust long before they become hard to compile
+- the Phase 2 boundary is now explicitly closed in documentation: analytics depth, streaks, missions, momentum, and operational surfacing belong here; real Calendar sync, notifications, export, and deeper orchestration remain Phase 3 work
+
 ### Current Conflict Strategy and Limits
 
 - the current foundation favors predictable local continuity over sophisticated merge behavior
