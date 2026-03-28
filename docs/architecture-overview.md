@@ -135,6 +135,22 @@ This document captures the Phase 1 architectural baseline that implementation sh
 - a lightweight monitoring seam now exists in [monitoringService.ts](/Users/ayushjaipuriar/Documents/GitHub/forge/src/services/monitoring/monitoringService.ts), and auth, sync, and App Check failures already route through it so later observability providers can attach without changing failure call sites again
 - the security provider is intentionally a thin app-shell concern rather than a domain concern, because rollout posture belongs near environment bootstrap, not inside execution logic
 
+## Phase 2 Milestone 2 Analytics Derivation Foundation
+
+- analytics now has a per-day fact layer in [facts.ts](/Users/ayushjaipuriar/Documents/GitHub/forge/src/domain/analytics/facts.ts), which converts day instances, score previews, sleep state, workout state, and focused prep domains into stable daily records instead of asking charts to interpret raw execution state themselves
+- rolling and weekly summary builders now live in [rollups.ts](/Users/ayushjaipuriar/Documents/GitHub/forge/src/domain/analytics/rollups.ts), which means summary metrics, chart-ready breakdowns, source ranges, and rolling-window filtering are all domain responsibilities rather than future UI logic
+- the local day-instance repository now supports historical listing, which is the minimum persistence capability needed for analytics to reason across real history instead of just the current workspace
+- a first analytics persistence service now exists in [analyticsPersistenceService.ts](/Users/ayushjaipuriar/Documents/GitHub/forge/src/services/analytics/analyticsPersistenceService.ts), and it intentionally derives rolling snapshots from canonical source records plus current settings rather than from screen-specific view models
+- the current derivation model is honest about its limits: block and score history are real, but prep-hours-by-domain still rely on current progress snapshots until deeper historical prep logging exists in later milestones
+
+## Phase 2 Milestone 3 Functions Snapshot Pipeline
+
+- a dedicated Firebase Functions workspace now exists in [functions/package.json](/Users/ayushjaipuriar/Documents/GitHub/forge/functions/package.json), which keeps server-side analytics generation inside the Firebase ecosystem without forcing a full backend extraction
+- the shared snapshot-generation logic lives in [snapshotGeneration.ts](/Users/ayushjaipuriar/Documents/GitHub/forge/src/services/analytics/snapshotGeneration.ts), while the Functions layer in [pipeline.ts](/Users/ayushjaipuriar/Documents/GitHub/forge/functions/src/analytics/pipeline.ts) focuses on Firestore fetch and persist orchestration
+- the first pipeline persists daily, weekly, and rolling analytics snapshots plus a default readiness projection and analytics metadata, which is the minimum durable derived-state footprint needed before Command Center UI depth begins
+- readiness projection logic now has a real contract in [projections.ts](/Users/ayushjaipuriar/Documents/GitHub/forge/src/domain/analytics/projections.ts); the current model is intentionally simple and explainable rather than pretending to be a sophisticated forecast engine already
+- this split matters architecturally because it lets the browser and Functions reuse the same derivation semantics, which reduces the risk of analytics drift between client-side exploration and server-side snapshot generation
+
 ### Current Conflict Strategy and Limits
 
 - the current foundation favors predictable local continuity over sophisticated merge behavior

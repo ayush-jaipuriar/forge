@@ -11,7 +11,10 @@
     "test": "vitest",
     "test:run": "vitest run",
     "coverage": "vitest run --coverage",
-    "preview": "vite preview"
+    "preview": "vite preview",
+    "functions:install": "npm --prefix functions install",
+    "functions:build": "npm --prefix functions run build",
+    "functions:serve": "npm --prefix functions run serve"
   },
   "dependencies": {
     "@emotion/react": "^11.14.0",

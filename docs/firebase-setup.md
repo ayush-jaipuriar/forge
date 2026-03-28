@@ -357,3 +357,30 @@ Why this matters:
 
 - analytics and derived data become much harder to trust when failures are silent
 - this boundary lets us route the same events to a future provider like Crashlytics, Sentry, or a custom pipeline later without changing domain logic again
+
+## Phase 2 Functions Workspace
+
+Forge now includes a dedicated Firebase Functions workspace in [functions/package.json](/Users/ayushjaipuriar/Documents/GitHub/forge/functions/package.json).
+
+Install it with:
+
+```bash
+npm run functions:install
+```
+
+Why this matters:
+
+- analytics snapshots and projections should not depend only on the active browser session forever
+- Functions let Forge generate durable derived summaries on demand or on a schedule while still staying inside the Firebase platform
+
+Current role of the Functions workspace:
+
+- fetch user settings and day instances from Firestore
+- generate daily, weekly, and rolling analytics snapshots
+- generate a readiness projection snapshot
+- persist those derived documents back into Firestore
+
+The shared snapshot-generation logic lives in [snapshotGeneration.ts](/Users/ayushjaipuriar/Documents/GitHub/forge/src/services/analytics/snapshotGeneration.ts), while the Functions entry points live in [functions/src/index.ts](/Users/ayushjaipuriar/Documents/GitHub/forge/functions/src/index.ts). That split is intentional:
+
+- shared logic stays testable in the main app codebase
+- Functions remain thin orchestration and persistence wrappers

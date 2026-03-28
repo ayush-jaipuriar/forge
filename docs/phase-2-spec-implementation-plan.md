@@ -775,8 +775,8 @@ Use this section as the live implementation tracker for Phase 2.
 
 - [x] Milestone 0 complete
 - [x] Milestone 1 complete
-- [ ] Milestone 2 complete
-- [ ] Milestone 3 complete
+- [x] Milestone 2 complete
+- [x] Milestone 3 complete
 - [ ] Milestone 4 complete
 - [ ] Milestone 5 complete
 - [ ] Milestone 6 complete
@@ -795,3 +795,7 @@ Use this section as the live implementation tracker for Phase 2.
 - Added domain tests that lock in the default analytics contract behavior and updated the architecture overview so the repo now documents the Phase 2 contract layer as a real implemented boundary instead of a planning-only idea.
 - Implemented Milestone 1 hardening artifacts: added repo-managed Firestore rules and initial indexes, pointed `firebase.json` at those files, introduced an App Check bootstrap boundary with a local-dev-safe rollout strategy, and added a lightweight monitoring seam for auth, sync, and security failures.
 - Updated Firebase and deployment docs so rules/index deployment, App Check behavior, and monitoring expectations are all visible in the repo rather than buried in console state.
+- Implemented Milestone 2 analytics derivation foundations: added a historical `listAll()` path for day instances, introduced per-day analytics fact extraction, built reusable rolling summary and breakdown generators, and added a first analytics persistence service that produces rolling snapshots from local source records.
+- Added domain and service tests for analytics facts, rollups, rolling-window filtering, and local persistence integration so later Command Center work can build on a verified derivation layer rather than a speculative one.
+- Implemented Milestone 3 snapshot generation: added a shared analytics snapshot bundle generator, first readiness projection builder, and a dedicated Firebase Functions workspace that fetches source records, generates derived snapshots, and writes them back into Firestore.
+- Added Phase 2 tests for readiness projection logic and snapshot bundle generation, and updated Firebase/deployment documentation so the new Functions workspace is installable and deployable from the repo instead of being implied only in planning notes.

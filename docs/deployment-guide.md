@@ -26,7 +26,8 @@ This gives the closest local equivalent of the deployed Hosting shell, including
 
 ```bash
 npm run build
-firebase deploy --only hosting,firestore:rules,firestore:indexes
+npm run functions:install
+firebase deploy --only hosting,firestore:rules,firestore:indexes,functions
 ```
 
 Current Hosting expectations:
@@ -36,6 +37,7 @@ Current Hosting expectations:
 - `sw.js` and `manifest.webmanifest` are intentionally served with `no-cache`
 - hashed JS, CSS, font, and image assets are served with long-lived immutable cache headers
 - Firestore rules and indexes are expected to deploy from the repo-managed `firestore.rules` and `firestore.indexes.json` files
+- Firebase Functions now deploy from the repo-managed `functions/` workspace
 
 ## Installability Validation Checklist
 
@@ -64,3 +66,4 @@ Current Hosting expectations:
 - service-worker behavior is only meaningful on a built preview or deployed origin, not the raw Vite dev server
 - if install/update behavior looks stale during testing, clear the browser’s site data and service-worker registration before rechecking
 - local development intentionally skips App Check on `localhost` and `127.0.0.1`; treat enforcement as a deployed-environment rollout step, not a local prerequisite
+- the Functions workspace has its own install/build lifecycle; run `npm run functions:install` before first deploy or emulator use

@@ -19,6 +19,7 @@ import type { UserSettings } from '@/domain/settings/types'
 export interface DayInstanceRepository {
   getByDate(date: string): Promise<DayInstance | null>
   getByDates(dates: string[]): Promise<DayInstance[]>
+  listAll(): Promise<DayInstance[]>
   upsert(instance: DayInstance): Promise<void>
   upsertMany(instances: DayInstance[]): Promise<void>
 }

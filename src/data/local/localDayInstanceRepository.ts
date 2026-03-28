@@ -20,6 +20,15 @@ export class LocalDayInstanceRepository implements DayInstanceRepository {
       .map((record) => deserializeDayInstance(record))
   }
 
+  async listAll() {
+    const db = await getForgeDb()
+    const allRecords = await db.getAll('dayInstances')
+
+    return allRecords
+      .map((record) => deserializeDayInstance(record))
+      .sort((left, right) => left.date.localeCompare(right.date))
+  }
+
   async upsert(instance: DayInstance) {
     const db = await getForgeDb()
     await db.put('dayInstances', serializeDayInstance(instance))
