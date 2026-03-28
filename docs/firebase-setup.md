@@ -19,6 +19,23 @@ Optional Phase 2 hardening variable:
 
 - `VITE_FIREBASE_APPCHECK_SITE_KEY`
 
+## Git Safety
+
+This repo now ignores the most important local-only Firebase and secret-bearing artifacts by default:
+
+- `.env` and `.env.*` except `.env.example`
+- Firebase local state such as `.firebase/` and debug logs
+- future `functions/.env` files
+- common key and certificate files such as `.pem`, `.key`, and `.p12`
+- common service-account JSON filename patterns
+- backup files like `.bak` and `.backup`
+
+Why this matters:
+
+- Firebase web config belongs in local environment files, not in committed source
+- backup files are a common way secrets leak accidentally even when the main `.env` is ignored
+- as the repo grows into Functions and stronger Firebase tooling, local artifacts should already be protected before they appear
+
 ## Beginner Verification Walkthrough
 
 Use this sequence when you want to verify or re-verify the Milestone 2 Firebase wiring for this repo.

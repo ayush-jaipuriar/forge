@@ -10,10 +10,36 @@ lerna-debug.log*
 node_modules
 dist
 dist-ssr
+coverage
 .env
 .env.*
 !.env.example
 *.local
+
+# Firebase local state and debug artifacts
+.firebase/
+.firebaserc.local
+firebase-debug.log*
+firestore-debug.log*
+ui-debug.log*
+.runtimeconfig.json
+
+# Future Functions / local backend env files
+functions/.env
+functions/.env.*
+!functions/.env.example
+
+# Secret-bearing keys and certificates
+*.pem
+*.key
+*.p12
+*.pfx
+*.mobileprovision
+*service-account*.json
+
+# Backup files that can accidentally preserve secrets
+*.bak
+*.backup
 
 # Editor directories and files
 .vscode/*
