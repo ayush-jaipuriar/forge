@@ -2,6 +2,7 @@ import type { ReactNode } from 'react'
 import { render, screen } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import App from '@/App'
+import type { CommandCenterWorkspace } from '@/services/analytics/commandCenterWorkspaceService'
 import type { AuthSessionValue } from '@/features/auth/types/auth'
 
 const authMock = vi.hoisted(() => {
@@ -23,12 +24,83 @@ const authMock = vi.hoisted(() => {
   }
 })
 
+const commandCenterMock = vi.hoisted(() => ({
+  value: {
+    isLoading: false,
+    isError: false,
+    isStale: false,
+    error: null as Error | null,
+    data: {
+      anchorDate: '2026-03-28',
+      windowKey: '30d',
+      availableWindows: ['7d', '14d', '30d', '90d'],
+      generatedAt: '2026-03-28T00:00:00.000Z',
+      dataState: 'empty',
+      trackedDays: 0,
+      sourceLabel: '2026-02-27 -> 2026-03-28',
+      metrics: [
+        {
+          id: 'tracked-days',
+          eyebrow: 'Tracked Days',
+          value: '0',
+          detail: 'Waiting for history.',
+          tone: 'warning',
+        },
+      ],
+      scoreTrend: [],
+      deepWorkTrend: [],
+      timeBandPressure: [],
+      prepDomainBalance: [],
+      warnings: [
+        {
+          id: 'history-empty',
+          title: 'History window is still empty',
+          detail: 'Command Center can render the shell now, but it still needs persisted day instances.',
+          severity: 'warning',
+        },
+      ],
+      insights: [],
+      projection: {
+        id: 'default',
+        snapshotVersion: 1,
+        generatedAt: '2026-03-28T00:00:00.000Z',
+        targetDate: '2026-06-30',
+        lastEvaluatedDate: '2026-03-28',
+        status: 'insufficientData',
+        statusLabel: 'Need more tracked days before projection becomes trustworthy.',
+        confidence: 'low',
+        currentReadinessLevel: 'building',
+        projectedReadinessLevel: 'building',
+        currentReadinessPercent: 0,
+        projectedReadinessPercent: 0,
+        estimatedReadyDate: null,
+        targetSlipDays: 0,
+        weeklyReadinessVelocity: 0,
+        requiredWeeklyVelocity: 0,
+        summary: 'Forge needs a larger behavior window before projecting readiness pace honestly.',
+        risks: ['Analytics history is still too shallow for a reliable readiness projection.'],
+        curve: [],
+      },
+    } as CommandCenterWorkspace | undefined,
+  } as {
+    isLoading: boolean
+    isError: boolean
+    isStale: boolean
+    error: Error | null
+    data: CommandCenterWorkspace | undefined
+  },
+}))
+
 vi.mock('@/features/auth/providers/AuthSessionProvider', () => ({
   AuthSessionProvider: ({ children }: { children: ReactNode }) => children,
 }))
 
 vi.mock('@/features/auth/providers/useAuthSession', () => ({
   useAuthSession: () => authMock.value,
+}))
+
+vi.mock('@/features/command-center/hooks/useCommandCenterWorkspace', () => ({
+  useCommandCenterWorkspace: () => commandCenterMock.value,
 }))
 
 describe('App', () => {
@@ -46,6 +118,65 @@ describe('App', () => {
       signInWithGoogle: vi.fn(async () => {}),
       signOutUser: vi.fn(async () => {}),
     }
+    commandCenterMock.value = {
+      ...commandCenterMock.value,
+      isLoading: false,
+      isError: false,
+      isStale: false,
+      error: null,
+      data: {
+        anchorDate: '2026-03-28',
+        windowKey: '30d',
+        availableWindows: ['7d', '14d', '30d', '90d'],
+        generatedAt: '2026-03-28T00:00:00.000Z',
+        dataState: 'empty',
+        trackedDays: 0,
+        sourceLabel: '2026-02-27 -> 2026-03-28',
+        metrics: [
+          {
+            id: 'tracked-days',
+            eyebrow: 'Tracked Days',
+            value: '0',
+            detail: 'Waiting for history.',
+            tone: 'warning',
+          },
+        ],
+        scoreTrend: [],
+        deepWorkTrend: [],
+        timeBandPressure: [],
+        prepDomainBalance: [],
+        warnings: [
+          {
+            id: 'history-empty',
+            title: 'History window is still empty',
+            detail: 'Command Center can render the shell now, but it still needs persisted day instances.',
+            severity: 'warning',
+          },
+        ],
+        insights: [],
+        projection: {
+          id: 'default',
+          snapshotVersion: 1,
+          generatedAt: '2026-03-28T00:00:00.000Z',
+          targetDate: '2026-06-30',
+          lastEvaluatedDate: '2026-03-28',
+          status: 'insufficientData',
+          statusLabel: 'Need more tracked days before projection becomes trustworthy.',
+          confidence: 'low',
+          currentReadinessLevel: 'building',
+          projectedReadinessLevel: 'building',
+          currentReadinessPercent: 0,
+          projectedReadinessPercent: 0,
+          estimatedReadyDate: null,
+          targetSlipDays: 0,
+          weeklyReadinessVelocity: 0,
+          requiredWeeklyVelocity: 0,
+          summary: 'Forge needs a larger behavior window before projecting readiness pace honestly.',
+          risks: ['Analytics history is still too shallow for a reliable readiness projection.'],
+          curve: [],
+        },
+      },
+    }
   })
 
   it('renders the Forge shell and primary navigation', () => {
@@ -53,6 +184,7 @@ describe('App', () => {
 
     expect(screen.getByText('Forge')).toBeInTheDocument()
     expect(screen.getAllByRole('link', { name: /^today$/i }).length).toBeGreaterThan(0)
+    expect(screen.getAllByRole('link', { name: /command center/i }).length).toBeGreaterThan(0)
     expect(screen.getAllByRole('link', { name: /schedule/i }).length).toBeGreaterThan(0)
   })
 
@@ -81,5 +213,30 @@ describe('App', () => {
     screen.getAllByRole('link', { name: /^today$/i }).forEach((link) => {
       expect(link).not.toHaveAttribute('aria-current', 'page')
     })
+  })
+
+  it('renders the Command Center route and its core empty-state warning surface', async () => {
+    window.history.pushState({}, '', '/command-center')
+
+    render(<App />)
+
+    expect(await screen.findByRole('heading', { name: /command center/i })).toBeInTheDocument()
+    expect(screen.getByText(/history window is still empty/i)).toBeInTheDocument()
+    expect(screen.getAllByText(/waiting for history/i).length).toBeGreaterThan(0)
+  })
+
+  it('shows an explicit error state when the command-center workspace query fails', async () => {
+    window.history.pushState({}, '', '/command-center')
+    commandCenterMock.value = {
+      ...commandCenterMock.value,
+      isError: true,
+      error: new Error('IndexedDB could not be opened'),
+      data: undefined,
+    }
+
+    render(<App />)
+
+    expect(await screen.findByRole('heading', { name: /command center could not load/i })).toBeInTheDocument()
+    expect(screen.getByText(/indexeddb could not be opened/i)).toBeInTheDocument()
   })
 })

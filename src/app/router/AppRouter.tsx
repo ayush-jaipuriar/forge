@@ -2,6 +2,7 @@ import { BrowserRouter, Navigate, Route, Routes } from 'react-router-dom'
 import { AppShell } from '@/components/layout/AppShell'
 import { AuthStatusScreen } from '@/features/auth/components/AuthStatusScreen'
 import { AuthPage } from '@/features/auth/pages/AuthPage'
+import { CommandCenterPage } from '@/features/command-center/pages/CommandCenterPage'
 import { useAuthSession } from '@/features/auth/providers/useAuthSession'
 import { PhysicalPage } from '@/features/physical/pages/PhysicalPage'
 import { PrepPage } from '@/features/prep/pages/PrepPage'
@@ -17,6 +18,7 @@ export function AppRouter() {
         <Route path="/auth" element={<PublicOnlyRoute />} />
         <Route element={<ProtectedLayout />}>
           <Route index element={<TodayPage />} />
+          <Route path="/command-center" element={<CommandCenterPage />} />
           <Route path="/schedule" element={<SchedulePage />} />
           <Route path="/prep" element={<PrepPage />} />
           <Route path="/physical" element={<PhysicalPage />} />

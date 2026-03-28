@@ -777,7 +777,7 @@ Use this section as the live implementation tracker for Phase 2.
 - [x] Milestone 1 complete
 - [x] Milestone 2 complete
 - [x] Milestone 3 complete
-- [ ] Milestone 4 complete
+- [x] Milestone 4 complete
 - [ ] Milestone 5 complete
 - [ ] Milestone 6 complete
 - [ ] Milestone 7 complete
@@ -799,3 +799,6 @@ Use this section as the live implementation tracker for Phase 2.
 - Added domain and service tests for analytics facts, rollups, rolling-window filtering, and local persistence integration so later Command Center work can build on a verified derivation layer rather than a speculative one.
 - Implemented Milestone 3 snapshot generation: added a shared analytics snapshot bundle generator, first readiness projection builder, and a dedicated Firebase Functions workspace that fetches source records, generates derived snapshots, and writes them back into Firestore.
 - Added Phase 2 tests for readiness projection logic and snapshot bundle generation, and updated Firebase/deployment documentation so the new Functions workspace is installable and deployable from the repo instead of being implied only in planning notes.
+- Implemented Milestone 4 Command Center shell: added the real `/command-center` route, a dedicated workspace hook and application service, desktop-first analytics layout, reusable visualization primitives, and honest loading/insufficient-data/stale states that make the analytics cockpit usable before the heavier chart milestone begins.
+- Documented the visualization rules in a dedicated Command Center doc so future chart work reuses the same tone system, state handling, and panel hierarchy instead of inventing a new dashboard style card by card.
+- Tightened the first Milestone 4 review findings: Command Center query errors now surface explicitly instead of masquerading as loading, the projection panel no longer uses a success tone for insufficient-data states, and the prep-domain attention panel is now window-scoped and labeled honestly.

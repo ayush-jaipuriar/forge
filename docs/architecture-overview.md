@@ -151,6 +151,15 @@ This document captures the Phase 1 architectural baseline that implementation sh
 - readiness projection logic now has a real contract in [projections.ts](/Users/ayushjaipuriar/Documents/GitHub/forge/src/domain/analytics/projections.ts); the current model is intentionally simple and explainable rather than pretending to be a sophisticated forecast engine already
 - this split matters architecturally because it lets the browser and Functions reuse the same derivation semantics, which reduces the risk of analytics drift between client-side exploration and server-side snapshot generation
 
+## Phase 2 Milestone 4 Command Center Shell
+
+- a dedicated Command Center feature now exists under [src/features/command-center](/Users/ayushjaipuriar/Documents/GitHub/forge/src/features/command-center), which keeps the analytics cockpit separate from Today/Readiness instead of letting one oversized page become the product’s analytics layer
+- [commandCenterWorkspaceService.ts](/Users/ayushjaipuriar/Documents/GitHub/forge/src/services/analytics/commandCenterWorkspaceService.ts) is the important new application seam: it transforms snapshot bundles into a page-ready workspace with summary cards, chart-series inputs, warning cards, and lightweight insights so the React tree stays mostly declarative
+- the first visualization primitives in [ChartCard.tsx](/Users/ayushjaipuriar/Documents/GitHub/forge/src/features/command-center/components/ChartCard.tsx), [ProjectionPanel.tsx](/Users/ayushjaipuriar/Documents/GitHub/forge/src/features/command-center/components/ProjectionPanel.tsx), [WarningCard.tsx](/Users/ayushjaipuriar/Documents/GitHub/forge/src/features/command-center/components/WarningCard.tsx), and [InsightCard.tsx](/Users/ayushjaipuriar/Documents/GitHub/forge/src/features/command-center/components/InsightCard.tsx) establish the Command Center’s visual vocabulary before deeper chart density begins
+- Milestone 4 is intentionally honest about analytics maturity: some “insights” are still lightweight heuristics and the page leans on insufficient-data states where history is shallow, which is better than pretending the pattern engine already exists
+- the route is now wired directly into the main shell and navigation, which means analytics is no longer only a future document topic; it is a real operator-facing surface with a desktop-first information architecture
+- the first review pass tightened two important trust boundaries: query failures now render as explicit error states instead of infinite loading, and the prep-domain panel now derives a window-scoped approximation from historical facts instead of presenting global current-state prep totals as if they were rolling-window history
+
 ### Current Conflict Strategy and Limits
 
 - the current foundation favors predictable local continuity over sophisticated merge behavior
