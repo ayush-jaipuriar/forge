@@ -4,6 +4,7 @@ import {
   localNotificationStateRepository,
   localRestoreJobRepository,
   localSettingsRepository,
+  localSyncQueueRepository,
 } from '@/data/local'
 import { resetForgeDb } from '@/data/local/forgeDb'
 import { forgeRoutine } from '@/data/seeds'
@@ -12,6 +13,7 @@ import { generateDayInstance } from '@/domain/routine/generateDayInstance'
 import { createDefaultUserSettings } from '@/domain/settings/types'
 import { createManualBackup } from '@/services/backup/backupService'
 import { applyRestoreStage, parseRestorePayloadText } from '@/services/backup/restoreService'
+import { createSyncQueueItem } from '@/services/sync/syncQueue'
 
 describe('restore service', () => {
   beforeEach(async () => {
@@ -45,19 +47,23 @@ describe('restore service', () => {
     await resetForgeDb()
 
     const stage = await parseRestorePayloadText(backup.jsonText)
+    await localSyncQueueRepository.enqueue(createSyncQueueItem('upsertSettings', settings.id, settings))
     const job = await applyRestoreStage(stage)
     const restoredSettings = await localSettingsRepository.getDefault()
     const restoredDay = await localDayInstanceRepository.getByDate('2026-03-28')
     const restoredNotificationState = await localNotificationStateRepository.getDefault()
     const restoreJobs = await localRestoreJobRepository.listRecent()
+    const queueItems = await localSyncQueueRepository.listOutstanding()
 
     expect(stage.summary).toContain('day instance')
     expect(job.status).toBe('partial')
     expect(job.warnings.some((warning) => warning.includes('derived state'))).toBe(true)
+    expect(job.warnings.some((warning) => warning.includes('Cleared 1 queued local sync item'))).toBe(true)
     expect(restoredSettings?.notificationsEnabled).toBe(false)
     expect(restoredDay?.blocks[0].status).toBe('completed')
     expect(restoredNotificationState?.permission).toBe('granted')
     expect(restoreJobs[0]?.id).toBe(job.id)
+    expect(queueItems).toHaveLength(0)
   })
 
   it('rejects invalid restore payloads before applying them', async () => {

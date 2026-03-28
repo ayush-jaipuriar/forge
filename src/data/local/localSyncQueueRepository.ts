@@ -25,6 +25,11 @@ export class LocalSyncQueueRepository implements SyncQueueRepository {
     await db.delete('syncQueue', id)
   }
 
+  async clearAll() {
+    const db = await getForgeDb()
+    await db.clear('syncQueue')
+  }
+
   async countOutstanding() {
     const items = await this.listOutstanding()
 

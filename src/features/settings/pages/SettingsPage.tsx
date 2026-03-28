@@ -29,6 +29,7 @@ export function SettingsPage() {
   const restoreInputRef = useRef<HTMLInputElement | null>(null)
   const [restoreStage, setRestoreStage] = useState<RestoreStage | null>(null)
   const [restoreError, setRestoreError] = useState<string | null>(null)
+  const [backupNotice, setBackupNotice] = useState<string | null>(null)
 
   if (isLoading || !data) {
     return (
@@ -54,9 +55,11 @@ export function SettingsPage() {
       const stage = await parseRestorePayloadText(text)
       setRestoreStage(stage)
       setRestoreError(null)
+      setBackupNotice(null)
     } catch (error) {
       setRestoreStage(null)
       setRestoreError(error instanceof Error ? error.message : 'Forge could not parse the selected backup file.')
+      setBackupNotice(null)
     } finally {
       event.target.value = ''
     }
@@ -176,7 +179,17 @@ export function SettingsPage() {
                 <Button
                   variant="contained"
                   startIcon={<DownloadRoundedIcon />}
-                  onClick={() => createManualBackup.mutate({ kind: 'json' })}
+                  onClick={() =>
+                    createManualBackup.mutate(
+                      { kind: 'json' },
+                      {
+                        onSuccess: (result) => {
+                          setBackupNotice(`Backup exported: ${result.suggestedJsonFilename}`)
+                          setRestoreError(null)
+                        },
+                      },
+                    )
+                  }
                   disabled={createManualBackup.isPending}
                 >
                   Export backup JSON
@@ -184,7 +197,17 @@ export function SettingsPage() {
                 <Button
                   variant="outlined"
                   startIcon={<ArchiveRoundedIcon />}
-                  onClick={() => createManualBackup.mutate({ kind: 'notes' })}
+                  onClick={() =>
+                    createManualBackup.mutate(
+                      { kind: 'notes' },
+                      {
+                        onSuccess: (result) => {
+                          setBackupNotice(`Notes exported: ${result.suggestedNotesFilename}`)
+                          setRestoreError(null)
+                        },
+                      },
+                    )
+                  }
                   disabled={createManualBackup.isPending}
                 >
                   Export notes markdown
@@ -213,10 +236,35 @@ export function SettingsPage() {
                   {restoreError}
                 </Alert>
               ) : null}
+              {createManualBackup.isError ? (
+                <Alert severity="error" variant="outlined">
+                  {createManualBackup.error instanceof Error
+                    ? createManualBackup.error.message
+                    : 'Forge could not generate the requested backup export.'}
+                </Alert>
+              ) : null}
+              {backupNotice ? (
+                <Alert severity="success" variant="outlined">
+                  {backupNotice}
+                </Alert>
+              ) : null}
               {restoreStage ? (
                 <Alert severity="info" variant="outlined">
                   {restoreStage.summary}
                   {restoreStage.warnings.length > 0 ? ` Warnings: ${restoreStage.warnings.join(' ')}` : ''}
+                </Alert>
+              ) : null}
+              {applyRestoreStage.isError ? (
+                <Alert severity="error" variant="outlined">
+                  {applyRestoreStage.error instanceof Error
+                    ? applyRestoreStage.error.message
+                    : 'Forge could not apply the staged restore.'}
+                </Alert>
+              ) : null}
+              {applyRestoreStage.data ? (
+                <Alert severity={applyRestoreStage.data.status === 'applied' ? 'success' : 'warning'} variant="outlined">
+                  {applyRestoreStage.data.summary}
+                  {applyRestoreStage.data.warnings.length > 0 ? ` ${applyRestoreStage.data.warnings.join(' ')}` : ''}
                 </Alert>
               ) : null}
               <Stack direction={{ xs: 'column', sm: 'row' }} spacing={1} alignItems={{ xs: 'flex-start', sm: 'center' }}>
@@ -224,7 +272,16 @@ export function SettingsPage() {
                   variant="contained"
                   color="secondary"
                   startIcon={<RestoreRoundedIcon />}
-                  onClick={() => restoreStage && applyRestoreStage.mutate(restoreStage)}
+                  onClick={() =>
+                    restoreStage &&
+                    applyRestoreStage.mutate(restoreStage, {
+                      onSuccess: () => {
+                        setRestoreStage(null)
+                        setRestoreError(null)
+                        setBackupNotice('Restore applied. Forge refreshed local workspaces from the restored state.')
+                      },
+                    })
+                  }
                   disabled={!restoreStage || applyRestoreStage.isPending}
                 >
                   Apply staged restore

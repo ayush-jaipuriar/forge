@@ -3,6 +3,7 @@ import {
   localNotificationStateRepository,
   localRestoreJobRepository,
   localSettingsRepository,
+  localSyncQueueRepository,
 } from '@/data/local'
 import {
   createEmptyRestoreCounts,
@@ -41,6 +42,7 @@ export async function applyRestoreStage(stage: RestoreStage): Promise<RestoreJob
   const startedAt = new Date().toISOString()
   const appliedCounts = createEmptyRestoreCounts()
   const warnings = [...stage.warnings]
+  const outstandingSyncItems = await localSyncQueueRepository.listOutstanding()
   const baseSettings = stage.payload.settings ?? (stage.payload.integrations.calendar ? createDefaultUserSettings() : null)
   const normalizedSettings = baseSettings
     ? {
@@ -91,6 +93,13 @@ export async function applyRestoreStage(stage: RestoreStage): Promise<RestoreJob
 
   if (stage.payload.integrations.health) {
     warnings.push('Health integration scaffolding remains provider-owned future state and was not restored.')
+  }
+
+  if (outstandingSyncItems.length > 0) {
+    await localSyncQueueRepository.clearAll()
+    warnings.push(
+      `Cleared ${outstandingSyncItems.length} queued local sync item(s) so stale pre-restore writes cannot replay over the restored state.`,
+    )
   }
 
   const completedAt = new Date().toISOString()

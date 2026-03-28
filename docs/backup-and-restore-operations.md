@@ -65,6 +65,16 @@ Current steps:
 4. user applies the staged restore intentionally
 5. Forge writes the compatible local state and records a restore job
 
+## Restore Safety Rule
+
+Restore is now treated as a local state replacement event, not just a data import.
+
+That means:
+
+- Forge clears any queued local sync mutations before finishing the restore
+- this prevents stale pre-restore writes from replaying later and silently overwriting the restored state
+- the restore job records that queue-clear step as a warning so the behavior stays visible
+
 ## What Restore Applies Today
 
 Current restore behavior applies:
@@ -87,6 +97,20 @@ These are intentionally treated as derived or provider-owned state:
 - Firebase Auth user identity
 
 Forge reports those as warnings so the restore remains honest.
+
+## UI Refresh Behavior
+
+Applying a restore now invalidates the workspaces that depend on restored settings and day data:
+
+- Settings
+- Today
+- Schedule weekly view
+- Prep
+- Physical
+- Readiness
+- Command Center
+
+This matters because restore should feel deterministic immediately, not “correct after a random reload.”
 
 ## Why Partial Restore Exists
 

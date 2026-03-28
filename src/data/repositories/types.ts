@@ -155,6 +155,7 @@ export interface SyncQueueRepository {
   listOutstanding(): Promise<AnySyncQueueItem[]>
   listReplayable(): Promise<AnySyncQueueItem[]>
   remove(id: string): Promise<void>
+  clearAll(): Promise<void>
   countOutstanding(): Promise<number>
   markRetrying(id: string): Promise<void>
   markFailed(id: string, message: string): Promise<void>

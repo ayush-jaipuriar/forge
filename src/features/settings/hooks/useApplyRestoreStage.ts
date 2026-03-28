@@ -16,7 +16,19 @@ export function useApplyRestoreStage() {
           queryKey: ['today-workspace'],
         }),
         queryClient.invalidateQueries({
-          queryKey: ['schedule-workspace'],
+          queryKey: ['weekly-workspace'],
+        }),
+        queryClient.invalidateQueries({
+          queryKey: ['prep-workspace'],
+        }),
+        queryClient.invalidateQueries({
+          queryKey: ['physical-workspace'],
+        }),
+        queryClient.invalidateQueries({
+          queryKey: ['readiness-workspace'],
+        }),
+        queryClient.invalidateQueries({
+          predicate: (query) => query.queryKey[0] === 'command-center-workspace',
         }),
       ])
     },

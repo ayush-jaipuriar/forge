@@ -554,6 +554,7 @@ Give users durable control over their data with reliable export and restore sema
 - [x] Implement restore validation and staging so invalid payloads fail honestly.
 - [x] Add restore reporting for partial compatibility or skipped records.
 - [x] Persist backup and restore metadata records for traceability.
+- [x] Ensure restore neutralizes stale queued local sync writes and refreshes every affected workspace after apply.
 
 ### Testing and Documentation
 
