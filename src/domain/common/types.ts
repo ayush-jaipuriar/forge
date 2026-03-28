@@ -52,4 +52,4 @@ export type PrepExposureState = 'notStarted' | 'introduced' | 'inProgress' | 're
 
 export type ReadinessLevel = 'critical' | 'behind' | 'building' | 'onTrack'
 
-export type SyncStatus = 'stable' | 'syncing' | 'queued'
+export type SyncStatus = 'stable' | 'syncing' | 'queued' | 'stale' | 'conflicted' | 'degraded'

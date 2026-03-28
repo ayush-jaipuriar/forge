@@ -41,6 +41,33 @@ export function getConnectivityStatusModel({
     }
   }
 
+  if (syncStatus === 'stale') {
+    return {
+      eyebrow: 'Sync Stale',
+      title: 'Queued changes have been waiting too long',
+      detail: 'Forge still has unsynced local work, and the queue age now suggests the current browser state may be drifting from the cloud baseline.',
+      tone: 'warning',
+    }
+  }
+
+  if (syncStatus === 'conflicted') {
+    return {
+      eyebrow: 'Sync Conflict',
+      title: 'Manual review is needed before sync can be trusted',
+      detail: 'Forge detected a conflict state that should stay visible instead of silently overwriting data.',
+      tone: 'warning',
+    }
+  }
+
+  if (syncStatus === 'degraded') {
+    return {
+      eyebrow: 'Sync Degraded',
+      title: 'Replay failures are blocking a clean sync pass',
+      detail: 'Local changes are still preserved, but at least one replay attempt failed and needs recovery attention.',
+      tone: 'warning',
+    }
+  }
+
   if (syncStatus === 'syncing') {
     return {
       eyebrow: 'Sync',

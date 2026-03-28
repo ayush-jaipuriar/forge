@@ -457,16 +457,16 @@ Strengthen the local-first and replay model before external integrations begin w
 
 ### Checklist
 
-- [ ] Expand sync-state modeling to distinguish queued, syncing, stale, failed, conflicted, and repaired states.
-- [ ] Add durable sync metadata records for last-success, last-failure, replay backlog, and stale-age tracking.
-- [ ] Introduce explicit conflict policies for singleton settings, day instances, backup state, and integration metadata.
-- [ ] Improve shell and settings visibility for sync-health and repairable failures.
-- [ ] Add monitoring hooks for replay failure storms and stale local-first state.
+- [x] Expand sync-state modeling to distinguish queued, syncing, stale, failed, conflicted, and repaired states.
+- [x] Add durable sync metadata records for last-success, last-failure, replay backlog, and stale-age tracking.
+- [x] Introduce explicit conflict policies for singleton settings, day instances, backup state, and integration metadata.
+- [x] Improve shell and settings visibility for sync-health and repairable failures.
+- [x] Add monitoring hooks for replay failure storms and stale local-first state.
 
 ### Testing and Documentation
 
-- [ ] Add unit and integration tests for sync-state transitions and conflict semantics.
-- [ ] Document conflict-resolution rules and replay expectations.
+- [x] Add unit and integration tests for sync-state transitions and conflict semantics.
+- [x] Document conflict-resolution rules and replay expectations.
 
 ### Exit Criteria
 
@@ -717,7 +717,7 @@ Close Phase 3 with an operationally credible release posture across notification
 ## Phase 3 Progress Tracker
 
 - [x] Milestone 0 complete
-- [ ] Milestone 1 complete
+- [x] Milestone 1 complete
 - [ ] Milestone 2 complete
 - [ ] Milestone 3 complete
 - [ ] Milestone 4 complete

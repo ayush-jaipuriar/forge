@@ -23,6 +23,16 @@ describe('pwaStatus helpers', () => {
     expect(model.tone).toBe('success')
   })
 
+  it('surfaces degraded sync as a recovery problem instead of a generic queued state', () => {
+    const model = getConnectivityStatusModel({
+      isOnline: true,
+      syncStatus: 'degraded',
+    })
+
+    expect(model.eyebrow).toBe('Sync Degraded')
+    expect(model.detail).toMatch(/replay attempt failed/i)
+  })
+
   it('shows the status surface when install, update, or offline states need user attention', () => {
     expect(
       shouldShowPwaStatusCard({

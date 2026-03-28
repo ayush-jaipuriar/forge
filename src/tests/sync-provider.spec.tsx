@@ -11,7 +11,10 @@ const authMock = vi.hoisted(() => ({
   },
 }))
 
-const countOutstandingMock = vi.hoisted(() => vi.fn<() => Promise<number>>())
+const listOutstandingMock = vi.hoisted(() => vi.fn<() => Promise<unknown[]>>())
+const diagnosticsGetDefaultMock = vi.hoisted(() => vi.fn<() => Promise<unknown>>())
+const diagnosticsUpsertMock = vi.hoisted(() => vi.fn<(value: unknown) => Promise<void>>())
+const listOpenConflictsMock = vi.hoisted(() => vi.fn<() => Promise<unknown[]>>())
 const flushSyncQueueMock = vi.hoisted(() => vi.fn<(userId: string) => Promise<number>>())
 
 vi.mock('@/features/auth/providers/useAuthSession', () => ({
@@ -19,8 +22,15 @@ vi.mock('@/features/auth/providers/useAuthSession', () => ({
 }))
 
 vi.mock('@/data/local', () => ({
+  localSyncConflictRepository: {
+    listOpen: listOpenConflictsMock,
+  },
+  localSyncDiagnosticsRepository: {
+    getDefault: diagnosticsGetDefaultMock,
+    upsert: diagnosticsUpsertMock,
+  },
   localSyncQueueRepository: {
-    countOutstanding: countOutstandingMock,
+    listOutstanding: listOutstandingMock,
   },
 }))
 
@@ -31,7 +41,10 @@ vi.mock('@/services/sync/syncOrchestrator', () => ({
 describe('SyncProvider', () => {
   beforeEach(() => {
     useUiStore.setState({ syncStatus: 'stable' })
-    countOutstandingMock.mockReset()
+    listOutstandingMock.mockReset()
+    diagnosticsGetDefaultMock.mockReset()
+    diagnosticsUpsertMock.mockReset()
+    listOpenConflictsMock.mockReset()
     flushSyncQueueMock.mockReset()
     authMock.value = {
       status: 'authenticated',
@@ -39,11 +52,32 @@ describe('SyncProvider', () => {
         uid: 'operator-1',
       },
     }
+    diagnosticsGetDefaultMock.mockResolvedValue(null)
+    diagnosticsUpsertMock.mockResolvedValue()
+    listOpenConflictsMock.mockResolvedValue([])
   })
 
   it('replays queued work after connectivity returns', async () => {
     setNavigatorOnline(false)
-    countOutstandingMock.mockResolvedValueOnce(2).mockResolvedValueOnce(2)
+    const recentTimestamp = new Date().toISOString()
+    listOutstandingMock
+      .mockResolvedValueOnce([
+        {
+          id: 'q1',
+          status: 'pending',
+          queuedAt: recentTimestamp,
+          updatedAt: recentTimestamp,
+        },
+      ])
+      .mockResolvedValueOnce([
+        {
+          id: 'q1',
+          status: 'pending',
+          queuedAt: recentTimestamp,
+          updatedAt: recentTimestamp,
+        },
+      ])
+      .mockResolvedValueOnce([])
     flushSyncQueueMock.mockResolvedValueOnce(0)
 
     render(
@@ -63,6 +97,30 @@ describe('SyncProvider', () => {
       expect(flushSyncQueueMock).toHaveBeenCalledWith('operator-1')
       expect(useUiStore.getState().syncStatus).toBe('stable')
     })
+  })
+
+  it('surfaces degraded state when failed replay items remain outstanding', async () => {
+    setNavigatorOnline(true)
+    listOutstandingMock.mockResolvedValue([
+      {
+        id: 'q1',
+        status: 'failed',
+        queuedAt: '2026-03-28T10:00:00.000Z',
+        updatedAt: '2026-03-28T10:00:00.000Z',
+      },
+    ])
+
+    render(
+      <SyncProvider>
+        <div>sync test</div>
+      </SyncProvider>,
+    )
+
+    await waitFor(() => {
+      expect(useUiStore.getState().syncStatus).toBe('degraded')
+    })
+
+    expect(flushSyncQueueMock).not.toHaveBeenCalled()
   })
 })
 
