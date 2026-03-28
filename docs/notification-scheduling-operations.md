@@ -113,6 +113,7 @@ Current local verification status:
 - the Functions workspace typechecks successfully
 - the Functions workspace builds successfully into `functions/lib`
 - the Functions workspace lints successfully
+- `functions/.nvmrc` now pins the intended local major runtime to `20`
 
 Current caveat:
 

@@ -549,16 +549,16 @@ Give users durable control over their data with reliable export and restore sema
 
 ### Checklist
 
-- [ ] Implement versioned JSON export of the core user record, settings, day instances, analytics essentials, and integration metadata.
-- [ ] Add markdown-friendly note export where execution notes or summaries make that worthwhile.
-- [ ] Implement restore validation and staging so invalid payloads fail honestly.
-- [ ] Add restore reporting for partial compatibility or skipped records.
-- [ ] Persist backup and restore metadata records for traceability.
+- [x] Implement versioned JSON export of the core user record, settings, day instances, analytics essentials, and integration metadata.
+- [x] Add markdown-friendly note export where execution notes or summaries make that worthwhile.
+- [x] Implement restore validation and staging so invalid payloads fail honestly.
+- [x] Add restore reporting for partial compatibility or skipped records.
+- [x] Persist backup and restore metadata records for traceability.
 
 ### Testing and Documentation
 
-- [ ] Add fixture-based tests for export serialization and restore validation.
-- [ ] Document export contents, restore limits, and schema-version expectations.
+- [x] Add fixture-based tests for export serialization and restore validation.
+- [x] Document export contents, restore limits, and schema-version expectations.
 
 ### Exit Criteria
 
@@ -721,7 +721,7 @@ Close Phase 3 with an operationally credible release posture across notification
 - [x] Milestone 1 complete
 - [x] Milestone 2 complete
 - [x] Milestone 3 complete
-- [ ] Milestone 4 complete
+- [x] Milestone 4 complete
 - [ ] Milestone 5 complete
 - [ ] Milestone 6 complete
 - [ ] Milestone 7 complete

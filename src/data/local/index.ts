@@ -1,14 +1,20 @@
+import { LocalBackupRepository } from '@/data/local/localBackupRepository'
 import { LocalDayInstanceRepository } from '@/data/local/localDayInstanceRepository'
+import { LocalExportPayloadRepository } from '@/data/local/localExportPayloadRepository'
 import { LocalNotificationLogRepository } from '@/data/local/localNotificationLogRepository'
 import { LocalNotificationStateRepository } from '@/data/local/localNotificationStateRepository'
+import { LocalRestoreJobRepository } from '@/data/local/localRestoreJobRepository'
 import { LocalSettingsRepository } from '@/data/local/localSettingsRepository'
 import { LocalSyncConflictRepository } from '@/data/local/localSyncConflictRepository'
 import { LocalSyncDiagnosticsRepository } from '@/data/local/localSyncDiagnosticsRepository'
 import { LocalSyncQueueRepository } from '@/data/local/localSyncQueueRepository'
 
+export const localBackupRepository = new LocalBackupRepository()
 export const localDayInstanceRepository = new LocalDayInstanceRepository()
+export const localExportPayloadRepository = new LocalExportPayloadRepository()
 export const localNotificationStateRepository = new LocalNotificationStateRepository()
 export const localNotificationLogRepository = new LocalNotificationLogRepository()
+export const localRestoreJobRepository = new LocalRestoreJobRepository()
 export const localSettingsRepository = new LocalSettingsRepository()
 export const localSyncDiagnosticsRepository = new LocalSyncDiagnosticsRepository()
 export const localSyncConflictRepository = new LocalSyncConflictRepository()

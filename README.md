@@ -61,6 +61,7 @@ npm run preview -- --host 127.0.0.1 --port 4173
 - [Analytics Performance Notes](/Users/ayushjaipuriar/Documents/GitHub/forge/docs/analytics-performance-notes.md)
 - [Notification Delivery Rules](/Users/ayushjaipuriar/Documents/GitHub/forge/docs/notification-delivery-rules.md)
 - [Notification Scheduling Operations](/Users/ayushjaipuriar/Documents/GitHub/forge/docs/notification-scheduling-operations.md)
+- [Backup and Restore Operations](/Users/ayushjaipuriar/Documents/GitHub/forge/docs/backup-and-restore-operations.md)
 - [Firebase Setup](/Users/ayushjaipuriar/Documents/GitHub/forge/docs/firebase-setup.md)
 - [Deployment Guide](/Users/ayushjaipuriar/Documents/GitHub/forge/docs/deployment-guide.md)
 - [Google Calendar Scaffolding](/Users/ayushjaipuriar/Documents/GitHub/forge/docs/google-calendar-scaffolding.md)

@@ -7,6 +7,7 @@ import type {
 } from '@/domain/analytics/types'
 import type { CalendarSyncStateSnapshot } from '@/domain/calendar/types'
 import type { HealthIntegrationSnapshot } from '@/domain/health/types'
+import type { NotificationStateSnapshot } from '@/domain/notifications/types'
 import type { DayInstance } from '@/domain/routine/types'
 import type { UserSettings } from '@/domain/settings/types'
 import type { SyncDiagnosticsSnapshot } from '@/domain/sync/types'
@@ -66,10 +67,19 @@ export type RestoreJobRecord = {
   appliedCounts: RestoreCounts
 }
 
+export type ForgeUserBackupRecord = {
+  uid: string
+  email: string | null
+  displayName: string | null
+  photoURL: string | null
+}
+
 export type ForgeExportPayload = {
+  id: string
   schemaVersion: number
   exportedAt: string
   userId: string
+  user: ForgeUserBackupRecord | null
   settings: UserSettings | null
   dayInstances: DayInstance[]
   analytics: {
@@ -81,6 +91,7 @@ export type ForgeExportPayload = {
   }
   integrations: {
     calendar: CalendarSyncStateSnapshot | null
+    notificationState: NotificationStateSnapshot | null
     syncDiagnostics: SyncDiagnosticsSnapshot | null
     health: HealthIntegrationSnapshot | null
   }

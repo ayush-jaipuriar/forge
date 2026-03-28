@@ -1,5 +1,6 @@
 import { openDB } from 'idb'
 import type { DBSchema, IDBPDatabase } from 'idb'
+import type { BackupSnapshotRecord, ForgeExportPayload, RestoreJobRecord } from '@/domain/backup/types'
 import type { AnySyncQueueItem } from '@/domain/execution/sync'
 import type { NotificationLogRecord, NotificationStateSnapshot } from '@/domain/notifications/types'
 import type { DayInstance } from '@/domain/routine/types'
@@ -50,6 +51,27 @@ type ForgeDbSchema = DBSchema & {
       byEvaluatedAt: string
     }
   }
+  backups: {
+    key: string
+    value: BackupSnapshotRecord
+    indexes: {
+      byCreatedAt: string
+    }
+  }
+  restoreJobs: {
+    key: string
+    value: RestoreJobRecord
+    indexes: {
+      byCreatedAt: string
+    }
+  }
+  exportPayloads: {
+    key: string
+    value: ForgeExportPayload
+    indexes: {
+      byExportedAt: string
+    }
+  }
 }
 
 let dbPromise: Promise<IDBPDatabase<ForgeDbSchema>> | null = null
@@ -57,7 +79,7 @@ const FORGE_DB_NAME = 'forge-db'
 
 export function getForgeDb() {
   if (!dbPromise) {
-    dbPromise = openDB<ForgeDbSchema>(FORGE_DB_NAME, 3, {
+    dbPromise = openDB<ForgeDbSchema>(FORGE_DB_NAME, 4, {
       upgrade(db) {
         if (!db.objectStoreNames.contains('dayInstances')) {
           const dayInstances = db.createObjectStore('dayInstances', {
@@ -106,6 +128,27 @@ export function getForgeDb() {
           })
           notificationLog.createIndex('byStatus', 'status')
           notificationLog.createIndex('byEvaluatedAt', 'evaluatedAt')
+        }
+
+        if (!db.objectStoreNames.contains('backups')) {
+          const backups = db.createObjectStore('backups', {
+            keyPath: 'id',
+          })
+          backups.createIndex('byCreatedAt', 'createdAt')
+        }
+
+        if (!db.objectStoreNames.contains('restoreJobs')) {
+          const restoreJobs = db.createObjectStore('restoreJobs', {
+            keyPath: 'id',
+          })
+          restoreJobs.createIndex('byCreatedAt', 'createdAt')
+        }
+
+        if (!db.objectStoreNames.contains('exportPayloads')) {
+          const exportPayloads = db.createObjectStore('exportPayloads', {
+            keyPath: 'id',
+          })
+          exportPayloads.createIndex('byExportedAt', 'exportedAt')
         }
       },
     })

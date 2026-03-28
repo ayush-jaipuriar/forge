@@ -1,21 +1,34 @@
+import ArchiveRoundedIcon from '@mui/icons-material/ArchiveRounded'
+import DownloadRoundedIcon from '@mui/icons-material/DownloadRounded'
 import NotificationsActiveRoundedIcon from '@mui/icons-material/NotificationsActiveRounded'
+import RestoreRoundedIcon from '@mui/icons-material/RestoreRounded'
 import SettingsSuggestRoundedIcon from '@mui/icons-material/SettingsSuggestRounded'
+import UploadFileRoundedIcon from '@mui/icons-material/UploadFileRounded'
 import { Alert, Button, Chip, CircularProgress, Grid, Stack, Switch, Typography } from '@mui/material'
+import { useRef, useState, type ChangeEvent } from 'react'
 import { EmptyState } from '@/components/common/EmptyState'
 import { SectionHeader } from '@/components/common/SectionHeader'
 import { SurfaceCard } from '@/components/common/SurfaceCard'
 import { useAuthSession } from '@/features/auth/providers/useAuthSession'
 import { usePwaState } from '@/features/pwa/providers/usePwaState'
+import { useApplyRestoreStage } from '@/features/settings/hooks/useApplyRestoreStage'
+import { useCreateManualBackup } from '@/features/settings/hooks/useCreateManualBackup'
 import { useRequestNotificationPermission } from '@/features/settings/hooks/useRequestNotificationPermission'
 import { useSettingsWorkspace } from '@/features/settings/hooks/useSettingsWorkspace'
 import { useUpdateNotificationPreference } from '@/features/settings/hooks/useUpdateNotificationPreference'
+import { parseRestorePayloadText, type RestoreStage } from '@/services/backup/restoreService'
 
 export function SettingsPage() {
-  const { status } = useAuthSession()
+  const { status, user } = useAuthSession()
   const { canInstall, isInstalled, isOnline, needRefresh, offlineReady } = usePwaState()
   const { data, isLoading } = useSettingsWorkspace()
   const updateNotificationPreference = useUpdateNotificationPreference()
   const requestNotificationPermission = useRequestNotificationPermission()
+  const createManualBackup = useCreateManualBackup(user)
+  const applyRestoreStage = useApplyRestoreStage()
+  const restoreInputRef = useRef<HTMLInputElement | null>(null)
+  const [restoreStage, setRestoreStage] = useState<RestoreStage | null>(null)
+  const [restoreError, setRestoreError] = useState<string | null>(null)
 
   if (isLoading || !data) {
     return (
@@ -27,7 +40,27 @@ export function SettingsPage() {
     )
   }
 
-  const { calendarConnection, featureFlags, mirroredBlockPreview, notificationState, recentNotificationLogs, settings } = data
+  const { calendarConnection, featureFlags, mirroredBlockPreview, notificationState, recentBackups, recentNotificationLogs, recentRestoreJobs, settings } = data
+
+  async function handleRestoreFileSelected(event: ChangeEvent<HTMLInputElement>) {
+    const file = event.target.files?.[0]
+
+    if (!file) {
+      return
+    }
+
+    try {
+      const text = await file.text()
+      const stage = await parseRestorePayloadText(text)
+      setRestoreStage(stage)
+      setRestoreError(null)
+    } catch (error) {
+      setRestoreStage(null)
+      setRestoreError(error instanceof Error ? error.message : 'Forge could not parse the selected backup file.')
+    } finally {
+      event.target.value = ''
+    }
+  }
 
   return (
     <Stack spacing={3}>
@@ -123,6 +156,88 @@ export function SettingsPage() {
         </Grid>
         <Grid size={{ xs: 12, md: 6 }}>
           <SurfaceCard
+            eyebrow="Backup Surface"
+            title="Manual export and controlled restore"
+            description="Phase 3 backup work starts with deterministic local exports and partial-safe restores before scheduled backup jobs arrive."
+            action={
+              <Chip
+                label={recentBackups[0]?.status ?? 'No backups yet'}
+                size="small"
+                variant="outlined"
+                color={recentBackups[0]?.status === 'ready' ? 'success' : 'default'}
+              />
+            }
+          >
+            <Stack spacing={1.25}>
+              <Typography variant="body2" color="text.secondary">
+                Latest manual backup: {recentBackups[0] ? `${recentBackups[0].createdAt} · ${recentBackups[0].sourceRecordCount} records` : 'None yet.'}
+              </Typography>
+              <Stack direction={{ xs: 'column', sm: 'row' }} spacing={1} flexWrap="wrap">
+                <Button
+                  variant="contained"
+                  startIcon={<DownloadRoundedIcon />}
+                  onClick={() => createManualBackup.mutate({ kind: 'json' })}
+                  disabled={createManualBackup.isPending}
+                >
+                  Export backup JSON
+                </Button>
+                <Button
+                  variant="outlined"
+                  startIcon={<ArchiveRoundedIcon />}
+                  onClick={() => createManualBackup.mutate({ kind: 'notes' })}
+                  disabled={createManualBackup.isPending}
+                >
+                  Export notes markdown
+                </Button>
+                <Button
+                  variant="outlined"
+                  startIcon={<UploadFileRoundedIcon />}
+                  onClick={() => restoreInputRef.current?.click()}
+                  disabled={applyRestoreStage.isPending}
+                >
+                  Load restore file
+                </Button>
+                <input
+                  ref={restoreInputRef}
+                  type="file"
+                  accept="application/json,.json"
+                  hidden
+                  onChange={handleRestoreFileSelected}
+                />
+              </Stack>
+              <Typography variant="body2" color="text.secondary">
+                Restore applies core local state first and reports partial compatibility honestly for analytics or provider-owned metadata that Forge prefers to regenerate.
+              </Typography>
+              {restoreError ? (
+                <Alert severity="error" variant="outlined">
+                  {restoreError}
+                </Alert>
+              ) : null}
+              {restoreStage ? (
+                <Alert severity="info" variant="outlined">
+                  {restoreStage.summary}
+                  {restoreStage.warnings.length > 0 ? ` Warnings: ${restoreStage.warnings.join(' ')}` : ''}
+                </Alert>
+              ) : null}
+              <Stack direction={{ xs: 'column', sm: 'row' }} spacing={1} alignItems={{ xs: 'flex-start', sm: 'center' }}>
+                <Button
+                  variant="contained"
+                  color="secondary"
+                  startIcon={<RestoreRoundedIcon />}
+                  onClick={() => restoreStage && applyRestoreStage.mutate(restoreStage)}
+                  disabled={!restoreStage || applyRestoreStage.isPending}
+                >
+                  Apply staged restore
+                </Button>
+                <Typography variant="body2" color="text.secondary">
+                  Recent restore jobs: {recentRestoreJobs.length === 0 ? 'None yet.' : recentRestoreJobs.map((job) => `${job.status} (${job.createdAt.slice(0, 10)})`).join(' · ')}
+                </Typography>
+              </Stack>
+            </Stack>
+          </SurfaceCard>
+        </Grid>
+        <Grid size={{ xs: 12, md: 6 }}>
+          <SurfaceCard
             eyebrow="Calendar Scaffolding"
             title="Google Calendar future boundary"
             description="Phase 1 keeps this integration deliberately disabled while still giving the codebase a real typed seam for future event mirroring and collision-aware recommendations."
@@ -172,7 +287,7 @@ export function SettingsPage() {
         </Grid>
       </Grid>
       <Alert severity="info" variant="outlined">
-        Notifications now have a real local rule, permission, and logging foundation. Calendar scaffolding is still architecture-only until the later Phase 3 milestones.
+        Notifications now have a real local rule, permission, and logging foundation. Backup and restore now provide a deterministic local safety layer. Calendar scaffolding is still architecture-only until the later Phase 3 milestones.
       </Alert>
       <EmptyState
         icon={<SettingsSuggestRoundedIcon color="primary" />}
