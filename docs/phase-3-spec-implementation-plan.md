@@ -596,7 +596,41 @@ Turn backups from a manual escape hatch into a durable safety system.
 - users have both manual export control and scheduled backup protection
 - known backup scale limits and the planned payload-storage migration are documented honestly rather than hidden
 
-## Milestone 6: Google Calendar Read Integration and Collision Modeling
+## Milestone 6: Cloud Storage Backup Payload Migration and Server Restore Foundations
+
+### Goal
+
+Move scheduled backup payload bodies out of Firestore and establish the retrieval model needed for future user-facing restore from server-side scheduled backups.
+
+### Deliverables
+
+- Cloud Storage payload persistence
+- Firestore metadata pointer model
+- scheduled-backup payload retrieval service
+- future-safe restore selection foundation
+
+### Checklist
+
+- [x] Add Firebase Storage integration for scheduled backup payload bodies while keeping backup metadata in Firestore.
+- [x] Replace `backupPayloads/{backupId}` document-body persistence with deterministic Cloud Storage object paths derived from `backupId`.
+- [x] Extend backup metadata to store payload location, storage provider, byte size, checksum, and restore eligibility.
+- [x] Add retrieval helpers that can fetch scheduled backup payloads by Firestore metadata pointer instead of assuming Firestore document storage.
+- [x] Define and implement payload cleanup behavior so retention expiry also removes Cloud Storage payload objects.
+- [x] Add restore-foundation contracts for future user-facing server-backup selection and guarded restore eligibility checks.
+- [x] Surface honest scheduled-backup storage state in Settings or operations views without pretending server-restore UI is already complete.
+- [x] Add monitoring for payload upload failures, payload cleanup failures, and metadata-to-object drift.
+
+### Testing and Documentation
+
+- [x] Add tests for metadata-pointer generation, payload cleanup planning, and restore-eligibility helpers.
+- [x] Document Cloud Storage bucket assumptions, object-key conventions, cleanup behavior, and the staged path toward in-app restore from server backups.
+
+### Exit Criteria
+
+- scheduled backups no longer rely on single Firestore documents for full payload bodies
+- Forge has a documented and testable foundation for future user-facing restore from server-side scheduled backups
+
+## Milestone 7: Google Calendar Read Integration and Collision Modeling
 
 ### Goal
 
@@ -626,7 +660,7 @@ Introduce external calendar awareness without allowing Calendar to replace the F
 
 - Forge can read Calendar pressure safely without surrendering control of routine intent
 
-## Milestone 7: Google Calendar Write and Mirror Management
+## Milestone 8: Google Calendar Write and Mirror Management
 
 ### Goal
 
@@ -657,7 +691,7 @@ Mirror major Forge blocks into Google Calendar with stable metadata and reconcil
 
 - mirrored major blocks behave predictably and do not create silent Calendar drift
 
-## Milestone 8: Health Integration Scaffolding Polish
+## Milestone 9: Health Integration Scaffolding Polish
 
 ### Goal
 
@@ -686,7 +720,7 @@ Polish the future-facing health seams so the product stays honest and ready for 
 
 - future health-provider work has clear seams and honest current-state presentation
 
-## Milestone 9: Phase 3 QA, Security, and Release Hardening
+## Milestone 10: Phase 3 QA, Security, and Release Hardening
 
 ### Goal
 
@@ -725,10 +759,11 @@ Close Phase 3 with an operationally credible release posture across notification
 - [x] Milestone 3 complete
 - [x] Milestone 4 complete
 - [x] Milestone 5 complete
-- [ ] Milestone 6 complete
+- [x] Milestone 6 complete
 - [ ] Milestone 7 complete
 - [ ] Milestone 8 complete
 - [ ] Milestone 9 complete
+- [ ] Milestone 10 complete
 
 ## Recommended Immediate Execution Order
 
@@ -744,6 +779,7 @@ If implementation starts now, the recommended order is:
 8. Milestone 7
 9. Milestone 8
 10. Milestone 9
+11. Milestone 10
 
 That order deliberately puts sync truthfulness, notification credibility, and data safety ahead of Calendar depth.
 

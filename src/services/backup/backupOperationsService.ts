@@ -6,6 +6,7 @@ import {
   type BackupSnapshotRecord,
 } from '@/domain/backup/types'
 import { getFirebaseFirestore } from '@/lib/firebase/client'
+import { buildBackupRestoreEligibility } from '@/services/backup/backupPayloadStorage'
 import { reportMonitoringEvent } from '@/services/monitoring/monitoringService'
 
 export type BackupOperationsWorkspace = {
@@ -108,6 +109,9 @@ export function reportBackupHealthMonitoring(params: {
 }
 
 export async function getBackupOperationsWorkspace(userId: string | null | undefined): Promise<BackupOperationsWorkspace> {
+  const checkedAt = new Date().toISOString()
+  const restoreUserId = userId ?? 'local-user'
+
   if (!userId) {
     const operations = (await localBackupOperationsRepository.getDefault()) ?? createDefaultBackupOperationsSnapshot()
     reportBackupHealthMonitoring({
@@ -118,7 +122,16 @@ export async function getBackupOperationsWorkspace(userId: string | null | undef
 
     return {
       operations,
-      recentBackups: await localBackupRepository.listRecent(5),
+      recentBackups: (await localBackupRepository.listRecent(5)).map((backup) => ({
+        ...backup,
+        restoreEligibility:
+          backup.restoreEligibility ??
+          buildBackupRestoreEligibility({
+            backup,
+            userId: restoreUserId,
+            checkedAt,
+          }),
+      })),
       source: {
         operations: 'local',
         recentBackups: 'local',
@@ -138,7 +151,16 @@ export async function getBackupOperationsWorkspace(userId: string | null | undef
 
     return {
       operations,
-      recentBackups: await localBackupRepository.listRecent(5),
+      recentBackups: (await localBackupRepository.listRecent(5)).map((backup) => ({
+        ...backup,
+        restoreEligibility:
+          backup.restoreEligibility ??
+          buildBackupRestoreEligibility({
+            backup,
+            userId: restoreUserId,
+            checkedAt,
+          }),
+      })),
       source: {
         operations: 'local',
         recentBackups: 'local',
@@ -154,7 +176,20 @@ export async function getBackupOperationsWorkspace(userId: string | null | undef
     const operations = operationsSnapshot.exists()
       ? ({ ...createDefaultBackupOperationsSnapshot(), ...operationsSnapshot.data() } as BackupOperationsSnapshot)
       : createDefaultBackupOperationsSnapshot()
-    const recentBackups = backupsSnapshot.docs.map((entry) => entry.data() as BackupSnapshotRecord)
+    const recentBackups = backupsSnapshot.docs.map((entry) => {
+      const backup = entry.data() as BackupSnapshotRecord
+
+      return {
+        ...backup,
+        restoreEligibility:
+          backup.restoreEligibility ??
+          buildBackupRestoreEligibility({
+            backup,
+            userId: restoreUserId,
+            checkedAt,
+          }),
+      }
+    })
     reportBackupHealthMonitoring({
       operations,
       source: 'remote',
@@ -201,7 +236,16 @@ export async function getBackupOperationsWorkspace(userId: string | null | undef
 
     return {
       operations,
-      recentBackups: await localBackupRepository.listRecent(5),
+      recentBackups: (await localBackupRepository.listRecent(5)).map((backup) => ({
+        ...backup,
+        restoreEligibility:
+          backup.restoreEligibility ??
+          buildBackupRestoreEligibility({
+            backup,
+            userId: restoreUserId,
+            checkedAt,
+          }),
+      })),
       source: {
         operations: 'local',
         recentBackups: 'local',

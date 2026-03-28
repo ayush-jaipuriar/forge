@@ -1,6 +1,7 @@
 import { getApp, getApps, initializeApp } from 'firebase/app'
 import { getAuth, GoogleAuthProvider } from 'firebase/auth'
 import { getFirestore } from 'firebase/firestore'
+import { getStorage } from 'firebase/storage'
 import { firebaseConfig, hasFirebaseEnv } from '@/lib/firebase/config'
 
 let cachedProvider: GoogleAuthProvider | null = null
@@ -23,6 +24,12 @@ export function getFirebaseFirestore() {
   const app = getFirebaseApp()
 
   return app ? getFirestore(app) : null
+}
+
+export function getFirebaseStorage() {
+  const app = getFirebaseApp()
+
+  return app ? getStorage(app) : null
 }
 
 export function getGoogleAuthProvider() {

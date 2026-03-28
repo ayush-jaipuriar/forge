@@ -6,6 +6,7 @@ This document records the Phase 3 backup durability model across:
 
 - Milestone 4 manual backup and restore foundation
 - Milestone 5 scheduled backups, retention, and recovery operations
+- Milestone 6 Cloud Storage payload migration and server-restore foundations
 
 The key boundary is simple:
 
@@ -173,7 +174,7 @@ When a backup falls outside retention:
 
 - its metadata record is marked `expired`
 - its `retentionExpiresAt` timestamp is recorded
-- its stored payload document is deleted
+- its stored payload body is deleted from its backing store
 
 This keeps recovery history inspectable while preventing old payload storage from growing forever.
 
@@ -218,33 +219,70 @@ The Settings UI now shows those sources separately so the user is not misled int
 Current recovery posture is:
 
 - manual restore still restores from user-provided backup JSON
-- scheduled backups create durable remote recovery records and payloads for later recovery tooling
+- scheduled backups now create Firestore metadata plus Cloud Storage-backed payload bodies
+- Forge can now resolve scheduled-backup metadata into a real payload fetch path, which is the foundation required for later in-app restore from server-side scheduled backups
 - restore safety still clears local queued sync items before completion so stale pre-restore writes cannot replay
 
 Current limitation:
 
 - the app does not yet expose a browser picker for server-side scheduled backup history
-- scheduled backup records are available to support later recovery UI and admin workflows, but recovery selection remains a future milestone
+- retrieval and restore contracts are now in place, but user-facing selection and apply flows for server-side scheduled backups remain a later milestone
 
-## Known Scale Limit and Planned Storage Strategy
+## Scheduled Backup Payload Storage
 
-The current scheduled-backup implementation stores each full backup payload in Firestore as a single document.
+The current scheduled-backup implementation no longer stores payload bodies in Firestore documents.
 
-That is acceptable for early-stage verification and modest history sizes, but it is not the long-term scalability posture.
+Current storage posture:
+
+- Firestore keeps backup metadata and backup-operations state
+- Cloud Storage stores scheduled backup payload bodies using deterministic object paths derived from `backupId`
+- legacy scheduled backups without explicit payload metadata can still resolve to inferred Firestore payload locations for compatibility during migration
 
 Why this matters:
 
+- Firestore remains the operational index
+- Cloud Storage absorbs the heavy payload body so growing history does not collide with Firestore document-size limits
+- future restore flows can select from metadata first and fetch payload bodies only when needed
+
+## Object-Key Convention
+
+Current default Cloud Storage object path:
+
+- `users/{uid}/backups/{backupId}.json`
+
+This keeps the object path:
+
+- deterministic
+- owner-scoped
+- easy to clean up during retention expiry
+
+## Server Restore Foundation
+
+Forge now has a dedicated retrieval foundation for scheduled backup payloads:
+
+- backup metadata can declare a payload pointer and restore eligibility
+- the client can resolve a scheduled backup record into either a Cloud Storage object or a legacy Firestore payload document
+- restore eligibility is now tracked explicitly instead of being implied by backup existence alone
+
+This is intentionally a foundation layer, not the final user workflow.
+
+What still remains for later work:
+
+- server-backup picker UI
+- explicit user confirmation flow for selecting one scheduled remote backup over another
+- end-to-end restore-from-server interaction design
+
+## Previous Scale Limit
+
+The earlier Firestore-only payload approach is now being retired as the main path.
+
+It remains relevant only as a migration and compatibility concern for older scheduled backup records.
+
+The reason for the migration was straightforward:
+
 - a full backup payload includes settings, every stored day instance, and derived analytics artifacts
 - Firestore document size is bounded
-- a user with enough retained history can eventually exceed that bound even if the metadata model itself remains healthy
-
-Planned next-step strategy:
-
-- keep backup metadata and operations state in Firestore
-- move heavy scheduled backup payload bodies to Cloud Storage, or chunk them into manifest-plus-parts storage if Cloud Storage is not yet adopted
-- keep restore and retention driven from Firestore metadata records so operational visibility does not depend on blob reads
-
-Until that storage migration lands, scheduled backups should be treated as operationally useful but still carrying a documented scale ceiling.
+- Cloud Storage is a better fit for growing payload bodies while Firestore remains a better fit for metadata, retention markers, and restore readiness
 
 ## Schema Compatibility
 

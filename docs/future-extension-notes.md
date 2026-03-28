@@ -25,7 +25,7 @@ Phase 1 should leave clean extension points for:
 - dedicated backend extraction for orchestration or merge conflict resolution
 - AI-generated planning or coaching features
 
-## Phase Boundary After Milestone 9
+## Phase Boundary After Milestone 10
 
 Phase 2 now covers:
 
@@ -42,21 +42,13 @@ Phase 3 still begins at:
 - deeper sync or orchestration extraction beyond the current Firebase-plus-Functions posture
 ## Backup Payload Storage Migration
 
-The current Phase 3 scheduled-backup implementation keeps metadata and payloads in Firestore so the system stays simple while the feature is being proven.
+This is no longer just a future note. It is now part of the official Phase 3 milestone sequence before Calendar work continues.
 
-That should not be treated as the long-term storage posture.
-
-Why:
-
-- full backup payloads contain settings, all retained day instances, and derived analytics artifacts
-- Firestore metadata is a good fit for auditability and retention markers
-- Firestore document size is a poor long-term fit for growing backup bodies
-
-Recommended migration path:
+The current Phase 3 scheduled-backup implementation keeps metadata and payloads in Firestore so the system stays simple while the feature is being proven, but the planned migration path is now explicit:
 
 1. Keep `backups/{backupId}` and `backupOperations/default` in Firestore as the operational index.
-2. Move heavy payload bodies to Cloud Storage using deterministic object keys derived from `backupId`.
-3. Keep checksum, byte size, retention state, and restore eligibility in Firestore metadata.
-4. Teach restore flows to fetch by metadata pointer instead of assuming the payload body is a Firestore document.
+2. Move heavy scheduled-backup payload bodies to Cloud Storage using deterministic object keys derived from `backupId`.
+3. Keep checksum, byte size, retention state, storage location, and restore eligibility in Firestore metadata.
+4. Add retrieval helpers and restore contracts so future in-app restore from server-side scheduled backups becomes possible without redesigning the backup model again.
 
-If Cloud Storage is not adopted immediately, a manifest-plus-chunks Firestore model is the fallback. Cloud Storage is still the cleaner long-term recommendation.
+Cloud Storage is now the chosen target, not just one possible fallback.

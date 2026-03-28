@@ -1,4 +1,5 @@
 import { localRestoreJobRepository, localSettingsRepository } from '@/data/local'
+import { isServerRestoreEligible } from '@/services/backup/backupPayloadStorage'
 import { getBackupOperationsWorkspace } from '@/services/backup/backupOperationsService'
 import { googleCalendarScaffoldingService } from '@/services/calendar/calendarIntegrationService'
 import { getNotificationStateWorkspace } from '@/services/notifications/notificationStateService'
@@ -27,6 +28,23 @@ export async function getSettingsWorkspace(userId?: string | null) {
     backupOperations: backupWorkspace.operations,
     backupSource: backupWorkspace.source,
     recentBackups: backupWorkspace.recentBackups,
+    serverRestoreReadyCount: userId
+      ? backupWorkspace.recentBackups.filter((backup) =>
+          isServerRestoreEligible({
+            backup,
+            userId,
+          }),
+        ).length
+      : 0,
+    latestServerRestoreReadyBackup:
+      userId
+        ? backupWorkspace.recentBackups.find((backup) =>
+            isServerRestoreEligible({
+              backup,
+              userId,
+            }),
+          ) ?? null
+        : null,
     recentRestoreJobs,
     mirroredBlockPreview,
     featureFlags: {

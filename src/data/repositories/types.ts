@@ -135,6 +135,11 @@ export interface ExportPayloadRepository {
   save(payload: ForgeExportPayload): Promise<void>
 }
 
+export interface RemoteBackupRestoreRepository {
+  listRecent(userId: string, limit?: number): Promise<BackupSnapshotRecord[]>
+  getPayload(userId: string, backup: BackupSnapshotRecord): Promise<ForgeExportPayload>
+}
+
 export interface CalendarStateRepository {
   getDefault(): Promise<CalendarSyncStateSnapshot | null>
   upsert(snapshot: CalendarSyncStateSnapshot): Promise<void>

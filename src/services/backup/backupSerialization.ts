@@ -5,6 +5,8 @@ import {
 import {
   createDefaultBackupOperationsSnapshot,
   FORGE_BACKUP_SCHEMA_VERSION,
+  type BackupPayloadPointer,
+  type BackupRestoreEligibility,
   type BackupOperationsSnapshot,
   type BackupRetentionPolicy,
   type BackupSnapshotRecord,
@@ -99,12 +101,16 @@ export function buildBackupSnapshotRecord({
   trigger,
   jsonText,
   retentionExpiresAt,
+  payloadPointer,
+  restoreEligibility,
 }: {
   payload: ForgeExportPayload
   exportedAt: string
   trigger: 'manual' | 'scheduled'
   jsonText: string
   retentionExpiresAt?: string
+  payloadPointer?: BackupPayloadPointer | null
+  restoreEligibility?: BackupRestoreEligibility | null
 }): BackupSnapshotRecord {
   return {
     id: payload.id,
@@ -116,6 +122,8 @@ export function buildBackupSnapshotRecord({
     retentionExpiresAt,
     checksum: buildChecksum(jsonText),
     byteSize: new TextEncoder().encode(jsonText).length,
+    payloadPointer: payloadPointer ?? null,
+    restoreEligibility: restoreEligibility ?? null,
     sourceRecordCount:
       (payload.user ? 1 : 0) +
       (payload.settings ? 1 : 0) +

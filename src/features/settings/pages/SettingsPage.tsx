@@ -46,11 +46,13 @@ export function SettingsPage() {
     backupSource,
     calendarConnection,
     featureFlags,
+    latestServerRestoreReadyBackup,
     mirroredBlockPreview,
     notificationState,
     recentBackups,
     recentNotificationLogs,
     recentRestoreJobs,
+    serverRestoreReadyCount,
     settings,
   } = data
 
@@ -172,7 +174,7 @@ export function SettingsPage() {
           <SurfaceCard
             eyebrow="Backup Surface"
             title="Manual export and controlled restore"
-            description="Phase 3 backup work starts with deterministic local exports and partial-safe restores before scheduled backup jobs arrive."
+            description="Forge now combines deterministic local exports with scheduled remote protection, while keeping restore posture and storage provenance explicit."
             action={
               <Chip
                 label={recentBackups[0]?.status ?? 'No backups yet'}
@@ -200,9 +202,18 @@ export function SettingsPage() {
                 Retention: keep {backupOperations.retentionPolicy.keepDaily} daily, {backupOperations.retentionPolicy.keepWeekly} weekly, and {backupOperations.retentionPolicy.keepManual} manual backups.
                 Status source: {backupSource.operations}. Recent backup list source: {backupSource.recentBackups}.
               </Typography>
+              <Typography variant="body2" color="text.secondary">
+                Server restore foundation: {serverRestoreReadyCount} restore-ready scheduled backup{serverRestoreReadyCount === 1 ? '' : 's'} in the current view.
+                {latestServerRestoreReadyBackup ? ` Latest restore-ready backup: ${latestServerRestoreReadyBackup.createdAt}.` : ' No server restore-ready backup is visible yet.'}
+              </Typography>
               {backupSource.operations !== backupSource.recentBackups ? (
                 <Alert severity="info" variant="outlined">
                   Forge loaded backup health from {backupSource.operations} state, but the recent backup list is currently using {backupSource.recentBackups} fallback data.
+                </Alert>
+              ) : null}
+              {serverRestoreReadyCount === 0 ? (
+                <Alert severity="info" variant="outlined">
+                  Forge now has the retrieval foundation for server-side scheduled backup restore, but the in-app backup picker is still a later milestone.
                 </Alert>
               ) : null}
               {backupOperations.latestFailureMessage ? (

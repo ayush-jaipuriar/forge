@@ -26,10 +26,29 @@ export type RestoreStatus = (typeof restoreStatuses)[number]
 export const backupHealthStates = ['unknown', 'healthy', 'stale', 'degraded'] as const
 export type BackupHealthState = (typeof backupHealthStates)[number]
 
+export const backupPayloadProviders = ['cloudStorage', 'firestoreDocument'] as const
+export type BackupPayloadProvider = (typeof backupPayloadProviders)[number]
+
+export const backupRestoreEligibilityStatuses = ['eligible', 'expired', 'unavailable'] as const
+export type BackupRestoreEligibilityStatus = (typeof backupRestoreEligibilityStatuses)[number]
+
 export type BackupRetentionPolicy = {
   keepDaily: number
   keepWeekly: number
   keepManual: number
+}
+
+export type BackupPayloadPointer = {
+  provider: BackupPayloadProvider
+  location: string
+  bucket?: string
+  contentType: 'application/json'
+}
+
+export type BackupRestoreEligibility = {
+  status: BackupRestoreEligibilityStatus
+  reason?: string
+  checkedAt: string
 }
 
 export type BackupSnapshotRecord = {
@@ -43,6 +62,8 @@ export type BackupSnapshotRecord = {
   checksum?: string
   byteSize?: number
   sourceRecordCount: number
+  payloadPointer?: BackupPayloadPointer | null
+  restoreEligibility?: BackupRestoreEligibility | null
 }
 
 export type BackupOperationsSnapshot = {

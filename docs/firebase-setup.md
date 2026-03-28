@@ -19,6 +19,20 @@ Optional Phase 2 hardening variable:
 
 - `VITE_FIREBASE_APPCHECK_SITE_KEY`
 
+## Phase 3 Storage Note
+
+Phase 3 scheduled backups now rely on Firebase Storage in addition to Firestore.
+
+That means the Firebase project used for Forge should have:
+
+- Firestore enabled for metadata and operational state
+- Firebase Storage enabled for scheduled backup payload bodies
+
+Why this matters:
+
+- Firestore remains the index for backup metadata, retention state, and restore readiness
+- Cloud Storage now holds the heavy scheduled-backup payload body so real history does not depend on Firestore document-size limits
+
 ## Git Safety
 
 This repo now ignores the most important local-only Firebase and secret-bearing artifacts by default:
