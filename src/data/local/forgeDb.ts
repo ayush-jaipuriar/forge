@@ -1,6 +1,7 @@
 import { openDB } from 'idb'
 import type { DBSchema, IDBPDatabase } from 'idb'
 import type { AnySyncQueueItem } from '@/domain/execution/sync'
+import type { NotificationLogRecord, NotificationStateSnapshot } from '@/domain/notifications/types'
 import type { DayInstance } from '@/domain/routine/types'
 import type { UserSettings } from '@/domain/settings/types'
 import type { SyncConflictRecord, SyncDiagnosticsSnapshot } from '@/domain/sync/types'
@@ -37,6 +38,18 @@ type ForgeDbSchema = DBSchema & {
       byDetectedAt: string
     }
   }
+  notificationState: {
+    key: string
+    value: NotificationStateSnapshot
+  }
+  notificationLog: {
+    key: string
+    value: NotificationLogRecord
+    indexes: {
+      byStatus: string
+      byEvaluatedAt: string
+    }
+  }
 }
 
 let dbPromise: Promise<IDBPDatabase<ForgeDbSchema>> | null = null
@@ -44,7 +57,7 @@ const FORGE_DB_NAME = 'forge-db'
 
 export function getForgeDb() {
   if (!dbPromise) {
-    dbPromise = openDB<ForgeDbSchema>(FORGE_DB_NAME, 2, {
+    dbPromise = openDB<ForgeDbSchema>(FORGE_DB_NAME, 3, {
       upgrade(db) {
         if (!db.objectStoreNames.contains('dayInstances')) {
           const dayInstances = db.createObjectStore('dayInstances', {
@@ -79,6 +92,20 @@ export function getForgeDb() {
           })
           syncConflicts.createIndex('byStatus', 'status')
           syncConflicts.createIndex('byDetectedAt', 'detectedAt')
+        }
+
+        if (!db.objectStoreNames.contains('notificationState')) {
+          db.createObjectStore('notificationState', {
+            keyPath: 'id',
+          })
+        }
+
+        if (!db.objectStoreNames.contains('notificationLog')) {
+          const notificationLog = db.createObjectStore('notificationLog', {
+            keyPath: 'id',
+          })
+          notificationLog.createIndex('byStatus', 'status')
+          notificationLog.createIndex('byEvaluatedAt', 'evaluatedAt')
         }
       },
     })

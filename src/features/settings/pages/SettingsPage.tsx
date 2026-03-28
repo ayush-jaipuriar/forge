@@ -1,16 +1,21 @@
+import NotificationsActiveRoundedIcon from '@mui/icons-material/NotificationsActiveRounded'
 import SettingsSuggestRoundedIcon from '@mui/icons-material/SettingsSuggestRounded'
-import { Alert, Chip, CircularProgress, Grid, Stack, Typography } from '@mui/material'
+import { Alert, Button, Chip, CircularProgress, Grid, Stack, Switch, Typography } from '@mui/material'
 import { EmptyState } from '@/components/common/EmptyState'
 import { SectionHeader } from '@/components/common/SectionHeader'
 import { SurfaceCard } from '@/components/common/SurfaceCard'
 import { useAuthSession } from '@/features/auth/providers/useAuthSession'
 import { usePwaState } from '@/features/pwa/providers/usePwaState'
+import { useRequestNotificationPermission } from '@/features/settings/hooks/useRequestNotificationPermission'
 import { useSettingsWorkspace } from '@/features/settings/hooks/useSettingsWorkspace'
+import { useUpdateNotificationPreference } from '@/features/settings/hooks/useUpdateNotificationPreference'
 
 export function SettingsPage() {
   const { status } = useAuthSession()
   const { canInstall, isInstalled, isOnline, needRefresh, offlineReady } = usePwaState()
   const { data, isLoading } = useSettingsWorkspace()
+  const updateNotificationPreference = useUpdateNotificationPreference()
+  const requestNotificationPermission = useRequestNotificationPermission()
 
   if (isLoading || !data) {
     return (
@@ -22,7 +27,7 @@ export function SettingsPage() {
     )
   }
 
-  const { calendarConnection, featureFlags, mirroredBlockPreview } = data
+  const { calendarConnection, featureFlags, mirroredBlockPreview, notificationState, recentNotificationLogs, settings } = data
 
   return (
     <Stack spacing={3}>
@@ -60,6 +65,58 @@ export function SettingsPage() {
               </Typography>
               <Typography variant="body2" color="text.secondary">
                 Pending update: {needRefresh ? 'Yes' : 'No'} · Offline shell ready: {offlineReady ? 'Yes' : 'No'}
+              </Typography>
+            </Stack>
+          </SurfaceCard>
+        </Grid>
+        <Grid size={{ xs: 12, md: 6 }}>
+          <SurfaceCard
+            eyebrow="Notification Surface"
+            title="Operational notification posture"
+            description="Phase 3 notifications stay sparse and rule-driven: missed prime block, fallback suggestion, and weekly summary. This card exposes the real browser permission and delivery state behind that posture."
+            action={
+              <Chip
+                label={notificationState.permission}
+                size="small"
+                variant="outlined"
+                color={notificationState.permission === 'granted' ? 'success' : notificationState.permission === 'denied' ? 'warning' : 'default'}
+              />
+            }
+          >
+            <Stack spacing={1.25}>
+              <Stack direction={{ xs: 'column', sm: 'row' }} spacing={1} alignItems={{ xs: 'flex-start', sm: 'center' }} justifyContent="space-between">
+                <Stack spacing={0.25}>
+                  <Typography variant="body2" color="text.secondary">
+                    Notification rules enabled
+                  </Typography>
+                  <Typography variant="body2" color="text.secondary">
+                    Daily cap: {notificationState.dailyCap} · Supported channels: {notificationState.supportedChannels.join(', ')}
+                  </Typography>
+                </Stack>
+                <Switch
+                  checked={settings?.notificationsEnabled ?? true}
+                  onChange={(_, checked) => updateNotificationPreference.mutate(checked)}
+                  disabled={updateNotificationPreference.isPending}
+                />
+              </Stack>
+              <Typography variant="body2" color="text.secondary">
+                Permission: {notificationState.permission}. Delivered today: {notificationState.countersByDate[new Date().toISOString().slice(0, 10)]?.delivered ?? 0}. Suppressed today: {notificationState.countersByDate[new Date().toISOString().slice(0, 10)]?.suppressed ?? 0}.
+              </Typography>
+              <Stack direction={{ xs: 'column', sm: 'row' }} spacing={1} alignItems={{ xs: 'flex-start', sm: 'center' }}>
+                <Button
+                  variant="contained"
+                  startIcon={<NotificationsActiveRoundedIcon />}
+                  onClick={() => requestNotificationPermission.mutate()}
+                  disabled={requestNotificationPermission.isPending || notificationState.permission === 'granted'}
+                >
+                  {notificationState.permission === 'granted' ? 'Permission granted' : 'Request browser permission'}
+                </Button>
+                <Typography variant="body2" color="text.secondary">
+                  Forge only asks for browser notification permission because browser and installed-PWA delivery are the honest Phase 3 channels.
+                </Typography>
+              </Stack>
+              <Typography variant="body2" color="text.secondary">
+                Recent notification records: {recentNotificationLogs.length === 0 ? 'None yet.' : recentNotificationLogs.slice(0, 2).map((log) => `${log.ruleKey} (${log.status})`).join(' · ')}
               </Typography>
             </Stack>
           </SurfaceCard>
@@ -115,7 +172,7 @@ export function SettingsPage() {
         </Grid>
       </Grid>
       <Alert severity="info" variant="outlined">
-        Calendar scaffolding is active at the architecture boundary, but no Google Calendar API read or write flow is enabled in Phase 1 yet.
+        Notifications now have a real local rule, permission, and logging foundation. Calendar scaffolding is still architecture-only until the later Phase 3 milestones.
       </Alert>
       <EmptyState
         icon={<SettingsSuggestRoundedIcon color="primary" />}

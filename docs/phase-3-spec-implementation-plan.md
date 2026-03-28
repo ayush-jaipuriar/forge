@@ -487,17 +487,17 @@ Create the serious, limited notification system defined by the PRS without drift
 
 ### Checklist
 
-- [ ] Implement notification categories for missed critical block, fallback suggestion, and weekly summary.
-- [ ] Enforce documented delivery caps and conditional-only behavior from one shared rule engine.
-- [ ] Add browser and PWA permission handling with honest unsupported-state UX.
-- [ ] Implement notification delivery through the browser Notification API and service-worker-compatible flows where needed.
-- [ ] Add notification state persistence for last delivery, suppression reasons, and daily counters.
-- [ ] Add settings controls for enabling, muting, and understanding notification behavior without creating clutter.
+- [x] Implement notification categories for missed critical block, fallback suggestion, and weekly summary.
+- [x] Enforce documented delivery caps and conditional-only behavior from one shared rule engine.
+- [x] Add browser and PWA permission handling with honest unsupported-state UX.
+- [x] Implement notification delivery through the browser Notification API and service-worker-compatible flows where needed.
+- [x] Add notification state persistence for last delivery, suppression reasons, and daily counters.
+- [x] Add settings controls for enabling, muting, and understanding notification behavior without creating clutter.
 
 ### Testing and Documentation
 
-- [ ] Add rule tests covering caps, suppression, quieting, and eligibility windows.
-- [ ] Document notification categories, copy tone, and delivery-channel limits honestly.
+- [x] Add rule tests covering caps, suppression, quieting, and eligibility windows.
+- [x] Document notification categories, copy tone, and delivery-channel limits honestly.
 
 ### Exit Criteria
 
@@ -718,7 +718,7 @@ Close Phase 3 with an operationally credible release posture across notification
 
 - [x] Milestone 0 complete
 - [x] Milestone 1 complete
-- [ ] Milestone 2 complete
+- [x] Milestone 2 complete
 - [ ] Milestone 3 complete
 - [ ] Milestone 4 complete
 - [ ] Milestone 5 complete

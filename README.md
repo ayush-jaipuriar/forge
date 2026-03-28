@@ -59,6 +59,7 @@ npm run preview -- --host 127.0.0.1 --port 4173
 - [Analytics Gamification Rules](/Users/ayushjaipuriar/Documents/GitHub/forge/docs/analytics-gamification-rules.md)
 - [Analytics Operational Signals](/Users/ayushjaipuriar/Documents/GitHub/forge/docs/analytics-operational-signals.md)
 - [Analytics Performance Notes](/Users/ayushjaipuriar/Documents/GitHub/forge/docs/analytics-performance-notes.md)
+- [Notification Delivery Rules](/Users/ayushjaipuriar/Documents/GitHub/forge/docs/notification-delivery-rules.md)
 - [Firebase Setup](/Users/ayushjaipuriar/Documents/GitHub/forge/docs/firebase-setup.md)
 - [Deployment Guide](/Users/ayushjaipuriar/Documents/GitHub/forge/docs/deployment-guide.md)
 - [Google Calendar Scaffolding](/Users/ayushjaipuriar/Documents/GitHub/forge/docs/google-calendar-scaffolding.md)
