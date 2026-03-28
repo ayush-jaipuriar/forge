@@ -1,7 +1,7 @@
 import ErrorOutlineRoundedIcon from '@mui/icons-material/ErrorOutlineRounded'
 import ReportGmailerrorredRoundedIcon from '@mui/icons-material/ReportGmailerrorredRounded'
 import ShieldRoundedIcon from '@mui/icons-material/ShieldRounded'
-import { Stack, Typography } from '@mui/material'
+import { Chip, Stack, Typography } from '@mui/material'
 import { SurfaceCard } from '@/components/common/SurfaceCard'
 import { commandCenterChartTheme } from '@/features/command-center/chartTheme'
 import type { CommandCenterWarning } from '@/services/analytics/commandCenterWorkspaceService'
@@ -31,6 +31,9 @@ export function WarningCard({ warning }: WarningCardProps) {
       action={<Icon sx={{ color: palette.solid }} />}
     >
       <Stack spacing={0.5}>
+        <Stack direction="row" spacing={1} useFlexGap flexWrap="wrap">
+          <Chip label={`Confidence ${warning.confidence}`} size="small" sx={{ borderColor: palette.border }} />
+        </Stack>
         <Typography variant="body2" color="text.secondary">
           Command Center warnings are meant to create behavior change, not just explain what already went wrong.
         </Typography>

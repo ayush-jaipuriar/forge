@@ -15,6 +15,8 @@ describe('command center workspace service', () => {
     expect(workspace.metrics[0]?.value).toBe('0')
     expect(workspace.warnings[0]?.title).toMatch(/history window is still empty/i)
     expect(workspace.projection.status).toBe('insufficientData')
+    expect(workspace.missions).toHaveLength(0)
+    expect(workspace.momentum.level).toBe('insufficientData')
   })
 
   it('keeps prep-domain attention scoped to the selected rolling window', async () => {

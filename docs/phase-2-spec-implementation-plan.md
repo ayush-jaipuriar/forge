@@ -580,16 +580,16 @@ Build the modular analytics rule engine that turns rollups into useful warnings 
 
 ### Checklist
 
-- [ ] Implement critical rules for sleep/performance, gym/performance, topic neglect, weekend utilization, missed-block time windows, and pace slippage.
-- [ ] Implement useful rules for WFO vs WFH differences, deep block trends, readiness pace, and low-energy success patterns.
-- [ ] Add severity levels, confidence framing, and evidence payloads to each rule output.
-- [ ] Surface behind-target and underweight-domain warnings.
-- [ ] Ensure all insights can be rendered as cards, warnings, or summaries from one shared output contract.
+- [x] Implement critical rules for sleep/performance, gym/performance, topic neglect, weekend utilization, missed-block time windows, and pace slippage.
+- [x] Implement useful rules for WFO vs WFH differences, deep block trends, readiness pace, and low-energy success patterns.
+- [x] Add severity levels, confidence framing, and evidence payloads to each rule output.
+- [x] Surface behind-target and underweight-domain warnings.
+- [x] Ensure all insights can be rendered as cards, warnings, or summaries from one shared output contract.
 
 ### Testing and Documentation
 
-- [ ] Add unit tests for every insight rule family.
-- [ ] Document rule precedence, evidence semantics, and copy tone guidance.
+- [x] Add unit tests for every insight rule family.
+- [x] Document rule precedence, evidence semantics, and copy tone guidance.
 
 ### Exit Criteria
 
@@ -611,16 +611,16 @@ Implement the mature gamification layer defined in the PRS without making the pr
 
 ### Checklist
 
-- [ ] Define streak categories and break conditions grounded in actual behavior.
-- [ ] Implement weekly missions derived from current deficits and product priorities.
-- [ ] Add a momentum meter based on recent execution quality, not simple raw completion count.
-- [ ] Add disciplined rank/level framing that communicates progress without toy-like gamification.
-- [ ] Surface this layer in Command Center and selectively on Today/Readiness where it adds pressure rather than clutter.
+- [x] Define streak categories and break conditions grounded in actual behavior.
+- [x] Implement weekly missions derived from current deficits and product priorities.
+- [x] Add a momentum meter based on recent execution quality, not simple raw completion count.
+- [x] Add disciplined rank/level framing that communicates progress without toy-like gamification.
+- [x] Surface this layer in Command Center and selectively on Today/Readiness where it adds pressure rather than clutter.
 
 ### Testing and Documentation
 
-- [ ] Add rule tests for streak continuity, break causes, mission selection, and momentum derivation.
-- [ ] Document anti-gamification guardrails so low-value tasks cannot cheaply inflate momentum.
+- [x] Add rule tests for streak continuity, break causes, mission selection, and momentum derivation.
+- [x] Document anti-gamification guardrails so low-value tasks cannot cheaply inflate momentum.
 
 ### Exit Criteria
 
@@ -779,8 +779,8 @@ Use this section as the live implementation tracker for Phase 2.
 - [x] Milestone 3 complete
 - [x] Milestone 4 complete
 - [x] Milestone 5 complete
-- [ ] Milestone 6 complete
-- [ ] Milestone 7 complete
+- [x] Milestone 6 complete
+- [x] Milestone 7 complete
 - [ ] Milestone 8 complete
 - [ ] Milestone 9 complete
 
@@ -805,3 +805,9 @@ Use this section as the live implementation tracker for Phase 2.
 - Implemented Milestone 5 core chart surfaces: added a dedicated analytics chart-data derivation layer, expanded the Command Center workspace with projected readiness, sleep/performance, WFO/WFH, time-window, heatmap, streak, workout-productivity, and topic-hour datasets, and rebuilt the page around the PRS chart priority order instead of generic panel filling.
 - Added chart-data tests and a dedicated metric-definition doc so the semantics behind terms like “strong day,” “prep topic hours,” “sleep vs performance,” and “best-performing time window” stay stable as later insight and gamification milestones build on top of them.
 - Tightened the Milestone 5 review findings: sleep comparison now requires both logged met and missed buckets before the chart is treated as meaningful, the time-window panel is framed as execution reliability instead of overclaiming deeper performance semantics, and streak-cell visuals now match the documented streak threshold exactly.
+- Implemented Milestone 6 pattern detection: added a dedicated analytics rule engine with modular rule families for sleep/prep quality, gym/productivity, topic neglect, weekend utilization, time-window reliability, pace slippage, WFO versus WFH differences, deep-block trend, readiness pace, and low-energy success patterns.
+- Expanded the shared analytics contract with confidence-aware insight outputs and coach summaries, then wired the Command Center workspace to map one rule evaluation pass into warning cards, insight cards, and a single operator-facing summary instead of scattering heuristics across the page.
+- Added focused rule-engine tests and a dedicated insight-rule doc so severity ordering, evidence semantics, and copy-tone guidance are documented before Milestone 7 adds streak, mission, and momentum pressure on top of the same analytics layer.
+- Implemented Milestone 7 disciplined gamification: added a dedicated derivation engine for formal streak categories, break reasons, deficit-driven weekly missions, momentum scoring, and operating-posture framing in the analytics domain instead of treating Command Center as a one-off dashboard surface.
+- Expanded the Command Center workspace and page so streaks, momentum, and missions are rendered from shared derived state, with explicit anti-padding copy and no toy-like reward framing.
+- Added gamification tests plus dedicated guardrail documentation so the repo now explains how momentum avoids low-value inflation and why missions are chosen from deficits rather than easy completions.

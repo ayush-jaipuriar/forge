@@ -167,11 +167,18 @@ export type AnalyticsInsight = {
   id: string
   ruleKey: AnalyticsInsightRuleKey
   severity: AnalyticsInsightSeverity
+  confidence: ProjectionConfidenceLevel
   title: string
   summary: string
   supportingEvidence: AnalyticsInsightEvidence[]
   sourceWindow: AnalyticsWindowReference
   generatedAt: string
+}
+
+export type AnalyticsCoachSummary = {
+  title: string
+  summary: string
+  severity: AnalyticsInsightSeverity
 }
 
 export type StreakEntry = {

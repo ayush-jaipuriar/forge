@@ -168,6 +168,25 @@ This document captures the Phase 1 architectural baseline that implementation sh
 - the heatmap and streak calendar deliberately avoid pretending the full disciplined gamification system already exists; they provide a clear operational precursor while leaving the formal streak engine for Milestone 7
 - the first Milestone 5 review pass also tightened three trust boundaries: unknown sleep logging no longer qualifies as a meaningful sleep-performance comparison on its own, the time-window chart is now framed explicitly as execution reliability rather than deeper cognitive scoring, and streak-cell emphasis now uses the same threshold as streak counting
 
+## Phase 2 Milestone 6 Pattern Detection Engine
+
+- the analytics rule engine now lives in [insights.ts](/Users/ayushjaipuriar/Documents/GitHub/forge/src/domain/analytics/insights.ts), which is the first real boundary between raw chart data and explainable coaching logic; this matters because warnings and insights are now generated from modular rules instead of page-local heuristics
+- rule outputs are standardized through [types.ts](/Users/ayushjaipuriar/Documents/GitHub/forge/src/domain/analytics/types.ts) with explicit `ruleKey`, `severity`, `confidence`, and evidence payloads, so the UI can render cards, warnings, and summaries from one shared contract rather than custom branching per rule
+- the Command Center application seam in [commandCenterWorkspaceService.ts](/Users/ayushjaipuriar/Documents/GitHub/forge/src/services/analytics/commandCenterWorkspaceService.ts) now evaluates rule outputs once, then maps them into three operator-facing layers: warning cards, insight cards, and a single coach summary that compresses the highest-priority signal into one opening narrative
+- the page itself in [CommandCenterPage.tsx](/Users/ayushjaipuriar/Documents/GitHub/forge/src/features/command-center/pages/CommandCenterPage.tsx) now surfaces that coach summary explicitly, which is important product-wise because the PRS wants analytical, coach-like guidance rather than forcing the user to mentally synthesize ten charts every time
+- the current rule set covers the PRS-priority categories that already have stable evidence inputs: sleep versus prep quality, gym versus mental performance, topic neglect, weekend utilization, missed or reliable time windows, pace prediction, WFO versus WFH differences, deep-block trend, readiness pace, behind-target pressure, and low-energy success patterns
+- rule precedence is intentionally severity-first and confidence-second, with `critical` and `warning` signals outranking `info`; this keeps the most operationally urgent insight at the top without pretending the engine is a black box
+- Milestone 6 is still deliberately explainable rather than predictive: these outputs are evidence-backed heuristics derived from rolling facts, not machine-learning forecasts, and the repo now documents that boundary explicitly in the dedicated insight-rule doc
+
+## Phase 2 Milestone 7 Disciplined Gamification
+
+- the formal streak, mission, and momentum derivation layer now lives in [gamification.ts](/Users/ayushjaipuriar/Documents/GitHub/forge/src/domain/analytics/gamification.ts), which is important because this milestone keeps “gamification” inside the analytics domain instead of turning it into a separate reward toy with unrelated rules
+- streak continuity is now grounded in explicit category semantics: execution, deep work, prep, workout, sleep, and logging each have their own relevance rules, success rules, and break reasons, so continuity pressure reflects actual behavior rather than generic checkbox counting
+- weekly missions are selected from deficits and leverage points instead of random achievement prompts; the current mission engine uses projection pressure, underweight prep breadth, sleep drag, workout drift, weekend softness, and WFO continuity gaps to decide what deserves weekly attention
+- momentum now weights recent score quality, strong-day rate, deep-work continuity, output capture, recovery, and penalties for prime misses or fallback dependence, which is the main anti-gamification guardrail keeping low-value completions from cheaply inflating the surface
+- the Command Center workspace in [commandCenterWorkspaceService.ts](/Users/ayushjaipuriar/Documents/GitHub/forge/src/services/analytics/commandCenterWorkspaceService.ts) now exposes `momentum`, `streaks`, `missions`, and an operating-posture summary, while the page consumes them through reusable presentation components instead of embedding derivation logic into React
+- the old “precursor” streak calendar is now tied to the formal streak engine, and Milestone 7 adds dedicated components for momentum, mission progress, and category streak summaries so the visual layer can deepen without inventing new business meaning card by card
+
 ### Current Conflict Strategy and Limits
 
 - the current foundation favors predictable local continuity over sophisticated merge behavior

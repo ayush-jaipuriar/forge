@@ -1,4 +1,6 @@
 import DashboardRoundedIcon from '@mui/icons-material/DashboardRounded'
+import FlagRoundedIcon from '@mui/icons-material/FlagRounded'
+import PsychologyAltRoundedIcon from '@mui/icons-material/PsychologyAltRounded'
 import TrackChangesRoundedIcon from '@mui/icons-material/TrackChangesRounded'
 import { useMemo, useState } from 'react'
 import { Box, Button, Chip, CircularProgress, Grid, Stack, Typography } from '@mui/material'
@@ -16,7 +18,10 @@ import { DistributionBars } from '@/features/command-center/components/Distribut
 import { HeatmapCalendar } from '@/features/command-center/components/HeatmapCalendar'
 import { InsightCard } from '@/features/command-center/components/InsightCard'
 import { MiniTrendChart } from '@/features/command-center/components/MiniTrendChart'
+import { MissionCard } from '@/features/command-center/components/MissionCard'
+import { MomentumPanel } from '@/features/command-center/components/MomentumPanel'
 import { ProjectionPanel } from '@/features/command-center/components/ProjectionPanel'
+import { StreakSummaryList } from '@/features/command-center/components/StreakSummaryList'
 import { WarningCard } from '@/features/command-center/components/WarningCard'
 import { useCommandCenterWorkspace } from '@/features/command-center/hooks/useCommandCenterWorkspace'
 
@@ -307,7 +312,7 @@ export function CommandCenterPage() {
                 <ChartCard
                   eyebrow="Streak"
                   title="Execution streak calendar"
-                  description="This is a Milestone 5 precursor to the formal streak engine: it shows strong execution days using a clear temporary threshold instead of pretending the full streak system already exists."
+                  description="The streak surface now uses the formal Milestone 7 discipline rules, so the calendar, streak counts, and break reasons all come from one shared derived engine."
                   tone="gold"
                   state={
                     data.streakCalendar.cells.every((cell) => cell.status === 'none')
@@ -323,9 +328,27 @@ export function CommandCenterPage() {
                       <Chip label={`Current streak ${data.streakCalendar.currentStreak}`} size="small" />
                       <Chip label={`Longest streak ${data.streakCalendar.longestStreak}`} size="small" />
                     </Stack>
+                    <StreakSummaryList streaks={data.streaks} />
                     <Typography variant="body2" color="text.secondary">
                       {data.streakCalendar.thresholdLabel}
                     </Typography>
+                  </Stack>
+                </ChartCard>
+              </Grid>
+              <Grid size={{ xs: 12, lg: 6 }}>
+                <ChartCard
+                  eyebrow="Missions"
+                  title="Weekly pressure missions"
+                  description="These missions are selected from deficits, not vanity goals. They exist to focus the week on the behaviors most likely to change readiness and pace."
+                  tone="critical"
+                  state={data.missions.length === 0 ? 'insufficientData' : isStale ? 'stale' : 'ready'}
+                  emptyTitle="Need more pressure signals before missions lock in"
+                  emptyDescription="Forge avoids inventing missions until there is enough history to tie them to a real deficit or continuity risk."
+                >
+                  <Stack spacing={1.5}>
+                    {data.missions.map((mission) => (
+                      <MissionCard key={mission.id} mission={mission} />
+                    ))}
                   </Stack>
                 </ChartCard>
               </Grid>
@@ -335,6 +358,28 @@ export function CommandCenterPage() {
 
         <Grid size={{ xs: 12, xl: 4 }}>
           <Stack spacing={2.5}>
+            <MomentumPanel momentum={data.momentum} posture={data.operatingTier} />
+
+            <SurfaceCard
+              eyebrow="Coach Summary"
+              title={data.coachSummary.title}
+              description={data.coachSummary.summary}
+              action={
+                <Chip
+                  label={data.coachSummary.severity === 'critical' ? 'Critical' : data.coachSummary.severity === 'warning' ? 'Warning' : 'Stable Read'}
+                  size="small"
+                  color={data.coachSummary.severity === 'critical' ? 'error' : data.coachSummary.severity === 'warning' ? 'warning' : 'default'}
+                />
+              }
+            >
+              <Stack spacing={0.5}>
+                <PsychologyAltRoundedIcon color={data.coachSummary.severity === 'critical' ? 'error' : data.coachSummary.severity === 'warning' ? 'warning' : 'primary'} />
+                <Typography variant="body2" color="text.secondary">
+                  This summary is generated from the shared rule engine, so Today and Readiness can consume the same judgment layer in later milestones.
+                </Typography>
+              </Stack>
+            </SurfaceCard>
+
             <ProjectionPanel projection={data.projection} />
 
             <SurfaceCard
@@ -360,7 +405,7 @@ export function CommandCenterPage() {
             <SurfaceCard
               eyebrow="Insight Stack"
               title="Emerging signals"
-              description="These are still lightweight heuristics in Milestone 4, but the card system is now ready for the deeper pattern engine."
+              description="These are rule-backed pattern reads from the shared analytics engine, meant to explain why the charts and missions are pushing in a specific direction."
               action={<DashboardRoundedIcon color="primary" />}
             >
               <Stack spacing={1.5}>
@@ -375,6 +420,17 @@ export function CommandCenterPage() {
                   data.insights.map((insight) => <InsightCard key={insight.id} insight={insight} />)
                 )}
               </Stack>
+            </SurfaceCard>
+
+            <SurfaceCard
+              eyebrow="Mission Posture"
+              title="Why these missions exist"
+              description="Forge should choose weekly pressure work from deficits and leverage points, not from whatever is easiest to complete."
+              action={<FlagRoundedIcon color="warning" />}
+            >
+              <Typography variant="body2" color="text.secondary">
+                Missions are weighted toward deep-work continuity, recovery, neglected prep breadth, weekend usefulness, and WFO continuity. Low-friction logging alone cannot inflate this layer.
+              </Typography>
             </SurfaceCard>
           </Stack>
         </Grid>

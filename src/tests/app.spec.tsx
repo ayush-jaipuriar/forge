@@ -38,6 +38,32 @@ const commandCenterMock = vi.hoisted(() => ({
       dataState: 'empty',
       trackedDays: 0,
       sourceLabel: '2026-02-27 -> 2026-03-28',
+      coachSummary: {
+        title: 'Pattern detection is warming up',
+        summary: 'Forge is reading the 30D window, but the current mix of data is still too flat to surface a stronger coaching summary.',
+        severity: 'info',
+      },
+      operatingTier: {
+        label: 'Observation Window',
+        detail: 'Forge needs more recent evidence before posture labels become useful.',
+        level: 'insufficientData',
+      },
+      momentum: {
+        score: 0,
+        level: 'insufficientData',
+        label: 'Observation window only',
+        explanation: 'Momentum needs a wider recent sample before it becomes a trustworthy pressure signal.',
+        trailingWindow: '7d',
+      },
+      streaks: [
+        { category: 'execution', current: 0, longest: 0 },
+        { category: 'deepWork', current: 0, longest: 0 },
+        { category: 'prep', current: 0, longest: 0 },
+        { category: 'workout', current: 0, longest: 0 },
+        { category: 'sleep', current: 0, longest: 0 },
+        { category: 'logging', current: 0, longest: 0 },
+      ],
+      missions: [],
       metrics: [
         {
           id: 'tracked-days',
@@ -70,6 +96,7 @@ const commandCenterMock = vi.hoisted(() => ({
           title: 'History window is still empty',
           detail: 'Command Center can render the shell now, but it still needs persisted day instances.',
           severity: 'warning',
+          confidence: 'low',
         },
       ],
       insights: [],
@@ -145,6 +172,32 @@ describe('App', () => {
         dataState: 'empty',
         trackedDays: 0,
         sourceLabel: '2026-02-27 -> 2026-03-28',
+        coachSummary: {
+          title: 'Pattern detection is warming up',
+          summary: 'Forge is reading the 30D window, but the current mix of data is still too flat to surface a stronger coaching summary.',
+          severity: 'info',
+        },
+        operatingTier: {
+          label: 'Observation Window',
+          detail: 'Forge needs more recent evidence before posture labels become useful.',
+          level: 'insufficientData',
+        },
+        momentum: {
+          score: 0,
+          level: 'insufficientData',
+          label: 'Observation window only',
+          explanation: 'Momentum needs a wider recent sample before it becomes a trustworthy pressure signal.',
+          trailingWindow: '7d',
+        },
+        streaks: [
+          { category: 'execution', current: 0, longest: 0 },
+          { category: 'deepWork', current: 0, longest: 0 },
+          { category: 'prep', current: 0, longest: 0 },
+          { category: 'workout', current: 0, longest: 0 },
+          { category: 'sleep', current: 0, longest: 0 },
+          { category: 'logging', current: 0, longest: 0 },
+        ],
+        missions: [],
         metrics: [
           {
             id: 'tracked-days',
@@ -177,6 +230,7 @@ describe('App', () => {
             title: 'History window is still empty',
             detail: 'Command Center can render the shell now, but it still needs persisted day instances.',
             severity: 'warning',
+            confidence: 'low',
           },
         ],
         insights: [],

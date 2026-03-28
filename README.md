@@ -12,6 +12,8 @@ Phase 1 now exists across the core domain, UI, persistence, scoring, recommendat
 - weighted daily scoring and rules-based next-action recommendations
 - installable PWA shell with offline baseline behavior and Hosting configuration
 - Phase 2 Command Center with PRS-priority charts, projection framing, and risk/insight panels
+- Phase 2 modular pattern-detection engine with confidence-aware warnings, insights, and coach summaries
+- Phase 2 disciplined gamification layer with formal streaks, deficit-driven missions, and anti-padding momentum
 - future-ready Google Calendar scaffolding with typed boundaries but no live Calendar sync yet
 
 ## Setup
@@ -51,6 +53,8 @@ npm run preview -- --host 127.0.0.1 --port 4173
 - [Architecture Overview](/Users/ayushjaipuriar/Documents/GitHub/forge/docs/architecture-overview.md)
 - [Command Center Visualization System](/Users/ayushjaipuriar/Documents/GitHub/forge/docs/command-center-visualization-system.md)
 - [Command Center Metric Definitions](/Users/ayushjaipuriar/Documents/GitHub/forge/docs/command-center-metric-definitions.md)
+- [Analytics Insight Rules](/Users/ayushjaipuriar/Documents/GitHub/forge/docs/analytics-insight-rules.md)
+- [Analytics Gamification Rules](/Users/ayushjaipuriar/Documents/GitHub/forge/docs/analytics-gamification-rules.md)
 - [Firebase Setup](/Users/ayushjaipuriar/Documents/GitHub/forge/docs/firebase-setup.md)
 - [Deployment Guide](/Users/ayushjaipuriar/Documents/GitHub/forge/docs/deployment-guide.md)
 - [Google Calendar Scaffolding](/Users/ayushjaipuriar/Documents/GitHub/forge/docs/google-calendar-scaffolding.md)

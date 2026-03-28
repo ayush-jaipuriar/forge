@@ -25,6 +25,7 @@ export function InsightCard({ insight }: InsightCardProps) {
       action={<Icon sx={{ color: palette.solid }} />}
     >
       <Stack direction="row" spacing={1} useFlexGap flexWrap="wrap">
+        <Chip label={`Confidence ${insight.confidence}`} size="small" sx={{ borderColor: palette.border }} />
         {insight.supportingEvidence.map((item) => (
           <Chip key={item} label={item} size="small" sx={{ borderColor: palette.border }} />
         ))}

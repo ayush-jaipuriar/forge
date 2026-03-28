@@ -120,13 +120,39 @@ Intensity thresholds:
 Definition:
 
 - Uses the same 35-day calendar surface as the heatmap.
-- Current Milestone 5 threshold:
-  - strong day = `projected score >= 70` and `no prime block miss`
+- Strong execution day = `projected score >= 70` and `no prime block miss`.
 - Calendar cell emphasis now uses the same rule as streak counting, so visual “strong” days and streak math do not drift apart.
+- The formal Milestone 7 streak engine now adds category streaks and break reasons on top of this same threshold instead of maintaining a separate execution-streak definition.
 
 Important limitation:
 
-- This is a precursor to the formal streak engine coming in Milestone 7.
+- The calendar only shows the execution category visually. Deep-work, prep, sleep, workout, and logging streaks are derived separately and surfaced as summary rows rather than separate calendar overlays.
+
+## Momentum Meter
+
+Definition:
+
+- Uses the trailing recent window from the formal gamification engine.
+- Weights score quality, strong-day rate, deep-work continuity, output capture, sleep, and workout continuity.
+- Applies penalties for prime misses and heavy fallback dependence.
+
+Important limitation:
+
+- Momentum is a discipline-pressure summary, not a vanity score.
+- Low-friction actions alone cannot meaningfully inflate it.
+
+## Weekly Pressure Missions
+
+Definition:
+
+- Missions are selected from current deficits and leverage points, not from random achievement prompts.
+- Candidate families currently include deep-work consistency, sleep recovery, workout consistency, topic-neglect recovery, weekend utilization, and WFO continuity.
+- Progress uses behavior-specific units such as days, sessions, or neglected topics touched.
+
+Important limitation:
+
+- Missions are only surfaced when there is enough history to justify them honestly.
+- This is a pressure system, not a badge collector.
 
 ## Gym vs Productivity Correlation
 

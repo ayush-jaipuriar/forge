@@ -19,10 +19,13 @@ import {
   type AnalyticsTopicHoursDatum,
 } from '@/domain/analytics/chartData'
 import { localDayInstanceRepository, localSettingsRepository } from '@/data/local'
+import { deriveAnalyticsGamification, type DisciplinePosture } from '@/domain/analytics/gamification'
+import { evaluateAnalyticsInsights } from '@/domain/analytics/insights'
 import { mergePrepTopicProgress } from '@/domain/prep/selectors'
 import type { PrepDomainKey } from '@/domain/prep/types'
 import { generateAnalyticsSnapshotBundle } from '@/services/analytics/snapshotGeneration'
 import { getDateKey } from '@/domain/routine/week'
+import type { MomentumSnapshot, StreakEntry, WeeklyMission } from '@/domain/analytics/types'
 
 export type CommandCenterDataState = 'empty' | 'limited' | 'ready'
 
@@ -39,6 +42,7 @@ export type CommandCenterWarning = {
   title: string
   detail: string
   severity: 'info' | 'warning' | 'critical'
+  confidence: 'low' | 'medium' | 'high'
 }
 
 export type CommandCenterInsight = {
@@ -47,7 +51,16 @@ export type CommandCenterInsight = {
   summary: string
   tone: 'neutral' | 'positive' | 'warning'
   supportingEvidence: string[]
+  confidence: 'low' | 'medium' | 'high'
 }
+
+export type CommandCenterCoachSummary = {
+  title: string
+  summary: string
+  severity: 'info' | 'warning' | 'critical'
+}
+
+export type CommandCenterOperatingTier = DisciplinePosture
 
 export type CommandCenterTrendPoint = {
   label: string
@@ -64,6 +77,11 @@ export type CommandCenterWorkspace = {
   trackedDays: number
   sourceLabel: string
   metrics: CommandCenterMetricCard[]
+  coachSummary: CommandCenterCoachSummary
+  operatingTier: CommandCenterOperatingTier
+  momentum: MomentumSnapshot
+  streaks: StreakEntry[]
+  missions: WeeklyMission[]
   readinessCurve: AnalyticsCurveDatum[]
   prepTopicHours: AnalyticsTopicHoursDatum[]
   sleepPerformanceCorrelation: AnalyticsComparisonDatum[]
@@ -108,6 +126,54 @@ export async function getCommandCenterWorkspace(
     prepDomainReference: snapshot.breakdowns.byPrepDomain,
     trackedDays: snapshot.summaryMetrics.trackedDays,
   })
+  const insightEvaluation = evaluateAnalyticsInsights({
+    windowKey,
+    facts: factsInWindow,
+    prepDomainBalance,
+    sleepPerformanceCorrelation: buildSleepPerformanceCorrelation(factsInWindow),
+    workoutProductivityCorrelation: buildWorkoutProductivityCorrelation(factsInWindow),
+    wfoWfhComparison: buildWfoWfhComparison(factsInWindow),
+    timeWindowPerformance: buildTimeWindowPerformance(factsInWindow),
+    projection: bundle.projection,
+    scoreTrend: buildScoreTrendChart(factsInWindow),
+    deepWorkTrend: buildDeepBlockTrendChart(factsInWindow),
+  })
+  const mappedWarnings = insightEvaluation.insights
+    .filter((insight) => insight.severity !== 'info')
+    .map(mapInsightToWarning)
+    .slice(0, 4)
+  const mappedInsights = insightEvaluation.insights
+    .filter((insight) => insight.severity === 'info')
+    .map(mapInsightToCard)
+    .slice(0, 5)
+  const emptyHistoryWarning: CommandCenterWarning = {
+    id: 'history-empty',
+    title: 'History window is still empty',
+    detail:
+      'Command Center can render the shell now, but the analytics engine needs persisted day instances before it can produce trustworthy patterns.',
+    severity: 'warning',
+    confidence: 'low',
+  }
+  const limitedHistoryWarning: CommandCenterWarning = {
+    id: 'history-limited',
+    title: 'Sample size is still narrow',
+    detail: `Only ${snapshot.summaryMetrics.trackedDays} tracked day(s) are inside this window, so trend cards should be treated as directional rather than stable.`,
+    severity: 'info',
+    confidence: 'low',
+  }
+  const warnings: CommandCenterWarning[] =
+    dataState === 'empty'
+      ? [emptyHistoryWarning]
+      : dataState === 'limited'
+        ? [limitedHistoryWarning, ...mappedWarnings].slice(0, 4)
+        : mappedWarnings
+  const gamification = deriveAnalyticsGamification({
+    facts: factsInWindow,
+    insights: insightEvaluation.insights,
+    projection: bundle.projection,
+    prepDomainBalance,
+    anchorDate: anchorDateKey,
+  })
 
   return {
     anchorDate: anchorDateKey,
@@ -125,6 +191,15 @@ export async function getCommandCenterWorkspace(
       projectionStatusLabel: bundle.projection.statusLabel,
       dataState,
     }),
+    coachSummary: {
+      title: insightEvaluation.coachSummary.title,
+      summary: insightEvaluation.coachSummary.summary,
+      severity: insightEvaluation.coachSummary.severity,
+    },
+    operatingTier: gamification.posture,
+    momentum: gamification.streakSnapshot.momentum,
+    streaks: gamification.streakSnapshot.activeStreaks,
+    missions: gamification.missions,
     readinessCurve: buildProjectionCurveChart(bundle.projection),
     prepTopicHours: buildPrepTopicHoursChart(topicRecords),
     sleepPerformanceCorrelation: buildSleepPerformanceCorrelation(factsInWindow),
@@ -145,22 +220,8 @@ export async function getCommandCenterWorkspace(
     })),
     timeBandPressure: [...snapshot.breakdowns.byTimeBand].sort((left, right) => right.value - left.value),
     prepDomainBalance,
-    warnings: buildWarnings({
-      dataState,
-      trackedDays: snapshot.summaryMetrics.trackedDays,
-      projection: bundle.projection,
-      missedPrimeBlocks: snapshot.summaryMetrics.missedPrimeBlocks,
-      workoutsScheduled: snapshot.summaryMetrics.workoutsScheduled,
-      workoutsCompleted: snapshot.summaryMetrics.workoutsCompleted,
-    }),
-    insights: buildInsights({
-      dataState,
-      timeBandPressure: snapshot.breakdowns.byTimeBand,
-      prepDomainBalance,
-      scoreAverage: snapshot.summaryMetrics.scoreAverages.master,
-      sleepTargetMetDays: snapshot.summaryMetrics.sleepTargetMetDays,
-      trackedDays: snapshot.summaryMetrics.trackedDays,
-    }),
+    warnings,
+    insights: mappedInsights,
     projection: bundle.projection,
   }
 }
@@ -213,133 +274,6 @@ function buildMetricCards({
       tone: projectionPercent >= 85 ? 'success' : 'warning',
     },
   ]
-}
-
-function buildWarnings({
-  dataState,
-  trackedDays,
-  projection,
-  missedPrimeBlocks,
-  workoutsScheduled,
-  workoutsCompleted,
-}: {
-  dataState: CommandCenterDataState
-  trackedDays: number
-  projection: ReturnType<typeof generateAnalyticsSnapshotBundle>['projection']
-  missedPrimeBlocks: number
-  workoutsScheduled: number
-  workoutsCompleted: number
-}): CommandCenterWarning[] {
-  const warnings: CommandCenterWarning[] = []
-
-  if (dataState === 'empty') {
-    warnings.push({
-      id: 'history-empty',
-      title: 'History window is still empty',
-      detail:
-        'Command Center can render the shell now, but the analytics engine needs persisted day instances before it can produce trustworthy patterns.',
-      severity: 'warning',
-    })
-  } else if (dataState === 'limited') {
-    warnings.push({
-      id: 'history-limited',
-      title: 'Sample size is still narrow',
-      detail: `Only ${trackedDays} tracked day(s) are inside this window, so trend cards should be treated as directional rather than stable.`,
-      severity: 'info',
-    })
-  }
-
-  if (projection.status === 'critical' || projection.status === 'slipping' || projection.status === 'atRisk') {
-    warnings.push({
-      id: 'projection-risk',
-      title: 'Readiness pace is under pressure',
-      detail: projection.summary,
-      severity: projection.status === 'critical' ? 'critical' : 'warning',
-    })
-  }
-
-  if (missedPrimeBlocks > 0) {
-    warnings.push({
-      id: 'prime-block-misses',
-      title: 'Prime execution blocks were missed',
-      detail: `${missedPrimeBlocks} prime block miss(es) inside the selected window are already lowering the ceiling on score and readiness momentum.`,
-      severity: missedPrimeBlocks >= 3 ? 'critical' : 'warning',
-    })
-  }
-
-  if (workoutsScheduled > 0 && workoutsCompleted / workoutsScheduled < 0.5) {
-    warnings.push({
-      id: 'workout-drift',
-      title: 'Physical consistency is trailing',
-      detail: `${workoutsCompleted}/${workoutsScheduled} scheduled workouts landed inside this window, which weakens the physical score and recovery assumptions.`,
-      severity: 'warning',
-    })
-  }
-
-  return warnings.slice(0, 4)
-}
-
-function buildInsights({
-  dataState,
-  timeBandPressure,
-  prepDomainBalance,
-  scoreAverage,
-  sleepTargetMetDays,
-  trackedDays,
-}: {
-  dataState: CommandCenterDataState
-  timeBandPressure: AnalyticsBreakdownDatum[]
-  prepDomainBalance: AnalyticsBreakdownDatum[]
-  scoreAverage: number
-  sleepTargetMetDays: number
-  trackedDays: number
-}): CommandCenterInsight[] {
-  if (dataState === 'empty') {
-    return []
-  }
-
-  const bestTimeBand = [...timeBandPressure]
-    .filter((entry) => (entry.secondaryValue ?? 0) > 0)
-    .sort((left, right) => (left.percent ?? 100) - (right.percent ?? 100))[0]
-  const mostInvestedPrepDomain = [...prepDomainBalance].sort((left, right) => right.value - left.value)[0]
-  const sleepRate = trackedDays === 0 ? 0 : Math.round((sleepTargetMetDays / trackedDays) * 100)
-
-  return [
-    bestTimeBand
-      ? {
-          id: 'best-time-band',
-          title: `${bestTimeBand.label} is holding best under pressure`,
-          summary: `${bestTimeBand.label} has the lowest skip rate in the current window, which makes it the most reliable place to protect prime work.`,
-          tone: 'positive',
-          supportingEvidence: [
-            `${bestTimeBand.percent ?? 0}% skip rate`,
-            `${bestTimeBand.secondaryValue ?? 0} completed blocks`,
-          ],
-        }
-      : null,
-    mostInvestedPrepDomain
-      ? {
-          id: 'prep-balance',
-          title: `${mostInvestedPrepDomain.label} is carrying the prep load`,
-          summary: `${mostInvestedPrepDomain.value} tracked hour(s) have landed in this domain, so it is currently the clearest sign of prep attention.`,
-          tone: 'neutral',
-          supportingEvidence: [
-            `${mostInvestedPrepDomain.secondaryValue ?? 0} touched topics`,
-            `${mostInvestedPrepDomain.percent ?? 0}% taxonomy coverage`,
-          ],
-        }
-      : null,
-    {
-      id: 'score-context',
-      title: 'Average score is a pressure signal, not a finish line',
-      summary: `The active window is averaging ${scoreAverage}/100. The point of this number is to reveal drift patterns, not to let low-value work hide prime misses.`,
-      tone: scoreAverage >= 75 ? 'positive' : 'warning',
-      supportingEvidence: [
-        `${trackedDays} tracked day(s)`,
-        `${sleepRate}% of days hit the sleep target`,
-      ],
-    },
-  ].filter((entry): entry is CommandCenterInsight => Boolean(entry))
 }
 
 function getCommandCenterDataState(trackedDays: number): CommandCenterDataState {
@@ -417,4 +351,40 @@ function keyLabel(key: string) {
   return key
     .replace(/([A-Z])/g, ' $1')
     .replace(/(^\w|-\w)/g, (match) => match.replace('-', '').toUpperCase())
+}
+
+function mapInsightToWarning(insight: {
+  id: string
+  title: string
+  summary: string
+  severity: 'info' | 'warning' | 'critical'
+  confidence: 'low' | 'medium' | 'high'
+}) {
+  return {
+    id: insight.id,
+    title: insight.title,
+    detail: insight.summary,
+    severity: insight.severity,
+    confidence: insight.confidence,
+  } satisfies CommandCenterWarning
+}
+
+function mapInsightToCard(insight: {
+  id: string
+  title: string
+  summary: string
+  supportingEvidence: Array<{ label: string; value: string; direction?: 'positive' | 'negative' | 'neutral' }>
+  confidence: 'low' | 'medium' | 'high'
+}) {
+  const positiveCount = insight.supportingEvidence.filter((item) => item.direction === 'positive').length
+  const negativeCount = insight.supportingEvidence.filter((item) => item.direction === 'negative').length
+
+  return {
+    id: insight.id,
+    title: insight.title,
+    summary: insight.summary,
+    tone: positiveCount > negativeCount ? 'positive' : negativeCount > 0 ? 'warning' : 'neutral',
+    supportingEvidence: insight.supportingEvidence.map((item) => `${item.label}: ${item.value}`),
+    confidence: insight.confidence,
+  } satisfies CommandCenterInsight
 }
