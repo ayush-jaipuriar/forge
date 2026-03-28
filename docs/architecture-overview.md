@@ -203,6 +203,14 @@ This document captures the Phase 1 architectural baseline that implementation sh
 - the repo now carries explicit hardening docs for Phase 2 performance, release gating, and heuristic limits, which matters because analytics products become hard to trust long before they become hard to compile
 - the Phase 2 boundary is now explicitly closed in documentation: analytics depth, streaks, missions, momentum, and operational surfacing belong here; real Calendar sync, notifications, export, and deeper orchestration remain Phase 3 work
 
+## Phase 3 Milestone 0 Foundation and Contracts
+
+- Phase 3 now has dedicated domain contracts for notifications in [src/domain/notifications/types.ts](/Users/ayushjaipuriar/Documents/GitHub/forge/src/domain/notifications/types.ts), sync diagnostics and conflict metadata in [src/domain/sync/types.ts](/Users/ayushjaipuriar/Documents/GitHub/forge/src/domain/sync/types.ts), backup and restore schemas in [src/domain/backup/types.ts](/Users/ayushjaipuriar/Documents/GitHub/forge/src/domain/backup/types.ts), and health-integration scaffolding in [src/domain/health/types.ts](/Users/ayushjaipuriar/Documents/GitHub/forge/src/domain/health/types.ts)
+- the important design choice is separation: these contracts define durable integration records without forcing the existing Phase 1 and 2 settings document to absorb every new responsibility prematurely
+- calendar scaffolding in [src/domain/calendar/types.ts](/Users/ayushjaipuriar/Documents/GitHub/forge/src/domain/calendar/types.ts) now includes explicit sync-state, mirror-record, and external-event-cache types, which gives later Calendar milestones stable shapes for read integration, write mirroring, and reconciliation
+- repository seams in [src/data/repositories/types.ts](/Users/ayushjaipuriar/Documents/GitHub/forge/src/data/repositories/types.ts) now cover notification state and logs, sync diagnostics and conflicts, backup and restore records, Calendar state and mirror records, and health-integration state; that matters because later services can be built against one interface vocabulary instead of inventing persistence assumptions ad hoc
+- the new contract test in [src/tests/domain/phase-3-contracts.spec.ts](/Users/ayushjaipuriar/Documents/GitHub/forge/src/tests/domain/phase-3-contracts.spec.ts) protects the most important defaults: notification caps, sync-health baselines, backup versioning and retention posture, Calendar sync defaults, and honest provider-scaffolding states for health integrations
+
 ### Current Conflict Strategy and Limits
 
 - the current foundation favors predictable local continuity over sophisticated merge behavior

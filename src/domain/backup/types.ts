@@ -1,0 +1,110 @@
+import type {
+  AnalyticsMetadataSnapshot,
+  AnalyticsSnapshot,
+  ReadinessProjectionSnapshot,
+  StreakSnapshot,
+  WeeklyMission,
+} from '@/domain/analytics/types'
+import type { CalendarSyncStateSnapshot } from '@/domain/calendar/types'
+import type { HealthIntegrationSnapshot } from '@/domain/health/types'
+import type { DayInstance } from '@/domain/routine/types'
+import type { UserSettings } from '@/domain/settings/types'
+import type { SyncDiagnosticsSnapshot } from '@/domain/sync/types'
+
+export const FORGE_BACKUP_SCHEMA_VERSION = 1
+
+export const backupTriggers = ['manual', 'scheduled'] as const
+export type BackupTrigger = (typeof backupTriggers)[number]
+
+export const backupStatuses = ['pending', 'ready', 'failed', 'expired'] as const
+export type BackupStatus = (typeof backupStatuses)[number]
+
+export const restoreStatuses = ['pending', 'validated', 'applied', 'partial', 'failed'] as const
+export type RestoreStatus = (typeof restoreStatuses)[number]
+
+export type BackupRetentionPolicy = {
+  keepDaily: number
+  keepWeekly: number
+  keepManual: number
+}
+
+export type BackupSnapshotRecord = {
+  id: string
+  schemaVersion: number
+  trigger: BackupTrigger
+  status: BackupStatus
+  createdAt: string
+  completedAt?: string
+  retentionExpiresAt?: string
+  checksum?: string
+  byteSize?: number
+  sourceRecordCount: number
+}
+
+export type RestoreCounts = {
+  user: number
+  settings: number
+  dayInstances: number
+  analyticsSnapshots: number
+  projections: number
+  streaks: number
+  missions: number
+  notificationState: number
+  calendarState: number
+  healthState: number
+}
+
+export type RestoreJobRecord = {
+  id: string
+  schemaVersion: number
+  status: RestoreStatus
+  createdAt: string
+  startedAt?: string
+  completedAt?: string
+  summary: string
+  warnings: string[]
+  appliedCounts: RestoreCounts
+}
+
+export type ForgeExportPayload = {
+  schemaVersion: number
+  exportedAt: string
+  userId: string
+  settings: UserSettings | null
+  dayInstances: DayInstance[]
+  analytics: {
+    snapshots: AnalyticsSnapshot[]
+    metadata: AnalyticsMetadataSnapshot | null
+    projection: ReadinessProjectionSnapshot | null
+    streaks: StreakSnapshot | null
+    missions: WeeklyMission[]
+  }
+  integrations: {
+    calendar: CalendarSyncStateSnapshot | null
+    syncDiagnostics: SyncDiagnosticsSnapshot | null
+    health: HealthIntegrationSnapshot | null
+  }
+}
+
+export function createDefaultBackupRetentionPolicy(): BackupRetentionPolicy {
+  return {
+    keepDaily: 7,
+    keepWeekly: 8,
+    keepManual: 20,
+  }
+}
+
+export function createEmptyRestoreCounts(): RestoreCounts {
+  return {
+    user: 0,
+    settings: 0,
+    dayInstances: 0,
+    analyticsSnapshots: 0,
+    projections: 0,
+    streaks: 0,
+    missions: 0,
+    notificationState: 0,
+    calendarState: 0,
+    healthState: 0,
+  }
+}

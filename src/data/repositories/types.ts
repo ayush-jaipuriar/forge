@@ -10,11 +10,24 @@ import type {
   WeeklyAnalyticsSnapshot,
   WeeklyMission,
 } from '@/domain/analytics/types'
+import type {
+  BackupSnapshotRecord,
+  ForgeExportPayload,
+  RestoreJobRecord,
+} from '@/domain/backup/types'
+import type {
+  CalendarMirrorRecord,
+  CalendarSyncStateSnapshot,
+  ExternalCalendarEventCacheRecord,
+} from '@/domain/calendar/types'
 import type { AnySyncQueueItem } from '@/domain/execution/sync'
+import type { HealthIntegrationSnapshot } from '@/domain/health/types'
+import type { NotificationLogRecord, NotificationStateSnapshot } from '@/domain/notifications/types'
 import type { WorkoutScheduleEntry } from '@/domain/physical/types'
 import type { PrepTopicSeed } from '@/domain/prep/types'
 import type { DayInstance } from '@/domain/routine/types'
 import type { UserSettings } from '@/domain/settings/types'
+import type { SyncConflictRecord, SyncDiagnosticsSnapshot } from '@/domain/sync/types'
 
 export interface DayInstanceRepository {
   getByDate(date: string): Promise<DayInstance | null>
@@ -75,6 +88,61 @@ export interface MissionRepository {
 export interface AnalyticsMetadataRepository {
   getDefault(): Promise<AnalyticsMetadataSnapshot | null>
   upsert(snapshot: AnalyticsMetadataSnapshot): Promise<void>
+}
+
+export interface NotificationStateRepository {
+  getDefault(): Promise<NotificationStateSnapshot | null>
+  upsert(snapshot: NotificationStateSnapshot): Promise<void>
+}
+
+export interface NotificationLogRepository {
+  listRecent(limit?: number): Promise<NotificationLogRecord[]>
+  upsert(record: NotificationLogRecord): Promise<void>
+}
+
+export interface SyncDiagnosticsRepository {
+  getDefault(): Promise<SyncDiagnosticsSnapshot | null>
+  upsert(snapshot: SyncDiagnosticsSnapshot): Promise<void>
+}
+
+export interface SyncConflictRepository {
+  listOpen(): Promise<SyncConflictRecord[]>
+  upsert(record: SyncConflictRecord): Promise<void>
+}
+
+export interface BackupRepository {
+  listRecent(limit?: number): Promise<BackupSnapshotRecord[]>
+  upsert(snapshot: BackupSnapshotRecord): Promise<void>
+}
+
+export interface RestoreJobRepository {
+  listRecent(limit?: number): Promise<RestoreJobRecord[]>
+  upsert(job: RestoreJobRecord): Promise<void>
+}
+
+export interface ExportPayloadRepository {
+  save(payload: ForgeExportPayload): Promise<void>
+}
+
+export interface CalendarStateRepository {
+  getDefault(): Promise<CalendarSyncStateSnapshot | null>
+  upsert(snapshot: CalendarSyncStateSnapshot): Promise<void>
+}
+
+export interface CalendarMirrorRepository {
+  listForDate(date: string): Promise<CalendarMirrorRecord[]>
+  upsert(record: CalendarMirrorRecord): Promise<void>
+  remove(id: string): Promise<void>
+}
+
+export interface ExternalCalendarEventRepository {
+  listForDate(date: string): Promise<ExternalCalendarEventCacheRecord[]>
+  upsertMany(records: ExternalCalendarEventCacheRecord[]): Promise<void>
+}
+
+export interface HealthIntegrationRepository {
+  getDefault(): Promise<HealthIntegrationSnapshot | null>
+  upsert(snapshot: HealthIntegrationSnapshot): Promise<void>
 }
 
 export interface SyncQueueRepository {
