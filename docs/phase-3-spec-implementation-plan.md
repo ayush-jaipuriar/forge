@@ -594,6 +594,7 @@ Turn backups from a manual escape hatch into a durable safety system.
 ### Exit Criteria
 
 - users have both manual export control and scheduled backup protection
+- known backup scale limits and the planned payload-storage migration are documented honestly rather than hidden
 
 ## Milestone 6: Google Calendar Read Integration and Collision Modeling
 

@@ -40,3 +40,23 @@ Phase 3 still begins at:
 - notifications and reminder delivery
 - export and backup features
 - deeper sync or orchestration extraction beyond the current Firebase-plus-Functions posture
+## Backup Payload Storage Migration
+
+The current Phase 3 scheduled-backup implementation keeps metadata and payloads in Firestore so the system stays simple while the feature is being proven.
+
+That should not be treated as the long-term storage posture.
+
+Why:
+
+- full backup payloads contain settings, all retained day instances, and derived analytics artifacts
+- Firestore metadata is a good fit for auditability and retention markers
+- Firestore document size is a poor long-term fit for growing backup bodies
+
+Recommended migration path:
+
+1. Keep `backups/{backupId}` and `backupOperations/default` in Firestore as the operational index.
+2. Move heavy payload bodies to Cloud Storage using deterministic object keys derived from `backupId`.
+3. Keep checksum, byte size, retention state, and restore eligibility in Firestore metadata.
+4. Teach restore flows to fetch by metadata pointer instead of assuming the payload body is a Firestore document.
+
+If Cloud Storage is not adopted immediately, a manifest-plus-chunks Firestore model is the fallback. Cloud Storage is still the cleaner long-term recommendation.

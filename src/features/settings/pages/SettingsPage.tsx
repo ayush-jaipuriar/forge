@@ -198,8 +198,13 @@ export function SettingsPage() {
               </Typography>
               <Typography variant="body2" color="text.secondary">
                 Retention: keep {backupOperations.retentionPolicy.keepDaily} daily, {backupOperations.retentionPolicy.keepWeekly} weekly, and {backupOperations.retentionPolicy.keepManual} manual backups.
-                Source: {backupSource}.
+                Status source: {backupSource.operations}. Recent backup list source: {backupSource.recentBackups}.
               </Typography>
+              {backupSource.operations !== backupSource.recentBackups ? (
+                <Alert severity="info" variant="outlined">
+                  Forge loaded backup health from {backupSource.operations} state, but the recent backup list is currently using {backupSource.recentBackups} fallback data.
+                </Alert>
+              ) : null}
               {backupOperations.latestFailureMessage ? (
                 <Alert severity="warning" variant="outlined">
                   Latest scheduled-backup issue: {backupOperations.latestFailureMessage}

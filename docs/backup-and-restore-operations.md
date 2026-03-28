@@ -197,6 +197,22 @@ Settings now surfaces:
 
 When the app observes `stale` or `degraded` scheduled backup protection, it now also emits backup-domain monitoring events. That gives future operational tooling and debug subscribers a concrete signal instead of forcing them to infer risk only from stored state.
 
+Those monitoring events are now edge-triggered rather than read-triggered:
+
+- repeated Settings refetches do not re-emit the same stale or degraded signal forever
+- Forge only emits again when the observed backup-health signature changes or the system recovers and later regresses
+
+## Backup Source Provenance
+
+Backup health and recent backup history do not always come from the same place.
+
+Forge now reports that honestly:
+
+- backup health can come from remote `backupOperations` state
+- recent backup records can temporarily fall back to local metadata when remote history is unavailable or still empty
+
+The Settings UI now shows those sources separately so the user is not misled into thinking one coherent remote view was loaded when the page is actually mixing durable remote state with local fallback history.
+
 ## Recovery and Operational Notes
 
 Current recovery posture is:
@@ -209,6 +225,26 @@ Current limitation:
 
 - the app does not yet expose a browser picker for server-side scheduled backup history
 - scheduled backup records are available to support later recovery UI and admin workflows, but recovery selection remains a future milestone
+
+## Known Scale Limit and Planned Storage Strategy
+
+The current scheduled-backup implementation stores each full backup payload in Firestore as a single document.
+
+That is acceptable for early-stage verification and modest history sizes, but it is not the long-term scalability posture.
+
+Why this matters:
+
+- a full backup payload includes settings, every stored day instance, and derived analytics artifacts
+- Firestore document size is bounded
+- a user with enough retained history can eventually exceed that bound even if the metadata model itself remains healthy
+
+Planned next-step strategy:
+
+- keep backup metadata and operations state in Firestore
+- move heavy scheduled backup payload bodies to Cloud Storage, or chunk them into manifest-plus-parts storage if Cloud Storage is not yet adopted
+- keep restore and retention driven from Firestore metadata records so operational visibility does not depend on blob reads
+
+Until that storage migration lands, scheduled backups should be treated as operationally useful but still carrying a documented scale ceiling.
 
 ## Schema Compatibility
 

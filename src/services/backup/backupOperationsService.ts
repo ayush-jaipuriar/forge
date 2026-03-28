@@ -11,7 +11,20 @@ import { reportMonitoringEvent } from '@/services/monitoring/monitoringService'
 export type BackupOperationsWorkspace = {
   operations: BackupOperationsSnapshot
   recentBackups: BackupSnapshotRecord[]
+  source: {
+    operations: 'local' | 'remote'
+    recentBackups: 'local' | 'remote'
+  }
+}
+
+const emittedBackupHealthEvents = new Map<string, string>()
+
+function buildMonitoringCacheKey(params: {
+  action: 'scheduled-backup-stale' | 'scheduled-backup-degraded'
+  userId?: string | null
   source: 'local' | 'remote'
+}) {
+  return `${params.action}:${params.userId ?? 'anonymous'}:${params.source}`
 }
 
 export function reportBackupHealthMonitoring(params: {
@@ -20,39 +33,77 @@ export function reportBackupHealthMonitoring(params: {
   userId?: string | null
 }) {
   const { operations, source, userId } = params
+  const staleCacheKey = buildMonitoringCacheKey({
+    action: 'scheduled-backup-stale',
+    userId,
+    source,
+  })
+  const degradedCacheKey = buildMonitoringCacheKey({
+    action: 'scheduled-backup-degraded',
+    userId,
+    source,
+  })
+
+  if (operations.healthState === 'healthy' || operations.healthState === 'unknown') {
+    emittedBackupHealthEvents.delete(staleCacheKey)
+    emittedBackupHealthEvents.delete(degradedCacheKey)
+    return
+  }
 
   if (operations.healthState === 'stale') {
-    reportMonitoringEvent({
-      level: 'warning',
-      domain: 'backup',
-      action: 'scheduled-backup-stale',
-      message: 'Scheduled backup protection is stale and may indicate a missed or delayed backup run.',
-      metadata: {
-        userId: userId ?? null,
-        source,
-        latestBackupId: operations.latestBackupId ?? null,
-        latestSuccessfulBackupAt: operations.latestSuccessfulBackupAt ?? null,
-        staleAfterHours: operations.staleAfterHours,
-      },
+    const signature = JSON.stringify({
+      healthState: operations.healthState,
+      latestBackupId: operations.latestBackupId ?? null,
+      latestSuccessfulBackupAt: operations.latestSuccessfulBackupAt ?? null,
+      staleAfterHours: operations.staleAfterHours,
     })
+
+    if (emittedBackupHealthEvents.get(staleCacheKey) !== signature) {
+      reportMonitoringEvent({
+        level: 'warning',
+        domain: 'backup',
+        action: 'scheduled-backup-stale',
+        message: 'Scheduled backup protection is stale and may indicate a missed or delayed backup run.',
+        metadata: {
+          userId: userId ?? null,
+          source,
+          latestBackupId: operations.latestBackupId ?? null,
+          latestSuccessfulBackupAt: operations.latestSuccessfulBackupAt ?? null,
+          staleAfterHours: operations.staleAfterHours,
+        },
+      })
+      emittedBackupHealthEvents.set(staleCacheKey, signature)
+    }
   }
 
   if (operations.healthState === 'degraded' || operations.latestFailureMessage) {
-    reportMonitoringEvent({
-      level: 'error',
-      domain: 'backup',
-      action: 'scheduled-backup-degraded',
-      message: 'Scheduled backup protection is degraded or a recent backup run failed.',
-      metadata: {
-        userId: userId ?? null,
-        source,
-        latestBackupId: operations.latestBackupId ?? null,
-        latestSuccessfulBackupAt: operations.latestSuccessfulBackupAt ?? null,
-        latestFailureAt: operations.latestFailureAt ?? null,
-        latestFailureMessage: operations.latestFailureMessage ?? null,
-        pendingDeletionCount: operations.pendingDeletionCount,
-      },
+    const signature = JSON.stringify({
+      healthState: operations.healthState,
+      latestBackupId: operations.latestBackupId ?? null,
+      latestSuccessfulBackupAt: operations.latestSuccessfulBackupAt ?? null,
+      latestFailureAt: operations.latestFailureAt ?? null,
+      latestFailureMessage: operations.latestFailureMessage ?? null,
+      pendingDeletionCount: operations.pendingDeletionCount,
     })
+
+    if (emittedBackupHealthEvents.get(degradedCacheKey) !== signature) {
+      reportMonitoringEvent({
+        level: 'error',
+        domain: 'backup',
+        action: 'scheduled-backup-degraded',
+        message: 'Scheduled backup protection is degraded or a recent backup run failed.',
+        metadata: {
+          userId: userId ?? null,
+          source,
+          latestBackupId: operations.latestBackupId ?? null,
+          latestSuccessfulBackupAt: operations.latestSuccessfulBackupAt ?? null,
+          latestFailureAt: operations.latestFailureAt ?? null,
+          latestFailureMessage: operations.latestFailureMessage ?? null,
+          pendingDeletionCount: operations.pendingDeletionCount,
+        },
+      })
+      emittedBackupHealthEvents.set(degradedCacheKey, signature)
+    }
   }
 }
 
@@ -68,7 +119,10 @@ export async function getBackupOperationsWorkspace(userId: string | null | undef
     return {
       operations,
       recentBackups: await localBackupRepository.listRecent(5),
-      source: 'local',
+      source: {
+        operations: 'local',
+        recentBackups: 'local',
+      },
     }
   }
 
@@ -85,7 +139,10 @@ export async function getBackupOperationsWorkspace(userId: string | null | undef
     return {
       operations,
       recentBackups: await localBackupRepository.listRecent(5),
-      source: 'local',
+      source: {
+        operations: 'local',
+        recentBackups: 'local',
+      },
     }
   }
 
@@ -104,10 +161,24 @@ export async function getBackupOperationsWorkspace(userId: string | null | undef
       userId,
     })
 
+    if (recentBackups.length > 0) {
+      return {
+        operations,
+        recentBackups,
+        source: {
+          operations: 'remote',
+          recentBackups: 'remote',
+        },
+      }
+    }
+
     return {
       operations,
-      recentBackups: recentBackups.length > 0 ? recentBackups : await localBackupRepository.listRecent(5),
-      source: 'remote',
+      recentBackups: await localBackupRepository.listRecent(5),
+      source: {
+        operations: 'remote',
+        recentBackups: 'local',
+      },
     }
   } catch (error) {
     reportMonitoringEvent({
@@ -131,7 +202,10 @@ export async function getBackupOperationsWorkspace(userId: string | null | undef
     return {
       operations,
       recentBackups: await localBackupRepository.listRecent(5),
-      source: 'local',
+      source: {
+        operations: 'local',
+        recentBackups: 'local',
+      },
     }
   }
 }
