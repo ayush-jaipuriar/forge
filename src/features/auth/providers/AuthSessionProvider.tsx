@@ -6,6 +6,7 @@ import { hasFirebaseEnv, missingFirebaseEnvKeys } from '@/lib/firebase/config'
 import { AuthSessionContext } from '@/features/auth/providers/authSessionContext'
 import { bootstrapUserSession } from '@/features/auth/services/bootstrapUserSession'
 import type { AuthSessionValue, AuthStatus, SessionUser } from '@/features/auth/types/auth'
+import { clearLocalCalendarSessionArtifacts } from '@/services/calendar/calendarIntegrationService'
 import { reportMonitoringError } from '@/services/monitoring/monitoringService'
 
 type AuthState = {
@@ -183,6 +184,7 @@ export function AuthSessionProvider({ children }: PropsWithChildren) {
           return
         }
 
+        await clearLocalCalendarSessionArtifacts()
         await signOut(auth)
       },
     }),

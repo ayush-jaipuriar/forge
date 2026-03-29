@@ -10,11 +10,13 @@ import {
 import type {
   CalendarConnectionSnapshot,
   CalendarRecommendationContext,
+  CalendarSessionSnapshot,
   CalendarSyncStateSnapshot,
   ExternalCalendarEventCacheRecord,
   MirroredRoutineBlock,
 } from '@/domain/calendar/types'
 import type { BlockInstance } from '@/domain/routine/types'
+import { getFirebaseAuth } from '@/lib/firebase/client'
 import { reportMonitoringError } from '@/services/monitoring/monitoringService'
 import { fetchGoogleCalendarEvents, requestGoogleCalendarSession } from '@/services/calendar/googleCalendarClient'
 import { createSyncQueueItem } from '@/services/sync/syncQueue'
@@ -120,8 +122,7 @@ class GoogleCalendarIntegrationService implements CalendarIntegrationService {
   }
 
   async disconnect(userId?: string) {
-    await localCalendarSessionRepository.clear()
-    await localExternalCalendarEventRepository.clearAll()
+    await clearLocalCalendarSessionArtifacts()
 
     const currentSettings = await localSettingsRepository.getDefault()
     const nextConnection: CalendarConnectionSnapshot = {
@@ -170,7 +171,8 @@ class GoogleCalendarIntegrationService implements CalendarIntegrationService {
 
     const session = await localCalendarSessionRepository.getDefault()
 
-    if (!session) {
+    if (!isCalendarSessionUsable(session)) {
+      await clearLocalCalendarSessionArtifacts()
       const staleState = {
         ...syncState,
         ...normalizedConnection,
@@ -231,6 +233,10 @@ class GoogleCalendarIntegrationService implements CalendarIntegrationService {
         externalEventSyncStatus: 'error',
         lastConnectionCheckAt: new Date().toISOString(),
         lastSyncError: error instanceof Error ? error.message : 'Calendar refresh failed.',
+      }
+
+      if (isCalendarAuthError(error)) {
+        await clearLocalCalendarSessionArtifacts()
       }
 
       await localCalendarStateRepository.upsert(nextState)
@@ -350,6 +356,14 @@ class GoogleCalendarIntegrationService implements CalendarIntegrationService {
   }
 }
 
+export async function clearLocalCalendarSessionArtifacts() {
+  await Promise.all([
+    localCalendarSessionRepository.clear(),
+    localExternalCalendarEventRepository.clearAll(),
+    localCalendarStateRepository.clear(),
+  ])
+}
+
 function shouldRefreshCalendarRange(args: {
   requestedDates: string[]
   syncState: CalendarSyncStateSnapshot
@@ -403,6 +417,24 @@ function isOnline() {
   }
 
   return navigator.onLine
+}
+
+function isCalendarSessionUsable(session: CalendarSessionSnapshot | null): session is CalendarSessionSnapshot {
+  const activeUid = getFirebaseAuth()?.currentUser?.uid
+
+  if (!session || !activeUid) {
+    return false
+  }
+
+  return session.userId === activeUid
+}
+
+function isCalendarAuthError(error: unknown) {
+  if (!(error instanceof Error)) {
+    return false
+  }
+
+  return error.message.includes('401') || error.message.includes('403')
 }
 
 export const googleCalendarIntegrationService = new GoogleCalendarIntegrationService()

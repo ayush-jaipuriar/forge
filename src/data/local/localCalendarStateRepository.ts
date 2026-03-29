@@ -15,4 +15,9 @@ export class LocalCalendarStateRepository implements CalendarStateRepository {
       ...snapshot,
     })
   }
+
+  async clear() {
+    const db = await getForgeDb()
+    await db.delete('calendarState', 'default')
+  }
 }

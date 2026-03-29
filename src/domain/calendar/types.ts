@@ -47,6 +47,7 @@ export type ExternalCalendarEventCacheRecord = ExternalCalendarEvent & {
 
 export type CalendarSessionSnapshot = {
   id: 'default'
+  userId: string
   provider: CalendarProvider
   accessScope: CalendarAccessScope
   accessToken: string

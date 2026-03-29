@@ -37,6 +37,8 @@ Current implementation posture:
 - external events are normalized into a bounded local cache for collision analysis
 - Today and Schedule now consume collision summaries derived from those cached events
 - Settings surfaces connection state, sync state, cache size, and the last sync issue honestly
+- the local Calendar access session is now explicitly bound to the authenticated Firebase user and is cleared on sign-out so another user on the same browser cannot inherit stale Calendar access
+- multi-day and overnight events are now duplicated across every constrained date in the cache model so later days do not silently lose pressure coverage
 
 ## Current Connection Assumptions
 

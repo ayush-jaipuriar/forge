@@ -1,5 +1,6 @@
 import { forgePrepTaxonomy, forgeRoutine, forgeWorkoutSchedule } from '@/data/seeds'
 import { localDayInstanceRepository, localSettingsRepository } from '@/data/local'
+import { deriveRecommendationCalendarContext } from '@/domain/calendar/deriveRecommendationCalendarContext'
 import { googleCalendarIntegrationService } from '@/services/calendar/calendarIntegrationService'
 import {
   buildScheduleOperationalSignals,
@@ -67,10 +68,10 @@ export async function getOrCreateTodayWorkspace(date = new Date()) {
     blocks: dayInstance.blocks,
     connection: settings?.calendarIntegration,
   })
-  const calendarContext = await googleCalendarIntegrationService.getRecommendationContext({
+  const calendarContext = deriveRecommendationCalendarContext({
     date: dateKey,
-    blocks: dayInstance.blocks,
-    connection: settings?.calendarIntegration,
+    connection: calendarWorkspace.connection,
+    summary: calendarWorkspace.summary,
   })
   const scorePreview = calculateDayScorePreview(dayInstance, {
     scheduledWorkout,

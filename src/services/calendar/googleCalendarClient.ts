@@ -46,6 +46,7 @@ export async function requestGoogleCalendarSession(): Promise<CalendarSessionSna
 
   return {
     id: 'default',
+    userId: user.uid,
     provider: 'google',
     accessScope: GOOGLE_CALENDAR_READ_SCOPE,
     accessToken: token,
@@ -59,7 +60,8 @@ export async function fetchGoogleCalendarEvents(args: {
   endDate: string
   calendarId?: string
 }): Promise<ExternalCalendarEventCacheRecord[]> {
-  const calendarId = encodeURIComponent(args.calendarId ?? 'primary')
+  const rawCalendarId = args.calendarId ?? 'primary'
+  const calendarId = encodeURIComponent(rawCalendarId)
   const timeMin = new Date(`${args.startDate}T00:00:00`).toISOString()
   const timeMax = new Date(`${args.endDate}T23:59:59`).toISOString()
   const collected: ExternalCalendarEventCacheRecord[] = []
@@ -92,7 +94,7 @@ export async function fetchGoogleCalendarEvents(args: {
 
     collected.push(
       ...(payload.items ?? [])
-        .map((event) => normalizeGoogleCalendarEventForCache(event, fetchedAt))
+        .flatMap((event) => normalizeGoogleCalendarEventForCache(event, fetchedAt, rawCalendarId))
         .filter((event): event is ExternalCalendarEventCacheRecord => event !== null),
     )
 
@@ -105,20 +107,22 @@ export async function fetchGoogleCalendarEvents(args: {
 export function normalizeGoogleCalendarEventForCache(
   event: GoogleCalendarApiEvent,
   fetchedAt: string,
-): ExternalCalendarEventCacheRecord | null {
+  calendarId = 'primary',
+): ExternalCalendarEventCacheRecord[] {
   const startsAt = event.start?.dateTime ?? (event.start?.date ? `${event.start.date}T00:00:00.000Z` : null)
   const endsAt = event.end?.dateTime ?? (event.end?.date ? `${event.end.date}T00:00:00.000Z` : null)
 
   if (!startsAt || !endsAt) {
-    return null
+    return []
   }
 
   const allDay = !event.start?.dateTime
+  const coveredDates = getCoveredDates(startsAt, endsAt, allDay)
 
-  return {
-    id: `google:${event.id}`,
+  return coveredDates.map((date) => ({
+    id: `google:${event.id}:${date}`,
     provider: 'google',
-    calendarId: 'primary',
+    calendarId,
     providerEventId: event.id,
     title: event.summary?.trim() || 'Untitled event',
     startsAt,
@@ -126,7 +130,25 @@ export function normalizeGoogleCalendarEventForCache(
     allDay,
     location: event.location,
     isForgeManaged: (event.summary ?? '').startsWith('[FORGE]'),
-    date: startsAt.slice(0, 10),
+    date,
     fetchedAt,
+  }))
+}
+
+function getCoveredDates(startsAt: string, endsAt: string, allDay: boolean) {
+  const start = new Date(startsAt)
+  const exclusiveEnd = new Date(endsAt)
+  const inclusiveEnd = allDay
+    ? new Date(exclusiveEnd.getTime() - 1000)
+    : exclusiveEnd
+  const dates: string[] = []
+  const cursor = new Date(start)
+
+  while (cursor <= inclusiveEnd) {
+    dates.push(cursor.toISOString().slice(0, 10))
+    cursor.setUTCDate(cursor.getUTCDate() + 1)
+    cursor.setUTCHours(0, 0, 0, 0)
   }
+
+  return [...new Set(dates)]
 }
