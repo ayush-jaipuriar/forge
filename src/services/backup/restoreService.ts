@@ -1,5 +1,6 @@
 import {
   localDayInstanceRepository,
+  localHealthIntegrationRepository,
   localNotificationStateRepository,
   localRestoreJobRepository,
   localSettingsRepository,
@@ -79,6 +80,11 @@ export async function applyRestoreStage(stage: RestoreStage): Promise<RestoreJob
     appliedCounts.notificationState = 1
   }
 
+  if (stage.payload.integrations.health) {
+    await localHealthIntegrationRepository.upsert(stage.payload.integrations.health)
+    appliedCounts.healthState = 1
+  }
+
   if (stage.payload.user) {
     warnings.push('Auth user records are managed by Firebase Auth and were not restored into local app state.')
   }
@@ -89,10 +95,6 @@ export async function applyRestoreStage(stage: RestoreStage): Promise<RestoreJob
 
   if (stage.payload.integrations.syncDiagnostics) {
     warnings.push('Sync diagnostics are operational telemetry and were intentionally not restored.')
-  }
-
-  if (stage.payload.integrations.health) {
-    warnings.push('Health integration scaffolding remains provider-owned future state and was not restored.')
   }
 
   if (outstandingSyncItems.length > 0) {

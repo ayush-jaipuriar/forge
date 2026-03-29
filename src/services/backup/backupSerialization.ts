@@ -14,7 +14,7 @@ import {
   type ForgeUserBackupRecord,
 } from '@/domain/backup/types'
 import { createDefaultCalendarSyncStateSnapshot } from '@/domain/calendar/types'
-import { createDefaultHealthIntegrationSnapshot } from '@/domain/health/types'
+import { createDefaultHealthIntegrationSnapshot, type HealthIntegrationSnapshot } from '@/domain/health/types'
 import { createDefaultNotificationStateSnapshot, type NotificationStateSnapshot } from '@/domain/notifications/types'
 import type { DayInstance } from '@/domain/routine/types'
 import { createDefaultUserSettings, type UserSettings } from '@/domain/settings/types'
@@ -34,6 +34,7 @@ export function buildBackupPayload({
   fallbackUserId,
   settings,
   dayInstances,
+  healthIntegration,
   notificationState,
   syncDiagnostics,
   exportedAt,
@@ -43,6 +44,7 @@ export function buildBackupPayload({
   fallbackUserId: string
   settings: UserSettings | null
   dayInstances: DayInstance[]
+  healthIntegration: HealthIntegrationSnapshot | null
   notificationState: NotificationStateSnapshot | null
   syncDiagnostics: SyncDiagnosticsSnapshot | null
   exportedAt: string
@@ -90,7 +92,7 @@ export function buildBackupPayload({
         : null,
       notificationState: notificationState ?? createDefaultNotificationStateSnapshot(),
       syncDiagnostics,
-      health: createDefaultHealthIntegrationSnapshot(),
+      health: healthIntegration ?? createDefaultHealthIntegrationSnapshot(),
     },
   }
 }

@@ -2,6 +2,7 @@ import { localRestoreJobRepository, localSettingsRepository } from '@/data/local
 import { isServerRestoreEligible } from '@/services/backup/backupPayloadStorage'
 import { getBackupOperationsWorkspace } from '@/services/backup/backupOperationsService'
 import { googleCalendarIntegrationService } from '@/services/calendar/calendarIntegrationService'
+import { healthIntegrationService } from '@/services/health/healthIntegrationService'
 import { getNotificationStateWorkspace } from '@/services/notifications/notificationStateService'
 
 export async function getSettingsWorkspace(userId?: string | null) {
@@ -19,6 +20,10 @@ export async function getSettingsWorkspace(userId?: string | null) {
     startsAt: '2026-03-27T08:00:00+05:30',
     endsAt: '2026-03-27T09:20:00+05:30',
   })
+  // Phase 3: health integration is scaffolded but not connected. The service returns
+  // an honest workspace from the persisted local snapshot with a default fallback,
+  // not live provider data.
+  const healthWorkspace = await healthIntegrationService.getSettingsWorkspace()
 
   return {
     settings,
@@ -55,5 +60,6 @@ export async function getSettingsWorkspace(userId?: string | null) {
     },
     calendarMirroredBlockCount: calendarWorkspace.mirroredBlockCount,
     calendarMirrorErrorCount: calendarWorkspace.mirrorErrorCount,
+    healthIntegration: healthWorkspace,
   }
 }

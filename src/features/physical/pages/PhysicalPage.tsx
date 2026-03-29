@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { Button, CircularProgress, Grid, Stack, TextField, Typography } from '@mui/material'
+import { Alert, Button, CircularProgress, Grid, Stack, TextField, Typography } from '@mui/material'
 import { MetricTile } from '@/components/common/MetricTile'
 import { SectionHeader } from '@/components/common/SectionHeader'
 import { SurfaceCard } from '@/components/common/SurfaceCard'
@@ -28,6 +28,7 @@ export function PhysicalPage() {
   const activeWorkout = data.workout
   const persistedWorkoutNote = activeWorkout.note ?? activeWorkout.missReason ?? ''
   const activeWorkoutNoteDraft = workoutNoteDraft ?? persistedWorkoutNote
+  const healthWorkspace = data.healthIntegration
 
   return (
     <Stack spacing={3}>
@@ -211,6 +212,26 @@ export function PhysicalPage() {
               {label}
             </Typography>
           ))}
+        </Stack>
+      </SurfaceCard>
+
+      <SurfaceCard
+        eyebrow="Health Provider Integration"
+        title="Automated sleep and recovery tracking"
+        description={healthWorkspace.phaseNotice}
+      >
+        <Stack spacing={1.25}>
+          <Typography variant="body2" color="text.secondary">
+            {healthWorkspace.statusSummaryLabel}
+          </Typography>
+          {healthWorkspace.providers.slice(0, 2).map((provider) => (
+            <Typography key={provider.provider} variant="body2" color="text.secondary">
+              {provider.displayName}: {provider.unavailableLabel} · {provider.supportedSignalCount} signals planned
+            </Typography>
+          ))}
+          <Alert severity="info" variant="outlined">
+            Sleep duration is logged manually in Phase 3. When Apple Health or Google Health Connect integration lands in a future phase, automated sleep data will flow through the normalized signal contract and appear here automatically without manual entry.
+          </Alert>
         </Stack>
       </SurfaceCard>
     </Stack>

@@ -1,6 +1,7 @@
 import { localSettingsRepository } from '@/data/local'
 import { forgeWorkoutSchedule } from '@/data/seeds'
 import { deriveSleepStatusFromDuration, getWeeklyWorkoutSummary, getWorkoutForDate } from '@/domain/physical/selectors'
+import { healthIntegrationService } from '@/services/health/healthIntegrationService'
 import { getOrCreateTodayWorkspace } from '@/services/routine/routinePersistenceService'
 
 const SLEEP_TARGET_HOURS = 7.5
@@ -18,6 +19,7 @@ export async function getPhysicalWorkspace(date = new Date()) {
     scheduledWorkout: todayWorkspace.scheduledWorkout,
     workoutLogs: settings.workoutLogs,
   })
+  const healthIntegration = await healthIntegrationService.getSettingsWorkspace()
 
   return {
     dateKey: todayWorkspace.dateKey,
@@ -28,5 +30,6 @@ export async function getPhysicalWorkspace(date = new Date()) {
     sleepDurationHours: dailySignals.sleepDurationHours,
     sleepStatus: deriveSleepStatusFromDuration(dailySignals.sleepDurationHours, SLEEP_TARGET_HOURS),
     sleepTargetHours: SLEEP_TARGET_HOURS,
+    healthIntegration,
   }
 }

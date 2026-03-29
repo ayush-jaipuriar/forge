@@ -1,5 +1,5 @@
 import TrendingUpRoundedIcon from '@mui/icons-material/TrendingUpRounded'
-import { CircularProgress, Grid, Stack, Typography } from '@mui/material'
+import { Alert, CircularProgress, Grid, Stack, Typography } from '@mui/material'
 import { MetricTile } from '@/components/common/MetricTile'
 import { OperationalSignalCard } from '@/components/common/OperationalSignalCard'
 import { SectionHeader } from '@/components/common/SectionHeader'
@@ -20,6 +20,7 @@ export function ReadinessPage() {
   }
 
   const { operationalSignals, readinessSnapshot } = data
+  const healthWorkspace = data.healthIntegration
 
   return (
     <Stack spacing={3}>
@@ -110,6 +111,29 @@ export function ReadinessPage() {
           </Stack>
         </SurfaceCard>
       ) : null}
+
+      <SurfaceCard
+        eyebrow="Recovery Signal Scaffolding"
+        title="Future health provider contribution points"
+        description="Readiness scoring in Phase 3 is based on prep coverage, confidence, and pace against the target date. Future phases will add recovery signal weighting from connected providers."
+      >
+        <Stack spacing={1.25}>
+          <Typography variant="body2" color="text.secondary">
+            {healthWorkspace.statusSummaryLabel}
+          </Typography>
+          {healthWorkspace.providers
+            .filter((p) => p.supportedSignalCount > 0)
+            .slice(0, 2)
+            .map((provider) => (
+              <Typography key={provider.provider} variant="body2" color="text.secondary">
+                {provider.displayName}: {provider.unavailableLabel} · recovery score signal planned
+              </Typography>
+            ))}
+          <Alert severity="info" variant="outlined">
+            Recovery Score is not yet factored into readiness because no health provider is connected. When Fitbit or Apple Health integration lands, recovery signals will be normalized and weighted into the readiness model through a typed seam that already exists in the domain layer.
+          </Alert>
+        </Stack>
+      </SurfaceCard>
     </Stack>
   )
 }

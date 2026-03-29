@@ -6,6 +6,7 @@ import {
   buildReadinessOperationalSignals,
   getOperationalAnalyticsSummary,
 } from '@/services/analytics/operationalAnalyticsService'
+import { healthIntegrationService } from '@/services/health/healthIntegrationService'
 import { getOrCreateTodayWorkspace } from '@/services/routine/routinePersistenceService'
 
 export async function getReadinessWorkspace(date = new Date()) {
@@ -19,6 +20,7 @@ export async function getReadinessWorkspace(date = new Date()) {
     topics: topicRecords,
   })
   const operationalAnalytics = await getOperationalAnalyticsSummary(date)
+  const healthIntegration = await healthIntegrationService.getSettingsWorkspace()
 
   return {
     dateKey: todayWorkspace.dateKey,
@@ -30,5 +32,6 @@ export async function getReadinessWorkspace(date = new Date()) {
       readinessSnapshot,
       domainSummaries,
     }),
+    healthIntegration,
   }
 }

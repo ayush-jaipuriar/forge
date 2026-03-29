@@ -6,6 +6,7 @@ import { LocalCalendarStateRepository } from '@/data/local/localCalendarStateRep
 import { LocalDayInstanceRepository } from '@/data/local/localDayInstanceRepository'
 import { LocalExternalCalendarEventRepository } from '@/data/local/localExternalCalendarEventRepository'
 import { LocalExportPayloadRepository } from '@/data/local/localExportPayloadRepository'
+import { LocalHealthIntegrationRepository } from '@/data/local/localHealthIntegrationRepository'
 import { LocalNotificationLogRepository } from '@/data/local/localNotificationLogRepository'
 import { LocalNotificationStateRepository } from '@/data/local/localNotificationStateRepository'
 import { LocalRestoreJobRepository } from '@/data/local/localRestoreJobRepository'
@@ -22,6 +23,7 @@ export const localCalendarStateRepository = new LocalCalendarStateRepository()
 export const localDayInstanceRepository = new LocalDayInstanceRepository()
 export const localExternalCalendarEventRepository = new LocalExternalCalendarEventRepository()
 export const localExportPayloadRepository = new LocalExportPayloadRepository()
+export const localHealthIntegrationRepository = new LocalHealthIntegrationRepository()
 export const localNotificationStateRepository = new LocalNotificationStateRepository()
 export const localNotificationLogRepository = new LocalNotificationLogRepository()
 export const localRestoreJobRepository = new LocalRestoreJobRepository()

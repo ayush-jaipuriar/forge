@@ -3,6 +3,7 @@ import {
   localBackupRepository,
   localDayInstanceRepository,
   localExportPayloadRepository,
+  localHealthIntegrationRepository,
   localNotificationStateRepository,
   localSettingsRepository,
   localSyncDiagnosticsRepository,
@@ -79,9 +80,10 @@ export async function buildExportPayload({
   exportedAt?: string
   trigger?: 'manual' | 'scheduled'
 }): Promise<ForgeExportPayload> {
-  const [settings, dayInstances, notificationState, syncDiagnostics] = await Promise.all([
+  const [settings, dayInstances, healthIntegration, notificationState, syncDiagnostics] = await Promise.all([
     localSettingsRepository.getDefault(),
     localDayInstanceRepository.listAll(),
+    localHealthIntegrationRepository.getDefault(),
     localNotificationStateRepository.getDefault(),
     localSyncDiagnosticsRepository.getDefault(),
   ])
@@ -90,6 +92,7 @@ export async function buildExportPayload({
     fallbackUserId: 'local-user',
     settings,
     dayInstances,
+    healthIntegration,
     notificationState,
     syncDiagnostics,
     exportedAt,

@@ -1,6 +1,7 @@
 import ArchiveRoundedIcon from '@mui/icons-material/ArchiveRounded'
 import CalendarMonthRoundedIcon from '@mui/icons-material/CalendarMonthRounded'
 import DownloadRoundedIcon from '@mui/icons-material/DownloadRounded'
+import MonitorHeartRoundedIcon from '@mui/icons-material/MonitorHeartRounded'
 import NotificationsActiveRoundedIcon from '@mui/icons-material/NotificationsActiveRounded'
 import RestoreRoundedIcon from '@mui/icons-material/RestoreRounded'
 import SettingsSuggestRoundedIcon from '@mui/icons-material/SettingsSuggestRounded'
@@ -61,6 +62,7 @@ export function SettingsPage() {
     calendarMirroredBlockCount,
     calendarSyncState,
     featureFlags,
+    healthIntegration,
     latestServerRestoreReadyBackup,
     mirroredBlockPreview,
     notificationState,
@@ -506,6 +508,47 @@ export function SettingsPage() {
               <Typography variant="body2" color="primary.light">
                 Mirrored title convention: {mirroredBlockPreview.eventTitle}
               </Typography>
+            </Stack>
+          </SurfaceCard>
+        </Grid>
+        <Grid size={{ xs: 12, md: 6 }}>
+          <SurfaceCard
+            eyebrow="Health Integration"
+            title="Wearable and health provider scaffolding"
+            description={healthIntegration.phaseNotice}
+            action={
+              <Chip
+                label={healthIntegration.connectionSummary}
+                size="small"
+                variant="outlined"
+                icon={<MonitorHeartRoundedIcon />}
+                color="default"
+              />
+            }
+          >
+            <Stack spacing={1.25}>
+              <Typography variant="body2" color="text.secondary">
+                {healthIntegration.statusSummaryLabel}
+              </Typography>
+              <Typography variant="body2" color="text.secondary">
+                Available signals: {healthIntegration.availableSignalCount} of {healthIntegration.totalSignalCount} (0 connected in Phase 3)
+              </Typography>
+              {healthIntegration.providers.map((provider) => (
+                <Stack key={provider.provider} direction="row" spacing={1} alignItems="center" justifyContent="space-between">
+                  <Typography variant="body2" color="text.secondary">
+                    {provider.displayName}
+                  </Typography>
+                  <Chip
+                    label={provider.unavailableLabel}
+                    size="small"
+                    variant="outlined"
+                    color="default"
+                  />
+                </Stack>
+              ))}
+              <Alert severity="info" variant="outlined">
+                Health integration seams are typed and ready for future providers. No fake connectivity or dead buttons exist here. Connect flows will land in a dedicated future phase once the native mobile shell exists.
+              </Alert>
             </Stack>
           </SurfaceCard>
         </Grid>

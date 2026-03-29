@@ -310,6 +310,21 @@ This document captures the Phase 1 architectural baseline that implementation sh
 - this means explicit field-level merges are intentionally deferred; Milestone 4 closes with documented coalescing plus whole-record upserts rather than pretending merge complexity is already solved
 - Firestore adapters are intentionally thin so conflict policy can evolve in the application/domain layer instead of being buried inside integration code
 
+## Phase 3 Milestone 9 Health Integration Scaffolding Polish
+
+- the health domain in `src/domain/health/` is now complete for Phase 3: richer `HealthProviderStatus` semantics (`planned`, `notConnected`, `unsupported`, `connected`, `error`), an explicit `HealthProviderUnavailableReason` enum, and individual normalized signal contracts for sleep duration, sleep consistency, recovery, and activity that future provider adapters must fulfill
+- `src/domain/health/providers.ts` is a pure function module for interpreting provider state into honest display labels without UI side effects; `getProviderStatusLabel`, `getUnavailableReasonLabel`, `isSignalAvailable`, `deriveHealthConnectionSummaryLabel`, `deriveHealthConnectionSummary`, and `deriveHealthPhaseNotice` all produce deterministic output based on state alone
+- `src/domain/health/normalization.ts` now models sleep duration and sleep consistency as separate normalized signals instead of trying to hide both behind one helper; that keeps future provider adapters honest and makes validation rules clearer
+- `src/data/local/localHealthIntegrationRepository.ts` plus the `healthIntegration` store in `src/data/local/forgeDb.ts` give Milestone 9 a real persistence seam, which means health scaffolding can now survive reloads, participate in restore flows, and evolve into remote-backed state later without rewriting the feature surfaces
+- `src/services/health/healthIntegrationService.ts` is no longer a static snapshot wrapper; it now reads and writes through the repository seam, derives `connectionSummary` from provider state, and is already async for the same architectural reason the Calendar and Settings services are async
+- `src/services/settings/settingsWorkspaceService.ts`, `src/services/physical/physicalPersistenceService.ts`, and `src/services/readiness/readinessPersistenceService.ts` now all consume the same health workspace flow, which prevents Physical and Readiness from freezing stale module-level health state
+- Settings, Physical, and Readiness now all surface health integration state explicitly: Settings shows a full provider breakdown with honest status chips and no fake connect buttons; Physical explains why sleep logging is still manual and what will become automated; Readiness explains why recovery signals are not yet factored into readiness scoring
+- the most important product honesty boundary for Milestone 9 remains unchanged: no provider in Phase 3 has `platformAvailable: true`, and `isProviderConnectable` returns `false` for all of them; there are zero dead connect buttons in the UI
+- backup and restore now include the persisted health integration snapshot through `src/services/backup/backupService.ts`, `src/services/backup/backupSerialization.ts`, and `src/services/backup/restoreService.ts`, which keeps the new seam consistent with the rest of the Phase 3 durability model
+- `src/tests/domain/health-integration.spec.ts` now covers persisted health state, status labels, readiness helpers, signal availability, connection summaries, display hints, normalization, validation, and the workspace builder
+- Verification: typecheck, lint, 53 test files, 190 tests — all passing, build clean
+
+
 ## Layer Boundaries
 
 ### Presentation

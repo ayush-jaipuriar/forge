@@ -706,19 +706,57 @@ Polish the future-facing health seams so the product stays honest and ready for 
 
 ### Checklist
 
-- [ ] Refine health integration settings and status surfaces so they distinguish disconnected, unsupported, and future-provider states.
-- [ ] Define provider contracts and normalized health-signal types for future sleep, recovery, or activity imports.
-- [ ] Add placeholder sync metadata and diagnostics without implying live provider support.
-- [ ] Ensure Readiness and Physical surfaces can reference future provider state honestly without fake connected data.
+- [x] Refine health integration settings and status surfaces so they distinguish disconnected, unsupported, and future-provider states.
+- [x] Define provider contracts and normalized health-signal types for future sleep, recovery, or activity imports.
+- [x] Add placeholder sync metadata and diagnostics without implying live provider support.
+- [x] Ensure Readiness and Physical surfaces can reference future provider state honestly without fake connected data.
 
 ### Testing and Documentation
 
-- [ ] Add tests for provider-state interpretation and unsupported-state UX contracts.
-- [ ] Document what is scaffolded versus actually integrated.
+- [x] Add tests for provider-state interpretation and unsupported-state UX contracts.
+- [x] Document what is scaffolded versus actually integrated.
+
+### Implementation Notes
+
+- Expanded `src/domain/health/types.ts` with richer `HealthProviderStatus` enum (planned/notConnected/unsupported/connected/error),
+  `HealthProviderUnavailableReason` enum, individual normalized signal contracts (`NormalizedSleepSignal`, `NormalizedRecoverySignal`,
+  `NormalizedActivitySignal`), and a `HealthIntegrationSettingsWorkspace` type for UI consumption.
+- Added `src/domain/health/providers.ts` — pure domain functions for interpreting provider state into honest display labels
+  (`getProviderStatusLabel`, `getUnavailableReasonLabel`, `isSignalAvailable`, `deriveHealthConnectionSummaryLabel`,
+  `deriveHealthPhaseNotice`).
+- Added `src/domain/health/normalization.ts` — typed normalization seam functions (`normalizeSleepSignal`,
+  `normalizeSleepConsistencySignal`, `normalizeRecoverySignal`, `normalizeStepsSignal`, `normalizeHeartRateSignal`,
+  `validateNormalizedSignal`). Sleep duration and sleep consistency are now modeled as separate normalized signals,
+  which keeps the contract honest for future adapters and prevents one helper from pretending to emit two distinct
+  signal types at once.
+- Added `src/data/local/localHealthIntegrationRepository.ts` and a new `healthIntegration` store in
+  `src/data/local/forgeDb.ts`, so Milestone 9 health state is persisted locally instead of being rebuilt from defaults
+  on every call. This matters because future providers, restore flows, and settings workspaces now share one seam.
+- Updated `src/services/health/healthIntegrationService.ts` so it reads and writes through the repository seam and
+  derives `connectionSummary` from provider state instead of passing through a static snapshot field. The service is
+  now async for the right reason: it already respects persistence boundaries, so moving to Firestore later will not
+  require the UI contract to change.
+- Updated `src/services/settings/settingsWorkspaceService.ts` to include `healthIntegration` workspace.
+- Updated `src/services/physical/physicalPersistenceService.ts` and
+  `src/services/readiness/readinessPersistenceService.ts` so Physical and Readiness read health state through their
+  normal workspace flow rather than freezing a module-level snapshot.
+- Updated `src/features/settings/pages/SettingsPage.tsx` to show a Health Integration card with honest provider state
+  (all planned, none connectable, no fake buttons).
+- Updated `src/features/physical/pages/PhysicalPage.tsx` with a Health Provider Integration card explaining what will be
+  automated in future phases.
+- Updated `src/features/readiness/pages/ReadinessPage.tsx` with a Recovery Signal Scaffolding card explaining what will
+  be factored into readiness scoring when providers connect.
+- Updated backup flows in `src/services/backup/backupService.ts`, `src/services/backup/backupSerialization.ts`, and
+  `src/services/backup/restoreService.ts` so health integration state is exported and restored alongside the other
+  Phase 3 integration seams instead of being silently dropped.
+- Added and expanded `src/tests/domain/health-integration.spec.ts` so it now covers persisted health state,
+  derived connection summaries, and the corrected sleep-duration vs sleep-consistency normalization contract.
+- Verification: typecheck, lint, `npm run test:run` (53 files, 190 tests — all passing), build all green.
 
 ### Exit Criteria
 
 - future health-provider work has clear seams and honest current-state presentation
+- ✅ achieved: all seams are typed, all surfaces are honest, no fake connectivity exists
 
 ## Milestone 10: Phase 3 QA, Security, and Release Hardening
 
@@ -762,7 +800,7 @@ Close Phase 3 with an operationally credible release posture across notification
 - [x] Milestone 6 complete
 - [x] Milestone 7 complete
 - [x] Milestone 8 complete
-- [ ] Milestone 9 complete
+- [x] Milestone 9 complete
 - [ ] Milestone 10 complete
 
 ## Recommended Immediate Execution Order

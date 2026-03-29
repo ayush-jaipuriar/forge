@@ -8,6 +8,7 @@ import type {
   ExternalCalendarEventCacheRecord,
 } from '@/domain/calendar/types'
 import type { AnySyncQueueItem } from '@/domain/execution/sync'
+import type { HealthIntegrationSnapshot } from '@/domain/health/types'
 import type { NotificationLogRecord, NotificationStateSnapshot } from '@/domain/notifications/types'
 import type { DayInstance } from '@/domain/routine/types'
 import type { UserSettings } from '@/domain/settings/types'
@@ -106,6 +107,10 @@ type ForgeDbSchema = DBSchema & {
       byProviderEventId: string
     }
   }
+  healthIntegration: {
+    key: string
+    value: HealthIntegrationSnapshot
+  }
 }
 
 let dbPromise: Promise<IDBPDatabase<ForgeDbSchema>> | null = null
@@ -113,7 +118,7 @@ const FORGE_DB_NAME = 'forge-db'
 
 export function getForgeDb() {
   if (!dbPromise) {
-    dbPromise = openDB<ForgeDbSchema>(FORGE_DB_NAME, 7, {
+    dbPromise = openDB<ForgeDbSchema>(FORGE_DB_NAME, 8, {
       upgrade(db) {
         if (!db.objectStoreNames.contains('dayInstances')) {
           const dayInstances = db.createObjectStore('dayInstances', {
@@ -217,6 +222,12 @@ export function getForgeDb() {
           })
           calendarMirrors.createIndex('byDayDate', 'dayDate')
           calendarMirrors.createIndex('byProviderEventId', 'providerEventId')
+        }
+
+        if (!db.objectStoreNames.contains('healthIntegration')) {
+          db.createObjectStore('healthIntegration', {
+            keyPath: 'id',
+          })
         }
       },
     })
