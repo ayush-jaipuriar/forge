@@ -21,7 +21,7 @@ That means:
 - a placeholder Google Calendar service boundary now exists in code and is responsible for:
   - normalizing connection status
   - returning a recommendation-ready collision context
-  - formatting future mirrored event metadata without actually writing events yet
+  - formatting future mirrored event metadata without letting screens talk directly to provider APIs
 - settings now store a typed `calendarIntegration` snapshot rather than a loose boolean, which gives future integration work a real schema home for provider status, feature gates, and selected calendars
 - the recommendation engine now accepts calendar-derived context instead of a generic free-floating conflict flag, so future schedule pressure can come from a real integration seam
 
@@ -49,12 +49,12 @@ That means:
 - access is granted through a popup using the Firebase-authenticated Google user
 - the access token is stored only in local browser state, not in Firestore
 - Forge can reconnect and refresh within the local browser context, but it does not yet have a server-managed long-lived Google token system
-- write mirroring is still deferred to the next milestone
+- write mirroring now exists as an explicit operator-triggered action for major blocks only
 
 Why this is acceptable now:
 
 - the immediate product need is collision pressure and schedule awareness
-- introducing a fake “fully durable Calendar sync” story before long-lived token handling exists would be misleading
+- introducing a fake “fully durable server-managed Calendar sync” story before long-lived token handling exists would still be misleading
 
 ## Current Read Flow
 
@@ -66,19 +66,38 @@ Why this is acceptable now:
 6. Forge derives `CalendarCollisionSummary` objects by comparing timed Forge blocks against overlapping external events.
 7. Today and Schedule surface those summaries as operational pressure, not as a replacement routine source.
 
+## Phase 3 Milestone 8 Write Mirroring
+
+Forge now has a real write-side mirror path layered on top of the read integration.
+
+Current implementation posture:
+
+- Forge can request `https://www.googleapis.com/auth/calendar.events` from the already signed-in Google user
+- only major routine blocks are eligible for mirroring
+- eligible mirrors must be timed, non-optional, and either required-output, deep-work, or workout blocks
+- write mirroring is operator-triggered from Settings through an explicit `Sync major blocks` action
+- local mirror mappings are persisted in IndexedDB so reconciliation can update or delete the same Google Calendar events instead of blindly duplicating them
+- changed, skipped, moved, or no-longer-eligible blocks are reconciled against existing mirror records
+- mirror sync state is tracked separately from external-event read sync state
+- local routine changes now mark mirror sync as `stale` when write mirroring is enabled, so the UI does not pretend Calendar is still aligned
+- Forge-managed events are ignored by collision analysis when they come back through the read cache, which prevents self-inflicted pressure loops
+
 ## Current Limitations
 
 - only the `primary` calendar is supported right now
 - Forge does not yet expose multi-calendar selection
 - read freshness is local-cache based, not server-orchestrated
 - if the local Google Calendar session expires, Forge marks sync state honestly and requires reconnection
-- Calendar writes and mirror reconciliation are still future work
+- mirror sync is still client-bounded and operator-triggered, not long-lived server-managed reconciliation
+- disconnecting Calendar clears local access and read-cache artifacts, but long-lived server-side token management is still future work
 
-## Planned Metadata Convention
+## Active Metadata Convention
 
 - event title prefix: `[FORGE] <block title>`
-- managed event mode is currently `planned`, not active
-- future mirrored event metadata should continue to distinguish Forge-managed events from external events even before bidirectional sync is introduced
+- managed event mode is `majorBlocks` when write mirroring is enabled
+- mirrored events carry description metadata with block id, day, block kind, required-output state, and metadata version
+- mirrored events use color conventions based on block type so deep work, workout, and prep mirrors stay visually distinct
+- Forge-managed events continue to be distinguishable from external events when they round-trip back through the read cache
 
 ## Current Placeholder Status Model
 
@@ -92,8 +111,10 @@ Why this is acceptable now:
   - `scaffoldingOnly`
   - `readMirrorPlanned`
   - `writeMirrorPlanned`
+  - `readEnabled`
+  - `writeEnabled`
 
-The important design choice is that these states are descriptive, not aspirational. Phase 1 does not pretend live Calendar sync exists.
+The important design choice is that these states are descriptive, not aspirational. Forge now has live Calendar read and explicit major-block write mirroring, but it still does not pretend a server-managed bidirectional sync system exists.
 
 ## How Future Read Flow Should Plug In
 
@@ -102,12 +123,15 @@ The important design choice is that these states are descriptive, not aspiration
 3. Move toward server-assisted refresh only when long-lived OAuth handling is real and honest.
 4. Preserve the rule that external events influence pressure without owning routine intent.
 
-## How Future Write Flow Should Plug In
+## Current Write Flow
 
-1. Reuse the existing `[FORGE]` event-title convention and managed-event metadata boundary.
-2. Generate a typed mirrored-block preview from the routine/day-instance layer before any provider write occurs.
-3. Add explicit write-mode and idempotency rules so repeated syncs update the same managed event instead of duplicating entries.
-4. Keep provider writes outside the screen layer; screens should only consume typed connection, mirror, and collision results.
+1. User enables write mirroring from Settings.
+2. Forge requests `calendar.events` through a dedicated Google popup.
+3. Forge stores the write-capable local Calendar session and upgrades the connection feature gate to `writeEnabled`.
+4. A manual mirror sync evaluates the current local day instances against existing mirror records.
+5. Forge creates, updates, or deletes Google Calendar events for major eligible blocks only.
+6. Local mirror mappings are updated so later syncs reconcile the same provider event ids.
+7. Screens consume connection, mirror, and collision results without issuing provider writes directly.
 
 ## Recommendation Boundary
 

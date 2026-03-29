@@ -1,5 +1,6 @@
 import type { DayMode } from '@/domain/common/types'
 import { localSettingsRepository, localSyncQueueRepository } from '@/data/local'
+import { markCalendarMirrorsStaleIfEnabled } from '@/services/calendar/calendarIntegrationService'
 import { createSyncQueueItem } from '@/services/sync/syncQueue'
 import { flushSyncQueue } from '@/services/sync/syncOrchestrator'
 
@@ -43,6 +44,7 @@ export async function updateDayModeOverride({
 
   await Promise.all(supersededSettingsItems.map((item) => localSyncQueueRepository.remove(item.id)))
   await localSyncQueueRepository.enqueue(createSyncQueueItem('upsertSettings', nextSettings.id, nextSettings))
+  await markCalendarMirrorsStaleIfEnabled()
 
   if (userId && isOnline()) {
     const pendingCount = await flushSyncQueue(userId)

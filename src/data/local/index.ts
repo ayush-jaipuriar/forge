@@ -1,6 +1,7 @@
 import { LocalBackupOperationsRepository } from '@/data/local/localBackupOperationsRepository'
 import { LocalBackupRepository } from '@/data/local/localBackupRepository'
 import { LocalCalendarSessionRepository } from '@/data/local/localCalendarSessionRepository'
+import { LocalCalendarMirrorRepository } from '@/data/local/localCalendarMirrorRepository'
 import { LocalCalendarStateRepository } from '@/data/local/localCalendarStateRepository'
 import { LocalDayInstanceRepository } from '@/data/local/localDayInstanceRepository'
 import { LocalExternalCalendarEventRepository } from '@/data/local/localExternalCalendarEventRepository'
@@ -15,6 +16,7 @@ import { LocalSyncQueueRepository } from '@/data/local/localSyncQueueRepository'
 
 export const localBackupOperationsRepository = new LocalBackupOperationsRepository()
 export const localBackupRepository = new LocalBackupRepository()
+export const localCalendarMirrorRepository = new LocalCalendarMirrorRepository()
 export const localCalendarSessionRepository = new LocalCalendarSessionRepository()
 export const localCalendarStateRepository = new LocalCalendarStateRepository()
 export const localDayInstanceRepository = new LocalDayInstanceRepository()

@@ -184,7 +184,9 @@ export function AuthSessionProvider({ children }: PropsWithChildren) {
           return
         }
 
-        await clearLocalCalendarSessionArtifacts()
+        await clearLocalCalendarSessionArtifacts({
+          clearMirrors: true,
+        })
         await signOut(auth)
       },
     }),

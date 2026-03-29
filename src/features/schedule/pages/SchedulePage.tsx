@@ -7,6 +7,7 @@ import { SurfaceCard } from '@/components/common/SurfaceCard'
 import { StatusBadge } from '@/components/status/StatusBadge'
 import { SyncIndicator } from '@/components/status/SyncIndicator'
 import { useUiStore } from '@/app/store/uiStore'
+import { formatCalendarTimestamp, getCalendarStatusTone } from '@/domain/calendar/presentation'
 import { getAllowedScheduleBlockTransitions, dayTypeLabels } from '@/domain/schedule/overrideRules'
 import { useUpdateDayMode } from '@/features/today/hooks/useUpdateDayMode'
 import { useUpdateBlockStatus } from '@/features/today/hooks/useUpdateBlockStatus'
@@ -31,6 +32,11 @@ export function SchedulePage() {
   }
 
   const { calendar, days: weekInstances, globalSignals } = weekWorkspace
+  const calendarTone = getCalendarStatusTone({
+    connectionStatus: calendar.connectionStatus,
+    externalSyncStatus: calendar.syncState?.externalEventSyncStatus ?? 'idle',
+    mirrorSyncStatus: calendar.syncState?.mirrorSyncStatus ?? 'idle',
+  })
 
   return (
     <Stack spacing={3}>
@@ -47,20 +53,28 @@ export function SchedulePage() {
         action={
           <Chip
             icon={<CalendarMonthRoundedIcon />}
-            label={`${calendar.connectionStatus} · ${calendar.syncState?.externalEventSyncStatus ?? 'idle'}`}
+            label={`${calendar.connectionStatus} · read ${calendar.syncState?.externalEventSyncStatus ?? 'idle'} · mirror ${calendar.syncState?.mirrorSyncStatus ?? 'idle'}`}
             variant="outlined"
             size="small"
-            color={calendar.constrainedDayCount > 0 ? 'warning' : 'default'}
+            color={calendarTone}
           />
         }
       >
         <Stack spacing={0.75}>
           <Typography variant="body2" color="text.secondary">
-            Constrained days this week: {calendar.constrainedDayCount}. Last external sync: {calendar.syncState?.lastExternalSyncAt ?? 'Not yet synced'}.
+            Constrained days this week: {calendar.constrainedDayCount}. Last external sync: {formatCalendarTimestamp(calendar.syncState?.lastExternalSyncAt)}.
+          </Typography>
+          <Typography variant="body2" color="text.secondary">
+            Last mirror sync: {formatCalendarTimestamp(calendar.syncState?.lastMirrorSyncAt)}.
           </Typography>
           <Typography variant="body2" color="text.secondary">
             The week view now treats outside events as pressure and collision context, not as a routine editor.
           </Typography>
+          {calendar.syncState?.lastMirrorSyncError ? (
+            <Typography variant="body2" color="warning.light">
+              Mirror sync issue: {calendar.syncState.lastMirrorSyncError}
+            </Typography>
+          ) : null}
         </Stack>
       </SurfaceCard>
       {globalSignals.length > 0 ? (

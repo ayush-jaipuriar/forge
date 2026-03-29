@@ -108,6 +108,7 @@ export async function getOrCreateTodayWorkspace(date = new Date()) {
     calendarSummary: calendarWorkspace.summary,
     calendarSyncState: calendarWorkspace.syncState,
     calendarEvents: calendarWorkspace.events,
+    calendarMirrors: calendarWorkspace.mirrors,
     operationalSignals: buildTodayOperationalSignals({
       summary: operationalAnalytics,
       dayInstance,
@@ -193,6 +194,7 @@ export async function getOrCreateWeeklyWorkspace(anchorDate = new Date()) {
       })),
       operationalSignals: scheduleSignals.daySignalsByDate[instance.date] ?? [],
       calendarSummary: calendarWorkspaces[instance.date]?.summary,
+      calendarMirrors: calendarWorkspaces[instance.date]?.mirrors ?? [],
     })),
   }
 }

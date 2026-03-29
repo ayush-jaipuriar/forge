@@ -15,6 +15,8 @@ export function buildCalendarCollisionSummary({
   events,
   source,
 }: BuildCalendarCollisionSummaryInput): CalendarCollisionSummary {
+  const externalEvents = events.filter((event) => !event.isForgeManaged)
+  const mirroredBlockCount = events.filter((event) => event.isForgeManaged).length
   const constrainedWindows = blocks.flatMap((block) => {
     if (!block.startTime || !block.endTime) {
       return []
@@ -22,7 +24,7 @@ export function buildCalendarCollisionSummary({
 
     const blockStart = getBlockDateTime(date, block.startTime)
     const blockEnd = getBlockDateTime(date, block.endTime)
-    const overlappingEvents = events.filter((event) => rangesOverlap(blockStart, blockEnd, event.startsAt, event.endsAt))
+    const overlappingEvents = externalEvents.filter((event) => rangesOverlap(blockStart, blockEnd, event.startsAt, event.endsAt))
 
     if (overlappingEvents.length === 0) {
       return []
@@ -50,7 +52,7 @@ export function buildCalendarCollisionSummary({
     severity,
     overlappingEventCount,
     constrainedWindows,
-    mirroredBlockCount: 0,
+    mirroredBlockCount,
     source,
   }
 }
@@ -76,11 +78,13 @@ function getCollisionSeverity(args: {
     const blockStart = getBlockDateTime(block.date, block.startTime)
     const blockEnd = getBlockDateTime(block.date, block.endTime)
 
-    return args.events.some(
+    return args.events
+      .filter((event) => !event.isForgeManaged)
+      .some(
       (event) =>
         args.constrainedEventIds.has(event.id) &&
         rangesOverlap(blockStart, blockEnd, event.startsAt, event.endsAt),
-    )
+      )
   })
 
   return hardOverlap ? 'hard' : 'soft'

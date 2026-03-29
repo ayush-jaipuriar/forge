@@ -1,3 +1,5 @@
+import type { BlockStatus } from '@/domain/common/types'
+
 export type CalendarProvider = 'google'
 
 export type CalendarConnectionStatus = 'notConnected' | 'scaffoldingReady' | 'connected' | 'error'
@@ -15,7 +17,9 @@ export type CalendarSyncStatus = 'idle' | 'syncing' | 'stale' | 'error'
 
 export type CalendarMirrorStatus = 'planned' | 'synced' | 'needsUpdate' | 'deleted' | 'error'
 
-export type CalendarAccessScope = 'https://www.googleapis.com/auth/calendar.readonly'
+export type CalendarAccessScope =
+  | 'https://www.googleapis.com/auth/calendar.readonly'
+  | 'https://www.googleapis.com/auth/calendar.events'
 
 export type CalendarConnectionSnapshot = {
   provider: CalendarProvider
@@ -72,7 +76,11 @@ export type CalendarMirrorRecord = {
   blockId: string
   dayDate: string
   sourceBlockTitle: string
+  sourceBlockStatus: BlockStatus
+  startsAt?: string
+  endsAt?: string
   eventTitle: string
+  colorId?: string
   writeMode: CalendarManagedEventMode
   status: CalendarMirrorStatus
   lastSyncedAt?: string
@@ -105,6 +113,7 @@ export type CalendarSyncStateSnapshot = CalendarConnectionSnapshot & {
   lastExternalSyncAt?: string
   lastMirrorSyncAt?: string
   lastSyncError?: string
+  lastMirrorSyncError?: string
   cachedDateRange?: {
     startDate: string
     endDate: string

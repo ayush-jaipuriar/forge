@@ -147,8 +147,10 @@ export interface CalendarStateRepository {
 
 export interface CalendarMirrorRepository {
   listForDate(date: string): Promise<CalendarMirrorRecord[]>
+  listAll(): Promise<CalendarMirrorRecord[]>
   upsert(record: CalendarMirrorRecord): Promise<void>
   remove(id: string): Promise<void>
+  clearAll(): Promise<void>
 }
 
 export interface ExternalCalendarEventRepository {

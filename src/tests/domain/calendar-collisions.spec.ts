@@ -49,4 +49,50 @@ describe('calendar collision summaries', () => {
     expect(summary.overlappingEventCount).toBe(1)
     expect(summary.constrainedWindows[0]?.reason).toContain('Prime Deep Block overlaps Standup')
   })
+
+  it('ignores Forge-managed mirrored events when calculating external collision pressure', () => {
+    const blocks: BlockInstance[] = [
+      {
+        id: 'prime-block',
+        templateId: 'prime-block',
+        title: 'Prime Deep Block',
+        kind: 'deepWork',
+        status: 'planned',
+        startTime: '08:00',
+        endTime: '09:20',
+        detail: 'Protect the highest-value work window.',
+        focusAreas: ['dsa'],
+        requiredOutput: true,
+        optional: false,
+        date: '2026-03-30',
+      },
+    ]
+
+    const events: ExternalCalendarEventCacheRecord[] = [
+      {
+        id: 'google:forge-event-1',
+        provider: 'google',
+        calendarId: 'primary',
+        providerEventId: 'forge-event-1',
+        title: '[FORGE] Prime Deep Block',
+        startsAt: '2026-03-30T08:00:00+05:30',
+        endsAt: '2026-03-30T09:20:00+05:30',
+        allDay: false,
+        isForgeManaged: true,
+        date: '2026-03-30',
+        fetchedAt: '2026-03-30T07:00:00.000Z',
+      },
+    ]
+
+    const summary = buildCalendarCollisionSummary({
+      date: '2026-03-30',
+      blocks,
+      events,
+      source: 'liveMirror',
+    })
+
+    expect(summary.severity).toBe('none')
+    expect(summary.overlappingEventCount).toBe(0)
+    expect(summary.mirroredBlockCount).toBe(1)
+  })
 })

@@ -14,12 +14,15 @@ import { useAuthSession } from '@/features/auth/providers/useAuthSession'
 import { usePwaState } from '@/features/pwa/providers/usePwaState'
 import { useApplyRestoreStage } from '@/features/settings/hooks/useApplyRestoreStage'
 import { useConnectCalendarRead } from '@/features/settings/hooks/useConnectCalendarRead'
+import { useConnectCalendarWrite } from '@/features/settings/hooks/useConnectCalendarWrite'
 import { useCreateManualBackup } from '@/features/settings/hooks/useCreateManualBackup'
 import { useDisconnectCalendar } from '@/features/settings/hooks/useDisconnectCalendar'
 import { useRefreshCalendarCache } from '@/features/settings/hooks/useRefreshCalendarCache'
 import { useRequestNotificationPermission } from '@/features/settings/hooks/useRequestNotificationPermission'
 import { useSettingsWorkspace } from '@/features/settings/hooks/useSettingsWorkspace'
+import { useSyncCalendarMirrors } from '@/features/settings/hooks/useSyncCalendarMirrors'
 import { useUpdateNotificationPreference } from '@/features/settings/hooks/useUpdateNotificationPreference'
+import { formatCalendarTimestamp, getCalendarStatusTone } from '@/domain/calendar/presentation'
 import { parseRestorePayloadText, type RestoreStage } from '@/services/backup/restoreService'
 
 export function SettingsPage() {
@@ -30,8 +33,10 @@ export function SettingsPage() {
   const requestNotificationPermission = useRequestNotificationPermission()
   const createManualBackup = useCreateManualBackup(user)
   const connectCalendarRead = useConnectCalendarRead()
+  const connectCalendarWrite = useConnectCalendarWrite()
   const disconnectCalendar = useDisconnectCalendar()
   const refreshCalendarCache = useRefreshCalendarCache()
+  const syncCalendarMirrors = useSyncCalendarMirrors()
   const applyRestoreStage = useApplyRestoreStage()
   const restoreInputRef = useRef<HTMLInputElement | null>(null)
   const [restoreStage, setRestoreStage] = useState<RestoreStage | null>(null)
@@ -52,6 +57,8 @@ export function SettingsPage() {
     backupOperations,
     backupSource,
     calendarConnection,
+    calendarMirrorErrorCount,
+    calendarMirroredBlockCount,
     calendarSyncState,
     featureFlags,
     latestServerRestoreReadyBackup,
@@ -63,6 +70,23 @@ export function SettingsPage() {
     serverRestoreReadyCount,
     settings,
   } = data
+  const calendarTone = getCalendarStatusTone({
+    connectionStatus: calendarConnection.connectionStatus,
+    externalSyncStatus: calendarSyncState.externalEventSyncStatus,
+    mirrorSyncStatus: calendarSyncState.mirrorSyncStatus,
+  })
+  const calendarActionPendingLabel =
+    connectCalendarRead.isPending
+      ? 'Connecting read access...'
+      : connectCalendarWrite.isPending
+        ? 'Enabling write mirroring...'
+        : refreshCalendarCache.isPending
+          ? 'Refreshing external events...'
+          : disconnectCalendar.isPending
+            ? 'Disconnecting Calendar...'
+            : syncCalendarMirrors.isPending
+              ? 'Reconciling mirrored blocks...'
+              : null
 
   async function handleRestoreFileSelected(event: ChangeEvent<HTMLInputElement>) {
     const file = event.target.files?.[0]
@@ -154,6 +178,9 @@ export function SettingsPage() {
                   checked={settings?.notificationsEnabled ?? true}
                   onChange={(_, checked) => updateNotificationPreference.mutate(checked)}
                   disabled={updateNotificationPreference.isPending}
+                  inputProps={{
+                    'aria-label': 'Enable operational notifications',
+                  }}
                 />
               </Stack>
               <Typography variant="body2" color="text.secondary">
@@ -286,37 +313,37 @@ export function SettingsPage() {
                 Restore applies core local state first and reports partial compatibility honestly for analytics or provider-owned metadata that Forge prefers to regenerate.
               </Typography>
               {restoreError ? (
-                <Alert severity="error" variant="outlined">
+                <Alert severity="error" variant="outlined" aria-live="polite">
                   {restoreError}
                 </Alert>
               ) : null}
               {createManualBackup.isError ? (
-                <Alert severity="error" variant="outlined">
+                <Alert severity="error" variant="outlined" aria-live="polite">
                   {createManualBackup.error instanceof Error
                     ? createManualBackup.error.message
                     : 'Forge could not generate the requested backup export.'}
                 </Alert>
               ) : null}
               {backupNotice ? (
-                <Alert severity="success" variant="outlined">
+                <Alert severity="success" variant="outlined" aria-live="polite">
                   {backupNotice}
                 </Alert>
               ) : null}
               {restoreStage ? (
-                <Alert severity="info" variant="outlined">
+                <Alert severity="info" variant="outlined" aria-live="polite">
                   {restoreStage.summary}
                   {restoreStage.warnings.length > 0 ? ` Warnings: ${restoreStage.warnings.join(' ')}` : ''}
                 </Alert>
               ) : null}
               {applyRestoreStage.isError ? (
-                <Alert severity="error" variant="outlined">
+                <Alert severity="error" variant="outlined" aria-live="polite">
                   {applyRestoreStage.error instanceof Error
                     ? applyRestoreStage.error.message
                     : 'Forge could not apply the staged restore.'}
                 </Alert>
               ) : null}
               {applyRestoreStage.data ? (
-                <Alert severity={applyRestoreStage.data.status === 'applied' ? 'success' : 'warning'} variant="outlined">
+                <Alert severity={applyRestoreStage.data.status === 'applied' ? 'success' : 'warning'} variant="outlined" aria-live="polite">
                   {applyRestoreStage.data.summary}
                   {applyRestoreStage.data.warnings.length > 0 ? ` ${applyRestoreStage.data.warnings.join(' ')}` : ''}
                 </Alert>
@@ -350,20 +377,14 @@ export function SettingsPage() {
         <Grid size={{ xs: 12, md: 6 }}>
           <SurfaceCard
             eyebrow="Calendar Read Integration"
-            title="Google Calendar pressure boundary"
-            description="Forge can now read your primary Google Calendar and translate outside commitments into pressure and collision context without letting Calendar rewrite the routine."
+            title="Google Calendar pressure and mirror boundary"
+            description="Forge reads your primary Google Calendar for pressure, and can now mirror major routine blocks back into Calendar through an explicit write scope and manual reconciliation pass."
             action={
               <Chip
-                label={calendarSyncState.externalEventSyncStatus}
+                label={`read ${calendarSyncState.externalEventSyncStatus} · mirror ${calendarSyncState.mirrorSyncStatus}`}
                 size="small"
                 variant="outlined"
-                color={
-                  calendarConnection.connectionStatus === 'connected'
-                    ? calendarSyncState.externalEventSyncStatus === 'error'
-                      ? 'warning'
-                      : 'success'
-                    : 'default'
-                }
+                color={calendarTone}
               />
             }
           >
@@ -372,61 +393,118 @@ export function SettingsPage() {
                 Provider: {calendarConnection.provider}
               </Typography>
               <Typography variant="body2" color="text.secondary">
-                Connection: {calendarConnection.connectionStatus} · Feature gate: {calendarConnection.featureGate}
+                Connection: {calendarConnection.connectionStatus} · Feature gate: {calendarConnection.featureGate} · Managed mode: {calendarConnection.managedEventMode}
               </Typography>
               <Typography variant="body2" color="text.secondary">
-                Sync status: {calendarSyncState.externalEventSyncStatus}. Last external sync: {calendarSyncState.lastExternalSyncAt ?? 'Not yet synced'}.
+                Read sync: {calendarSyncState.externalEventSyncStatus}. Last external sync: {formatCalendarTimestamp(calendarSyncState.lastExternalSyncAt)}.
               </Typography>
               <Typography variant="body2" color="text.secondary">
-                Cached event count: {calendarSyncState.cachedEventCount}. Selected calendar: {calendarConnection.selectedCalendarIds[0] ?? 'primary'}.
+                Mirror sync: {calendarSyncState.mirrorSyncStatus}. Last mirror sync: {formatCalendarTimestamp(calendarSyncState.lastMirrorSyncAt)}.
+              </Typography>
+              <Typography variant="body2" color="text.secondary">
+                Cached external events: {calendarSyncState.cachedEventCount}. Mirrored major blocks: {calendarMirroredBlockCount}. Mirror errors: {calendarMirrorErrorCount}. Selected calendar: {calendarConnection.selectedCalendarIds[0] ?? 'primary'}.
               </Typography>
               {calendarSyncState.lastSyncError ? (
-                <Alert severity="warning" variant="outlined">
-                  Calendar sync issue: {calendarSyncState.lastSyncError}
+                <Alert severity="warning" variant="outlined" aria-live="polite">
+                  Calendar issue: {calendarSyncState.lastSyncError}
+                </Alert>
+              ) : null}
+              {calendarSyncState.lastMirrorSyncError ? (
+                <Alert severity="warning" variant="outlined" aria-live="polite">
+                  Last mirror reconciliation issue: {calendarSyncState.lastMirrorSyncError}
                 </Alert>
               ) : null}
               <Stack direction={{ xs: 'column', sm: 'row' }} spacing={1} alignItems={{ xs: 'flex-start', sm: 'center' }}>
                 <Button
                   variant="contained"
-                  startIcon={<CalendarMonthRoundedIcon />}
+                  startIcon={connectCalendarRead.isPending ? <CircularProgress size={16} color="inherit" /> : <CalendarMonthRoundedIcon />}
                   onClick={() => connectCalendarRead.mutate()}
-                  disabled={connectCalendarRead.isPending || status !== 'authenticated'}
+                  disabled={Boolean(calendarActionPendingLabel) || status !== 'authenticated'}
                 >
-                  {calendarConnection.connectionStatus === 'connected' ? 'Reconnect Calendar' : 'Connect Calendar'}
+                  {connectCalendarRead.isPending
+                    ? 'Connecting read access...'
+                    : calendarConnection.connectionStatus === 'connected'
+                      ? 'Reconnect read access'
+                      : 'Connect read access'}
                 </Button>
                 <Button
                   variant="outlined"
-                  onClick={() => refreshCalendarCache.mutate()}
-                  disabled={refreshCalendarCache.isPending || calendarConnection.connectionStatus !== 'connected'}
+                  startIcon={connectCalendarWrite.isPending ? <CircularProgress size={16} color="inherit" /> : <CalendarMonthRoundedIcon />}
+                  onClick={() => connectCalendarWrite.mutate()}
+                  disabled={Boolean(calendarActionPendingLabel) || status !== 'authenticated'}
                 >
-                  Refresh read cache
+                  {connectCalendarWrite.isPending
+                    ? 'Enabling write mirroring...'
+                    : calendarConnection.featureGate === 'writeEnabled'
+                      ? 'Refresh write access'
+                      : 'Enable write mirroring'}
+                </Button>
+                <Button
+                  variant="outlined"
+                  startIcon={refreshCalendarCache.isPending ? <CircularProgress size={16} color="inherit" /> : undefined}
+                  onClick={() => refreshCalendarCache.mutate()}
+                  disabled={Boolean(calendarActionPendingLabel) || calendarConnection.connectionStatus !== 'connected'}
+                >
+                  {refreshCalendarCache.isPending ? 'Refreshing external events...' : 'Refresh read cache'}
+                </Button>
+                <Button
+                  variant="outlined"
+                  startIcon={syncCalendarMirrors.isPending ? <CircularProgress size={16} color="inherit" /> : undefined}
+                  onClick={() => syncCalendarMirrors.mutate()}
+                  disabled={
+                    Boolean(calendarActionPendingLabel) ||
+                    calendarConnection.connectionStatus !== 'connected' ||
+                    calendarConnection.featureGate !== 'writeEnabled'
+                  }
+                >
+                  {syncCalendarMirrors.isPending ? 'Reconciling mirrored blocks...' : 'Sync major blocks'}
                 </Button>
                 <Button
                   variant="text"
                   color="inherit"
                   onClick={() => disconnectCalendar.mutate()}
-                  disabled={disconnectCalendar.isPending || calendarConnection.connectionStatus === 'notConnected'}
+                  disabled={Boolean(calendarActionPendingLabel) || calendarConnection.connectionStatus === 'notConnected'}
                 >
-                  Disconnect
+                  {disconnectCalendar.isPending ? 'Disconnecting...' : 'Disconnect'}
                 </Button>
               </Stack>
+              {calendarActionPendingLabel ? (
+                <Typography variant="body2" color="text.secondary">
+                  {calendarActionPendingLabel}
+                </Typography>
+              ) : null}
               {connectCalendarRead.isError ? (
-                <Alert severity="error" variant="outlined">
+                <Alert severity="error" variant="outlined" aria-live="polite">
                   {connectCalendarRead.error instanceof Error ? connectCalendarRead.error.message : 'Forge could not connect Google Calendar.'}
                 </Alert>
               ) : null}
+              {connectCalendarWrite.isError ? (
+                <Alert severity="error" variant="outlined" aria-live="polite">
+                  {connectCalendarWrite.error instanceof Error ? connectCalendarWrite.error.message : 'Forge could not enable Calendar write mirroring.'}
+                </Alert>
+              ) : null}
               {refreshCalendarCache.isError ? (
-                <Alert severity="error" variant="outlined">
+                <Alert severity="error" variant="outlined" aria-live="polite">
                   {refreshCalendarCache.error instanceof Error ? refreshCalendarCache.error.message : 'Forge could not refresh the Calendar cache.'}
                 </Alert>
               ) : null}
+              {syncCalendarMirrors.isError ? (
+                <Alert severity="error" variant="outlined" aria-live="polite">
+                  {syncCalendarMirrors.error instanceof Error ? syncCalendarMirrors.error.message : 'Forge could not reconcile mirrored Calendar blocks.'}
+                </Alert>
+              ) : null}
               {disconnectCalendar.isError ? (
-                <Alert severity="error" variant="outlined">
+                <Alert severity="error" variant="outlined" aria-live="polite">
                   {disconnectCalendar.error instanceof Error ? disconnectCalendar.error.message : 'Forge could not disconnect Google Calendar.'}
                 </Alert>
               ) : null}
+              {syncCalendarMirrors.data ? (
+                <Alert severity={syncCalendarMirrors.data.errorCount > 0 ? 'warning' : 'success'} variant="outlined" aria-live="polite">
+                  Mirror sync result: {syncCalendarMirrors.data.createdCount} created, {syncCalendarMirrors.data.updatedCount} updated, {syncCalendarMirrors.data.deletedCount} deleted, {syncCalendarMirrors.data.errorCount} failed.
+                </Alert>
+              ) : null}
               <Typography variant="body2" color="primary.light">
-                Mirrored title convention for the later write phase: {mirroredBlockPreview.eventTitle}
+                Mirrored title convention: {mirroredBlockPreview.eventTitle}
               </Typography>
             </Stack>
           </SurfaceCard>
@@ -448,14 +526,14 @@ export function SettingsPage() {
                 Write mirror: {featureFlags.writeMirror}
               </Typography>
               <Typography variant="body2" color="text.secondary">
-                Phase 3 read integration is primary-calendar only. Calendar writes remain intentionally deferred to the next milestone.
+                Phase 3 currently supports primary-calendar read integration plus explicit major-block write mirroring. Long-lived server-managed Calendar OAuth is still deferred.
               </Typography>
             </Stack>
           </SurfaceCard>
         </Grid>
       </Grid>
       <Alert severity="info" variant="outlined">
-        Notifications now have a real rule and delivery foundation. Backup and restore now provide deterministic local and scheduled safety. Calendar can read pressure from Google now, but it still does not own the routine and it does not write mirrored events yet.
+        Notifications now have a real rule and delivery foundation. Backup and restore now provide deterministic local and scheduled safety. Calendar can read pressure and mirror major Forge blocks, but Forge remains the source of truth and Calendar reconciliation is still an explicit operator action.
       </Alert>
       <EmptyState
         icon={<SettingsSuggestRoundedIcon color="primary" />}

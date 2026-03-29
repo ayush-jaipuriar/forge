@@ -50,8 +50,10 @@ export async function getSettingsWorkspace(userId?: string | null) {
     mirroredBlockPreview,
     featureFlags: {
       readMirror: calendarWorkspace.connection.featureGate === 'readEnabled' ? 'enabled' : 'planned',
-      writeMirror: 'planned',
+      writeMirror: calendarWorkspace.connection.featureGate === 'writeEnabled' ? 'enabled' : 'planned',
       collisionAwareRecommendations: true,
     },
+    calendarMirroredBlockCount: calendarWorkspace.mirroredBlockCount,
+    calendarMirrorErrorCount: calendarWorkspace.mirrorErrorCount,
   }
 }

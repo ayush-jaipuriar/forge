@@ -1,8 +1,9 @@
 import { GoogleAuthProvider, reauthenticateWithPopup } from 'firebase/auth'
 import { getFirebaseAuth } from '@/lib/firebase/client'
-import type { CalendarSessionSnapshot, ExternalCalendarEventCacheRecord } from '@/domain/calendar/types'
+import type { CalendarAccessScope, CalendarSessionSnapshot, ExternalCalendarEventCacheRecord } from '@/domain/calendar/types'
 
 export const GOOGLE_CALENDAR_READ_SCOPE = 'https://www.googleapis.com/auth/calendar.readonly' as const
+export const GOOGLE_CALENDAR_WRITE_SCOPE = 'https://www.googleapis.com/auth/calendar.events' as const
 
 type GoogleCalendarApiEvent = {
   id: string
@@ -23,7 +24,21 @@ type GoogleCalendarEventsResponse = {
   nextPageToken?: string
 }
 
-export async function requestGoogleCalendarSession(): Promise<CalendarSessionSnapshot> {
+type GoogleCalendarWritableEventInput = {
+  title: string
+  description: string
+  startsAt: string
+  endsAt: string
+  colorId?: string
+}
+
+type GoogleCalendarWriteResponse = {
+  id?: string
+}
+
+export async function requestGoogleCalendarSession(
+  accessScope: CalendarAccessScope = GOOGLE_CALENDAR_READ_SCOPE,
+): Promise<CalendarSessionSnapshot> {
   const auth = getFirebaseAuth()
   const user = auth?.currentUser
 
@@ -32,7 +47,7 @@ export async function requestGoogleCalendarSession(): Promise<CalendarSessionSna
   }
 
   const provider = new GoogleAuthProvider()
-  provider.addScope(GOOGLE_CALENDAR_READ_SCOPE)
+  provider.addScope(accessScope)
   provider.setCustomParameters({
     prompt: 'consent',
   })
@@ -48,7 +63,7 @@ export async function requestGoogleCalendarSession(): Promise<CalendarSessionSna
     id: 'default',
     userId: user.uid,
     provider: 'google',
-    accessScope: GOOGLE_CALENDAR_READ_SCOPE,
+    accessScope,
     accessToken: token,
     grantedAt: new Date().toISOString(),
   }
@@ -151,4 +166,119 @@ function getCoveredDates(startsAt: string, endsAt: string, allDay: boolean) {
   }
 
   return [...new Set(dates)]
+}
+
+export async function createGoogleCalendarEvent(args: {
+  accessToken: string
+  calendarId?: string
+  event: GoogleCalendarWritableEventInput
+}) {
+  const payload = await requestGoogleCalendarWrite({
+    accessToken: args.accessToken,
+    calendarId: args.calendarId,
+    method: 'POST',
+    event: args.event,
+  })
+
+  if (!payload.id) {
+    throw new Error('Google Calendar did not return an event id for the new mirror.')
+  }
+
+  return {
+    providerEventId: payload.id,
+  }
+}
+
+export async function updateGoogleCalendarEvent(args: {
+  accessToken: string
+  calendarId?: string
+  providerEventId: string
+  event: GoogleCalendarWritableEventInput
+}) {
+  const payload = await requestGoogleCalendarWrite({
+    accessToken: args.accessToken,
+    calendarId: args.calendarId,
+    providerEventId: args.providerEventId,
+    method: 'PUT',
+    event: args.event,
+  })
+
+  if (!payload.id) {
+    throw new Error('Google Calendar did not return an event id for the updated mirror.')
+  }
+
+  return {
+    providerEventId: payload.id,
+  }
+}
+
+export async function deleteGoogleCalendarEvent(args: {
+  accessToken: string
+  calendarId?: string
+  providerEventId: string
+}) {
+  const rawCalendarId = args.calendarId ?? 'primary'
+  const calendarId = encodeURIComponent(rawCalendarId)
+  const providerEventId = encodeURIComponent(args.providerEventId)
+  const response = await fetch(
+    `https://www.googleapis.com/calendar/v3/calendars/${calendarId}/events/${providerEventId}`,
+    {
+      method: 'DELETE',
+      headers: {
+        Authorization: `Bearer ${args.accessToken}`,
+      },
+    },
+  )
+
+  if (response.status === 404) {
+    return {
+      deleted: true,
+      missing: true,
+    }
+  }
+
+  if (!response.ok) {
+    throw new Error(`Google Calendar delete failed with ${response.status}.`)
+  }
+
+  return {
+    deleted: true,
+    missing: false,
+  }
+}
+
+async function requestGoogleCalendarWrite(args: {
+  accessToken: string
+  calendarId?: string
+  providerEventId?: string
+  method: 'POST' | 'PUT'
+  event: GoogleCalendarWritableEventInput
+}) {
+  const rawCalendarId = args.calendarId ?? 'primary'
+  const calendarId = encodeURIComponent(rawCalendarId)
+  const eventPath = args.providerEventId ? `/events/${encodeURIComponent(args.providerEventId)}` : '/events'
+  const response = await fetch(`https://www.googleapis.com/calendar/v3/calendars/${calendarId}${eventPath}`, {
+    method: args.method,
+    headers: {
+      Authorization: `Bearer ${args.accessToken}`,
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify({
+      summary: args.event.title,
+      description: args.event.description,
+      start: {
+        dateTime: args.event.startsAt,
+      },
+      end: {
+        dateTime: args.event.endsAt,
+      },
+      colorId: args.event.colorId,
+    }),
+  })
+
+  if (!response.ok) {
+    throw new Error(`Google Calendar write failed with ${response.status}.`)
+  }
+
+  return (await response.json()) as GoogleCalendarWriteResponse
 }

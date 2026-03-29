@@ -675,17 +675,17 @@ Mirror major Forge blocks into Google Calendar with stable metadata and reconcil
 
 ### Checklist
 
-- [ ] Implement write flows for major mirrored Forge blocks only, using the `[FORGE] <block title>` convention.
-- [ ] Add color and description metadata conventions for mirrored events.
-- [ ] Persist Calendar mirror mappings between Forge blocks and external event ids.
-- [ ] Implement reconciliation rules for changed, moved, skipped, or deleted mirrored blocks.
-- [ ] Add cleanup behavior for stale or orphaned mirror records.
-- [ ] Add visibility into last Calendar sync status and mirror errors.
+- [x] Implement write flows for major mirrored Forge blocks only, using the `[FORGE] <block title>` convention.
+- [x] Add color and description metadata conventions for mirrored events.
+- [x] Persist Calendar mirror mappings between Forge blocks and external event ids.
+- [x] Implement reconciliation rules for changed, moved, skipped, or deleted mirrored blocks.
+- [x] Add cleanup behavior for stale or orphaned mirror records.
+- [x] Add visibility into last Calendar sync status and mirror errors.
 
 ### Testing and Documentation
 
-- [ ] Add tests for mirror creation, update, delete, and reconciliation helpers.
-- [ ] Document mirror conventions, allowed block classes, and known edge cases.
+- [x] Add tests for mirror creation, update, delete, and reconciliation helpers.
+- [x] Document mirror conventions, allowed block classes, and known edge cases.
 
 ### Exit Criteria
 
@@ -761,7 +761,7 @@ Close Phase 3 with an operationally credible release posture across notification
 - [x] Milestone 5 complete
 - [x] Milestone 6 complete
 - [x] Milestone 7 complete
-- [ ] Milestone 8 complete
+- [x] Milestone 8 complete
 - [ ] Milestone 9 complete
 - [ ] Milestone 10 complete
 

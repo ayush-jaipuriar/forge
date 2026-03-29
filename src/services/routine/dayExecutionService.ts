@@ -2,6 +2,7 @@ import type { BlockStatus } from '@/domain/common/types'
 import { localDayInstanceRepository, localSyncQueueRepository } from '@/data/local'
 import { updateBlockExecutionNote, updateBlockStatus } from '@/domain/routine/mutations'
 import type { DayInstance } from '@/domain/routine/types'
+import { markCalendarMirrorsStaleIfEnabled } from '@/services/calendar/calendarIntegrationService'
 import { getOrCreateTodayWorkspace } from '@/services/routine/routinePersistenceService'
 import { createSyncQueueItem } from '@/services/sync/syncQueue'
 import { flushSyncQueue } from '@/services/sync/syncOrchestrator'
@@ -76,6 +77,7 @@ async function updateDayInstance({
 
   await Promise.all(supersededDayItems.map((item) => localSyncQueueRepository.remove(item.id)))
   await localSyncQueueRepository.enqueue(createSyncQueueItem('upsertDayInstance', nextDayInstance.id, nextDayInstance))
+  await markCalendarMirrorsStaleIfEnabled()
 
   if (userId && isOnline()) {
     const pendingCount = await flushSyncQueue(userId)

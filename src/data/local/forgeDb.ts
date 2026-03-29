@@ -2,6 +2,7 @@ import { openDB } from 'idb'
 import type { DBSchema, IDBPDatabase } from 'idb'
 import type { BackupOperationsSnapshot, BackupSnapshotRecord, ForgeExportPayload, RestoreJobRecord } from '@/domain/backup/types'
 import type {
+  CalendarMirrorRecord,
   CalendarSessionSnapshot,
   CalendarSyncStateSnapshot,
   ExternalCalendarEventCacheRecord,
@@ -97,6 +98,14 @@ type ForgeDbSchema = DBSchema & {
     key: string
     value: CalendarSessionSnapshot
   }
+  calendarMirrors: {
+    key: string
+    value: CalendarMirrorRecord
+    indexes: {
+      byDayDate: string
+      byProviderEventId: string
+    }
+  }
 }
 
 let dbPromise: Promise<IDBPDatabase<ForgeDbSchema>> | null = null
@@ -104,7 +113,7 @@ const FORGE_DB_NAME = 'forge-db'
 
 export function getForgeDb() {
   if (!dbPromise) {
-    dbPromise = openDB<ForgeDbSchema>(FORGE_DB_NAME, 6, {
+    dbPromise = openDB<ForgeDbSchema>(FORGE_DB_NAME, 7, {
       upgrade(db) {
         if (!db.objectStoreNames.contains('dayInstances')) {
           const dayInstances = db.createObjectStore('dayInstances', {
@@ -200,6 +209,14 @@ export function getForgeDb() {
           db.createObjectStore('calendarSessions', {
             keyPath: 'id',
           })
+        }
+
+        if (!db.objectStoreNames.contains('calendarMirrors')) {
+          const calendarMirrors = db.createObjectStore('calendarMirrors', {
+            keyPath: 'id',
+          })
+          calendarMirrors.createIndex('byDayDate', 'dayDate')
+          calendarMirrors.createIndex('byProviderEventId', 'providerEventId')
         }
       },
     })

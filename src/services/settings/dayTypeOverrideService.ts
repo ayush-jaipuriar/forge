@@ -2,6 +2,7 @@ import type { DayType } from '@/domain/common/types'
 import { localSettingsRepository, localSyncQueueRepository } from '@/data/local'
 import { forgeRoutine } from '@/data/seeds'
 import { isDayTypeOverrideAllowed, getScheduledDayTypeForDate } from '@/domain/schedule/overrideRules'
+import { markCalendarMirrorsStaleIfEnabled } from '@/services/calendar/calendarIntegrationService'
 import { createSyncQueueItem } from '@/services/sync/syncQueue'
 import { flushSyncQueue } from '@/services/sync/syncOrchestrator'
 
@@ -56,6 +57,7 @@ export async function updateDayTypeOverride({
 
   await Promise.all(supersededSettingsItems.map((item) => localSyncQueueRepository.remove(item.id)))
   await localSyncQueueRepository.enqueue(createSyncQueueItem('upsertSettings', nextSettings.id, nextSettings))
+  await markCalendarMirrorsStaleIfEnabled()
 
   if (userId && isOnline()) {
     const pendingCount = await flushSyncQueue(userId)

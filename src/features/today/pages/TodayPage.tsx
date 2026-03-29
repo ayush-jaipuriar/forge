@@ -12,6 +12,7 @@ import { SurfaceCard } from '@/components/common/SurfaceCard'
 import { StatusBadge } from '@/components/status/StatusBadge'
 import { SyncIndicator } from '@/components/status/SyncIndicator'
 import { useUiStore } from '@/app/store/uiStore'
+import { formatCalendarTimestamp, getCalendarStatusTone } from '@/domain/calendar/presentation'
 import { BlockNoteComposer } from '@/features/today/components/BlockNoteComposer'
 import { DayModeSelector } from '@/features/today/components/DayModeSelector'
 import { FallbackModeSuggestionCard } from '@/features/today/components/FallbackModeSuggestionCard'
@@ -61,7 +62,13 @@ export function TodayPage() {
     )
   }
 
-  const { calendarEvents, calendarSummary, calendarSyncState, currentBlock, dateLabel, dayInstance, energyStatus, fallbackSuggestion, focusedPrepDomains, operationalSignals, recommendation, readinessSnapshot, scorePreview, sleepStatus, topPriorities, weekdayLabel, workoutState } = data
+  const { calendarEvents, calendarMirrors, calendarSummary, calendarSyncState, currentBlock, dateLabel, dayInstance, energyStatus, fallbackSuggestion, focusedPrepDomains, operationalSignals, recommendation, readinessSnapshot, scorePreview, sleepStatus, topPriorities, weekdayLabel, workoutState } = data
+  const calendarTone = getCalendarStatusTone({
+    connectionStatus: calendarSyncState.connectionStatus,
+    externalSyncStatus: calendarSyncState.externalEventSyncStatus,
+    mirrorSyncStatus: calendarSyncState.mirrorSyncStatus,
+    collisionSeverity: calendarSummary.severity,
+  })
   const activeMode = dayModeDetails[currentDayMode]
   const fallbackKey = fallbackSuggestion
     ? getFallbackKey(dayInstance.date, fallbackSuggestion.suggestedDayMode, fallbackSuggestion.explanation)
@@ -237,16 +244,19 @@ export function TodayPage() {
         action={
           <Chip
             icon={<CalendarMonthRoundedIcon />}
-            label={`${calendarSummary.severity.toUpperCase()} · ${calendarSyncState.externalEventSyncStatus}`}
+            label={`${calendarSummary.severity.toUpperCase()} · read ${calendarSyncState.externalEventSyncStatus} · mirror ${calendarSyncState.mirrorSyncStatus}`}
             size="small"
             variant="outlined"
-            color={calendarSummary.severity === 'hard' ? 'warning' : calendarSummary.severity === 'soft' ? 'info' : 'default'}
+            color={calendarTone}
           />
         }
       >
         <Stack spacing={1}>
           <Typography variant="body2" color="text.secondary">
-            Cached events today: {calendarEvents.length}. Last calendar sync: {calendarSyncState.lastExternalSyncAt ?? 'Not yet synced'}.
+            Cached events today: {calendarEvents.length}. Mirrored major blocks today: {calendarMirrors.length}. Last external sync: {formatCalendarTimestamp(calendarSyncState.lastExternalSyncAt)}.
+          </Typography>
+          <Typography variant="body2" color="text.secondary">
+            Last mirror sync: {formatCalendarTimestamp(calendarSyncState.lastMirrorSyncAt)}.
           </Typography>
           {calendarSummary.constrainedWindows.length > 0 ? (
             calendarSummary.constrainedWindows.slice(0, 3).map((window) => (
@@ -259,6 +269,11 @@ export function TodayPage() {
               No external calendar collisions are currently constraining the timed blocks in today&apos;s plan.
             </Typography>
           )}
+          {calendarSyncState.lastMirrorSyncError ? (
+            <Typography variant="body2" color="warning.light">
+              Mirror sync issue: {calendarSyncState.lastMirrorSyncError}
+            </Typography>
+          ) : null}
         </Stack>
       </SurfaceCard>
 

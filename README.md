@@ -15,7 +15,7 @@ Phase 1 now exists across the core domain, UI, persistence, scoring, recommendat
 - Phase 2 modular pattern-detection engine with confidence-aware warnings, insights, and coach summaries
 - Phase 2 disciplined gamification layer with formal streaks, deficit-driven missions, and anti-padding momentum
 - Phase 2 operational analytics surfacing across Today, Readiness, and Schedule with shared pressure signals
-- Phase 3 Google Calendar read integration with primary-calendar connection, bounded event caching, and collision-aware Today/Schedule pressure
+- Phase 3 Google Calendar integration with primary-calendar read pressure, bounded event caching, and explicit major-block write mirroring
 
 ## Setup
 
@@ -85,7 +85,7 @@ Live Firebase verification has also been completed against a real project, inclu
 
 ## Known Limitations
 
-- Google Calendar now supports read-only primary-calendar pressure in Phase 3, but write mirroring and long-lived server-managed OAuth are not complete yet.
+- Google Calendar now supports primary-calendar pressure plus explicit major-block write mirroring in Phase 3, but long-lived server-managed OAuth and background reconciliation are not complete yet.
 - Offline behavior is intentionally shell-first and action-focused. It does not attempt full query-cache persistence for every screen.
 
 ## Product Boundary

@@ -1,7 +1,16 @@
-import { localCalendarSessionRepository, localCalendarStateRepository, localExternalCalendarEventRepository, localSettingsRepository, localSyncQueueRepository } from '@/data/local'
+import {
+  localCalendarMirrorRepository,
+  localCalendarSessionRepository,
+  localCalendarStateRepository,
+  localDayInstanceRepository,
+  localExternalCalendarEventRepository,
+  localSettingsRepository,
+  localSyncQueueRepository,
+} from '@/data/local'
 import { buildCalendarCollisionSummary } from '@/domain/calendar/collisions'
 import { buildMirroredRoutineBlockPreview } from '@/domain/calendar/conventions'
 import { deriveRecommendationCalendarContext } from '@/domain/calendar/deriveRecommendationCalendarContext'
+import { deriveCalendarMirrorOperations } from '@/domain/calendar/mirrors'
 import {
   createDefaultCalendarConnectionSnapshot,
   createDefaultCalendarSyncStateSnapshot,
@@ -9,6 +18,7 @@ import {
 } from '@/domain/calendar/types'
 import type {
   CalendarConnectionSnapshot,
+  CalendarMirrorRecord,
   CalendarRecommendationContext,
   CalendarSessionSnapshot,
   CalendarSyncStateSnapshot,
@@ -18,7 +28,14 @@ import type {
 import type { BlockInstance } from '@/domain/routine/types'
 import { getFirebaseAuth } from '@/lib/firebase/client'
 import { reportMonitoringError } from '@/services/monitoring/monitoringService'
-import { fetchGoogleCalendarEvents, requestGoogleCalendarSession } from '@/services/calendar/googleCalendarClient'
+import {
+  createGoogleCalendarEvent,
+  deleteGoogleCalendarEvent,
+  fetchGoogleCalendarEvents,
+  GOOGLE_CALENDAR_WRITE_SCOPE,
+  requestGoogleCalendarSession,
+  updateGoogleCalendarEvent,
+} from '@/services/calendar/googleCalendarClient'
 import { createSyncQueueItem } from '@/services/sync/syncQueue'
 import { flushSyncQueue } from '@/services/sync/syncOrchestrator'
 
@@ -27,12 +44,15 @@ type CalendarDayWorkspace = {
   syncState: CalendarSyncStateSnapshot
   summary: ReturnType<typeof createEmptyCalendarCollisionSummary>
   events: ExternalCalendarEventCacheRecord[]
+  mirrors: CalendarMirrorRecord[]
 }
 
 type CalendarSettingsWorkspace = {
   connection: CalendarConnectionSnapshot
   syncState: CalendarSyncStateSnapshot
   cachedEventCount: number
+  mirroredBlockCount: number
+  mirrorErrorCount: number
 }
 
 type RefreshCalendarCacheInput = {
@@ -45,8 +65,10 @@ export interface CalendarIntegrationService {
   getConnectionSnapshot(connection?: CalendarConnectionSnapshot | null): Promise<CalendarConnectionSnapshot>
   getSettingsWorkspace(connection?: CalendarConnectionSnapshot | null): Promise<CalendarSettingsWorkspace>
   connectReadAccess(userId?: string): Promise<{ connection: CalendarConnectionSnapshot; pendingCount: number }>
+  connectWriteAccess(userId?: string): Promise<{ connection: CalendarConnectionSnapshot; pendingCount: number }>
   disconnect(userId?: string): Promise<{ connection: CalendarConnectionSnapshot; pendingCount: number }>
   refreshCache(input: RefreshCalendarCacheInput): Promise<Record<string, CalendarDayWorkspace>>
+  syncMirrors(userId?: string): Promise<{ createdCount: number; updatedCount: number; deletedCount: number; errorCount: number }>
   getDayWorkspace(args: {
     date: string
     blocks: BlockInstance[]
@@ -81,11 +103,14 @@ class GoogleCalendarIntegrationService implements CalendarIntegrationService {
   async getSettingsWorkspace(connection?: CalendarConnectionSnapshot | null): Promise<CalendarSettingsWorkspace> {
     const normalizedConnection = await this.getConnectionSnapshot(connection)
     const syncState = await this.getSyncStateSnapshot(normalizedConnection)
+    const mirrorRecords = await localCalendarMirrorRepository.listAll()
 
     return {
       connection: normalizedConnection,
       syncState,
       cachedEventCount: syncState.cachedEventCount,
+      mirroredBlockCount: mirrorRecords.length,
+      mirrorErrorCount: mirrorRecords.filter((record) => record.status === 'error').length,
     }
   }
 
@@ -99,7 +124,7 @@ class GoogleCalendarIntegrationService implements CalendarIntegrationService {
       ...baseConnection,
       provider: 'google',
       connectionStatus: 'connected',
-      featureGate: 'readEnabled',
+      featureGate: baseConnection.featureGate === 'writeEnabled' ? 'writeEnabled' : 'readEnabled',
       managedEventMode: baseConnection.managedEventMode,
       selectedCalendarIds: baseConnection.selectedCalendarIds.length > 0 ? baseConnection.selectedCalendarIds : ['primary'],
       lastConnectionCheckAt: new Date().toISOString(),
@@ -121,6 +146,39 @@ class GoogleCalendarIntegrationService implements CalendarIntegrationService {
     }
   }
 
+  async connectWriteAccess(userId?: string) {
+    const session = await requestGoogleCalendarSession(GOOGLE_CALENDAR_WRITE_SCOPE)
+    await localCalendarSessionRepository.upsert(session)
+
+    const currentSettings = await localSettingsRepository.getDefault()
+    const baseConnection = currentSettings?.calendarIntegration ?? createDefaultCalendarConnectionSnapshot()
+    const nextConnection: CalendarConnectionSnapshot = {
+      ...baseConnection,
+      provider: 'google',
+      connectionStatus: 'connected',
+      featureGate: 'writeEnabled',
+      managedEventMode: 'majorBlocks',
+      selectedCalendarIds: baseConnection.selectedCalendarIds.length > 0 ? baseConnection.selectedCalendarIds : ['primary'],
+      lastConnectionCheckAt: new Date().toISOString(),
+    }
+
+    const pendingCount = await persistCalendarConnection(nextConnection, userId)
+    const syncState = await this.getSyncStateSnapshot(nextConnection)
+
+    await localCalendarStateRepository.upsert({
+      ...syncState,
+      ...nextConnection,
+      mirrorSyncStatus: syncState.mirrorSyncStatus === 'idle' ? 'stale' : syncState.mirrorSyncStatus,
+      lastMirrorSyncError: undefined,
+      lastSyncError: undefined,
+    })
+
+    return {
+      connection: nextConnection,
+      pendingCount,
+    }
+  }
+
   async disconnect(userId?: string) {
     await clearLocalCalendarSessionArtifacts()
 
@@ -129,7 +187,7 @@ class GoogleCalendarIntegrationService implements CalendarIntegrationService {
       ...(currentSettings?.calendarIntegration ?? createDefaultCalendarConnectionSnapshot()),
       provider: 'google',
       connectionStatus: 'notConnected',
-      featureGate: 'readEnabled',
+      managedEventMode: 'disabled',
       selectedCalendarIds: ['primary'],
       lastConnectionCheckAt: new Date().toISOString(),
     }
@@ -140,9 +198,11 @@ class GoogleCalendarIntegrationService implements CalendarIntegrationService {
       ...createDefaultCalendarSyncStateSnapshot(),
       ...nextConnection,
       externalEventSyncStatus: 'idle',
+      mirrorSyncStatus: 'idle',
       cachedEventCount: 0,
       cachedDateRange: undefined,
       lastSyncError: undefined,
+      lastMirrorSyncError: undefined,
     })
 
     return {
@@ -245,6 +305,203 @@ class GoogleCalendarIntegrationService implements CalendarIntegrationService {
     }
   }
 
+  async syncMirrors(userId?: string) {
+    const settings = await localSettingsRepository.getDefault()
+    const connection = await this.getConnectionSnapshot(settings?.calendarIntegration)
+    const syncState = await this.getSyncStateSnapshot(connection)
+
+    if (connection.connectionStatus !== 'connected') {
+      throw new Error('Connect Google Calendar before syncing mirrored Forge blocks.')
+    }
+
+    if (connection.featureGate !== 'writeEnabled') {
+      throw new Error('Enable Calendar write mirroring before syncing Forge blocks.')
+    }
+
+    const session = await localCalendarSessionRepository.getDefault()
+
+    if (!isCalendarWriteSessionUsable(session)) {
+      await clearLocalCalendarSessionArtifacts()
+      await localCalendarStateRepository.upsert({
+        ...syncState,
+        ...connection,
+        mirrorSyncStatus: 'stale',
+        lastMirrorSyncError: 'Calendar write access needs to be reconnected before Forge can sync mirrored blocks.',
+        lastSyncError: 'Calendar write access needs to be reconnected before Forge can sync mirrored blocks.',
+      })
+      throw new Error('Calendar write access needs to be reconnected before Forge can sync mirrored blocks.')
+    }
+
+    await localCalendarStateRepository.upsert({
+      ...syncState,
+      ...connection,
+      mirrorSyncStatus: 'syncing',
+      lastMirrorSyncError: undefined,
+    })
+
+    const calendarId = connection.selectedCalendarIds[0] ?? 'primary'
+    const [dayInstances, existingMirrorRecords] = await Promise.all([
+      localDayInstanceRepository.listAll(),
+      localCalendarMirrorRepository.listAll(),
+    ])
+    const horizonDates = buildMirrorSyncHorizon()
+    const horizonDateSet = new Set(horizonDates)
+    const operations = deriveCalendarMirrorOperations({
+      blocks: dayInstances
+        .filter((dayInstance) => horizonDateSet.has(dayInstance.date))
+        .flatMap((dayInstance) => dayInstance.blocks),
+      existingRecords: existingMirrorRecords.filter((record) => horizonDateSet.has(record.dayDate)),
+      calendarId,
+      writeMode: connection.managedEventMode === 'majorBlocks' ? 'majorBlocks' : 'majorBlocks',
+    })
+
+    let createdCount = 0
+    let updatedCount = 0
+    let deletedCount = 0
+    let errorCount = 0
+    let latestError: string | undefined
+    const syncedAt = new Date().toISOString()
+
+    for (const operation of operations) {
+      try {
+        switch (operation.type) {
+          case 'create': {
+            const created = await createGoogleCalendarEvent({
+              accessToken: session.accessToken,
+              calendarId,
+              event: {
+                title: operation.desired.eventTitle,
+                description: operation.desired.description,
+                startsAt: operation.desired.startsAt,
+                endsAt: operation.desired.endsAt,
+                colorId: operation.desired.colorId,
+              },
+            })
+            await localCalendarMirrorRepository.upsert({
+              id: operation.desired.id,
+              provider: 'google',
+              calendarId,
+              providerEventId: created.providerEventId,
+              blockId: operation.desired.blockId,
+              dayDate: operation.desired.dayDate,
+              sourceBlockTitle: operation.desired.title,
+              sourceBlockStatus: operation.desired.sourceBlockStatus,
+              startsAt: operation.desired.startsAt,
+              endsAt: operation.desired.endsAt,
+              eventTitle: operation.desired.eventTitle,
+              colorId: operation.desired.colorId,
+              writeMode: operation.desired.writeMode,
+              status: 'synced',
+              lastSyncedAt: syncedAt,
+              lastError: undefined,
+              metadataVersion: 1,
+            })
+            createdCount += 1
+            break
+          }
+          case 'update': {
+            const updated = await updateGoogleCalendarEvent({
+              accessToken: session.accessToken,
+              calendarId,
+              providerEventId: operation.existing.providerEventId,
+              event: {
+                title: operation.desired.eventTitle,
+                description: operation.desired.description,
+                startsAt: operation.desired.startsAt,
+                endsAt: operation.desired.endsAt,
+                colorId: operation.desired.colorId,
+              },
+            })
+            await localCalendarMirrorRepository.upsert({
+              ...operation.existing,
+              providerEventId: updated.providerEventId,
+              sourceBlockTitle: operation.desired.title,
+              sourceBlockStatus: operation.desired.sourceBlockStatus,
+              startsAt: operation.desired.startsAt,
+              endsAt: operation.desired.endsAt,
+              eventTitle: operation.desired.eventTitle,
+              colorId: operation.desired.colorId,
+              writeMode: operation.desired.writeMode,
+              status: 'synced',
+              lastSyncedAt: syncedAt,
+              lastError: undefined,
+              metadataVersion: 1,
+            })
+            updatedCount += 1
+            break
+          }
+          case 'delete': {
+            if (operation.existing.providerEventId) {
+              await deleteGoogleCalendarEvent({
+                accessToken: session.accessToken,
+                calendarId,
+                providerEventId: operation.existing.providerEventId,
+              })
+            }
+            await localCalendarMirrorRepository.remove(operation.existing.id)
+            deletedCount += 1
+            break
+          }
+          case 'noop': {
+            if (operation.existing.status !== 'synced' || operation.existing.lastError) {
+              await localCalendarMirrorRepository.upsert({
+                ...operation.existing,
+                status: 'synced',
+                lastSyncedAt: syncedAt,
+                lastError: undefined,
+              })
+            }
+            break
+          }
+        }
+      } catch (error) {
+        const message = error instanceof Error ? error.message : 'Calendar mirror sync failed.'
+        latestError = message
+        errorCount += 1
+
+        if (operation.type === 'update' || operation.type === 'noop' || operation.type === 'delete') {
+          await localCalendarMirrorRepository.upsert({
+            ...operation.existing,
+            status: 'error',
+            lastError: message,
+          })
+        }
+
+        reportMonitoringError({
+          domain: 'calendar',
+          action: 'sync-calendar-mirrors',
+          message: 'Forge could not reconcile one of the mirrored Google Calendar events.',
+          error,
+          metadata: {
+            operationType: operation.type,
+            blockId: operation.type === 'delete' ? operation.existing.blockId : operation.desired.blockId,
+            dayDate: operation.type === 'delete' ? operation.existing.dayDate : operation.desired.dayDate,
+          },
+        })
+      }
+    }
+
+    await localCalendarStateRepository.upsert({
+      ...syncState,
+      ...connection,
+      mirrorSyncStatus: errorCount > 0 ? 'error' : 'idle',
+      lastMirrorSyncAt: syncedAt,
+      lastMirrorSyncError: latestError,
+      lastSyncError: latestError,
+    })
+
+    if (userId && isOnline()) {
+      await flushSyncQueue(userId)
+    }
+
+    return {
+      createdCount,
+      updatedCount,
+      deletedCount,
+      errorCount,
+    }
+  }
+
   async getDayWorkspace({
     date,
     blocks,
@@ -329,7 +586,10 @@ class GoogleCalendarIntegrationService implements CalendarIntegrationService {
   ) {
     const entries = await Promise.all(
       dates.map(async (date) => {
-        const events = await localExternalCalendarEventRepository.listForDate(date)
+        const [events, mirrors] = await Promise.all([
+          localExternalCalendarEventRepository.listForDate(date),
+          localCalendarMirrorRepository.listForDate(date),
+        ])
         const summary =
           events.length === 0
             ? createEmptyCalendarCollisionSummary(date)
@@ -345,8 +605,12 @@ class GoogleCalendarIntegrationService implements CalendarIntegrationService {
           {
             connection,
             syncState,
-            summary,
+            summary: {
+              ...summary,
+              mirroredBlockCount: mirrors.length,
+            },
             events,
+            mirrors,
           },
         ] as const
       }),
@@ -356,12 +620,28 @@ class GoogleCalendarIntegrationService implements CalendarIntegrationService {
   }
 }
 
-export async function clearLocalCalendarSessionArtifacts() {
+export async function clearLocalCalendarSessionArtifacts(options?: { clearMirrors?: boolean }) {
   await Promise.all([
     localCalendarSessionRepository.clear(),
     localExternalCalendarEventRepository.clearAll(),
     localCalendarStateRepository.clear(),
+    ...(options?.clearMirrors ? [localCalendarMirrorRepository.clearAll()] : []),
   ])
+}
+
+export async function markCalendarMirrorsStaleIfEnabled() {
+  const settings = await localSettingsRepository.getDefault()
+  const syncState = await localCalendarStateRepository.getDefault()
+
+  if (!settings || settings.calendarIntegration.featureGate !== 'writeEnabled') {
+    return
+  }
+
+  await localCalendarStateRepository.upsert({
+    ...syncState,
+    ...settings.calendarIntegration,
+    mirrorSyncStatus: 'stale',
+  })
 }
 
 function shouldRefreshCalendarRange(args: {
@@ -429,6 +709,10 @@ function isCalendarSessionUsable(session: CalendarSessionSnapshot | null): sessi
   return session.userId === activeUid
 }
 
+function isCalendarWriteSessionUsable(session: CalendarSessionSnapshot | null): session is CalendarSessionSnapshot {
+  return isCalendarSessionUsable(session) && session.accessScope === GOOGLE_CALENDAR_WRITE_SCOPE
+}
+
 function isCalendarAuthError(error: unknown) {
   if (!(error instanceof Error)) {
     return false
@@ -438,3 +722,13 @@ function isCalendarAuthError(error: unknown) {
 }
 
 export const googleCalendarIntegrationService = new GoogleCalendarIntegrationService()
+
+function buildMirrorSyncHorizon() {
+  const today = new Date()
+
+  return Array.from({ length: 14 }, (_, index) => {
+    const date = new Date(today)
+    date.setDate(today.getDate() + index)
+    return date.toISOString().slice(0, 10)
+  })
+}
