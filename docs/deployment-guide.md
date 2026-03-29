@@ -67,3 +67,10 @@ Current Hosting expectations:
 - if install/update behavior looks stale during testing, clear the browser’s site data and service-worker registration before rechecking
 - local development intentionally skips App Check on `localhost` and `127.0.0.1`; treat enforcement as a deployed-environment rollout step, not a local prerequisite
 - the Functions workspace has its own install/build lifecycle; run `npm run functions:install` before first deploy or emulator use
+
+## Phase 3 Operational Notes
+
+- browser and installed-PWA notifications are the only supported delivery channels today; scheduled Functions can evaluate and persist candidates, but they do not create native mobile push by themselves
+- scheduled backup payloads are now expected to live in Cloud Storage with Firestore metadata as the operational index
+- Google Calendar integration currently depends on user-interactive browser OAuth and supports the primary calendar plus explicit major-block mirroring only
+- health integration remains scaffold-only in this phase and should not be represented as a live provider ingestion system during deployment or QA signoff

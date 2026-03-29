@@ -69,6 +69,7 @@ npm run preview -- --host 127.0.0.1 --port 4173
 - [Future Extension Notes](/Users/ayushjaipuriar/Documents/GitHub/forge/docs/future-extension-notes.md)
 - [Release Readiness Checklist](/Users/ayushjaipuriar/Documents/GitHub/forge/docs/release-readiness-checklist.md)
 - [Phase 2 Release Readiness Checklist](/Users/ayushjaipuriar/Documents/GitHub/forge/docs/phase-2-release-readiness-checklist.md)
+- [Phase 3 Release Readiness Checklist](/Users/ayushjaipuriar/Documents/GitHub/forge/docs/phase-3-release-readiness-checklist.md)
 
 ## Verification Status
 
@@ -85,7 +86,10 @@ Live Firebase verification has also been completed against a real project, inclu
 
 ## Known Limitations
 
+- Notifications are browser and installed-PWA only. Scheduled Functions create evaluation records and candidate metadata, but they do not provide native mobile push delivery.
+- Scheduled backups are durable and versioned, but the in-app picker for remote scheduled backups is still not finished.
 - Google Calendar now supports primary-calendar pressure plus explicit major-block write mirroring in Phase 3, but long-lived server-managed OAuth and background reconciliation are not complete yet.
+- Health integration is a persisted scaffold and typed normalization seam, not a live provider sync system yet.
 - Offline behavior is intentionally shell-first and action-focused. It does not attempt full query-cache persistence for every screen.
 
 ## Product Boundary

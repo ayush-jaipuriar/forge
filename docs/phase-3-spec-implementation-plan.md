@@ -782,12 +782,35 @@ Close Phase 3 with an operationally credible release posture across notification
 
 ### Testing and Documentation
 
-- [ ] Run and verify the full test suite including Phase 3 logic.
-- [ ] Add a Phase 3 release-readiness checklist or expand the existing one.
+- [x] Run and verify the full test suite including Phase 3 logic.
+- [x] Add a Phase 3 release-readiness checklist or expand the existing one.
+
+### Implementation Notes
+
+- Completed the full root quality pass for the shipped Phase 3 surface: `npm run lint`, `npm run test:run`,
+  `npm run typecheck`, and `npm run build` are all green at milestone close.
+- Completed the Functions workspace verification pass as part of release hardening: `cd functions && npm run lint`,
+  `npm run typecheck`, and `npm run build` are all green, which matters because notifications and scheduled backups now
+  depend on repo-managed Functions rather than console-only logic.
+- Added [docs/phase-3-release-readiness-checklist.md](/Users/ayushjaipuriar/Documents/GitHub/forge/docs/phase-3-release-readiness-checklist.md)
+  as the operator-facing release gate for Phase 3. This records the actual supported notification, backup, Calendar,
+  and health-integration posture instead of forcing future sessions to infer it from milestone notes.
+- Updated [docs/notification-scheduling-operations.md](/Users/ayushjaipuriar/Documents/GitHub/forge/docs/notification-scheduling-operations.md),
+  [docs/backup-and-restore-operations.md](/Users/ayushjaipuriar/Documents/GitHub/forge/docs/backup-and-restore-operations.md),
+  [docs/google-calendar-scaffolding.md](/Users/ayushjaipuriar/Documents/GitHub/forge/docs/google-calendar-scaffolding.md),
+  [docs/deployment-guide.md](/Users/ayushjaipuriar/Documents/GitHub/forge/docs/deployment-guide.md),
+  [docs/future-extension-notes.md](/Users/ayushjaipuriar/Documents/GitHub/forge/docs/future-extension-notes.md), and
+  [README.md](/Users/ayushjaipuriar/Documents/GitHub/forge/README.md) so the shipped limits are explicit where operators
+  will actually look for them.
+- Fixed a release-hardening gap in [functions/src/backups/pipeline.ts](/Users/ayushjaipuriar/Documents/GitHub/forge/functions/src/backups/pipeline.ts):
+  scheduled backups now explicitly pass `healthIntegration: null` into the shared payload builder, which keeps the
+  contract honest about the current local-only health seam rather than implying the Functions layer knows about browser-local
+  health state.
 
 ### Exit Criteria
 
 - the product can support real external integration and durability without hiding operational risk
+- ✅ achieved: release posture, supported limits, and Functions verification are now explicit and green
 
 ## Phase 3 Progress Tracker
 
@@ -801,7 +824,7 @@ Close Phase 3 with an operationally credible release posture across notification
 - [x] Milestone 7 complete
 - [x] Milestone 8 complete
 - [x] Milestone 9 complete
-- [ ] Milestone 10 complete
+- [x] Milestone 10 complete
 
 ## Recommended Immediate Execution Order
 

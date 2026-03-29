@@ -324,6 +324,15 @@ This document captures the Phase 1 architectural baseline that implementation sh
 - `src/tests/domain/health-integration.spec.ts` now covers persisted health state, status labels, readiness helpers, signal availability, connection summaries, display hints, normalization, validation, and the workspace builder
 - Verification: typecheck, lint, 53 test files, 190 tests — all passing, build clean
 
+## Phase 3 Milestone 10 QA, Security, and Release Hardening
+
+- Phase 3 now has a dedicated operator-facing release gate in [docs/phase-3-release-readiness-checklist.md](/Users/ayushjaipuriar/Documents/GitHub/forge/docs/phase-3-release-readiness-checklist.md), which matters because the integration layer now spans browser code, scheduled Functions, Cloud Storage payloads, and Google OAuth scopes; closing the phase without a written gate would hide too much operational context
+- the full root application quality pass is green at milestone close: lint, typecheck, full tests, and build all pass against the integrated Phase 3 surface
+- the Functions workspace quality pass is also green: [functions/package.json](/Users/ayushjaipuriar/Documents/GitHub/forge/functions/package.json) scripts for lint, typecheck, and build all pass, which is important because scheduled notifications and scheduled backups are now first-class production paths rather than optional experiments
+- release-hardening exposed one real integration seam in [functions/src/backups/pipeline.ts](/Users/ayushjaipuriar/Documents/GitHub/forge/functions/src/backups/pipeline.ts): scheduled backups now explicitly pass `healthIntegration: null` into the shared backup builder so the server path stays honest about the current local-only health scaffold instead of implying that browser-local health state is remotely available
+- the operations docs for notifications, backup/restore, Calendar, deployment, and future extension boundaries now all include explicit “release-ready limits” sections; this is a product honesty win because the shipped system now states not just what works, but also what it does not claim to do yet
+- [README.md](/Users/ayushjaipuriar/Documents/GitHub/forge/README.md) now links the Phase 3 release checklist and records the most important accepted limits directly in the repo entry point: browser-only notification delivery, no finished remote-backup picker, no long-lived server-managed Calendar OAuth, and health integration remaining scaffold-only
+
 
 ## Layer Boundaries
 

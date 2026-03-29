@@ -140,3 +140,19 @@ Calendar context is now threaded into the recommendation engine as a typed objec
 ## Why This Matters
 
 The product spec expects future calendar integration to influence schedule pressure and tradeoff suggestions. The domain context should be prepared early even if the API integration lands later.
+
+## Release-Ready Limits
+
+Phase 3 can honestly claim:
+
+- primary-calendar read pressure
+- bounded local event caching
+- explicit major-block write mirroring with reconciliation
+- truthful read and mirror sync-state surfacing in Settings, Today, and Schedule
+
+Phase 3 must not claim:
+
+- long-lived server-managed Google OAuth
+- background mirror reconciliation without user action
+- multi-calendar selection or organization-level calendar orchestration
+- full bidirectional sync ownership over the Forge routine

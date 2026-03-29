@@ -101,6 +101,7 @@ export async function generateBackupForUser(userId: string, anchorDate = new Dat
     fallbackUserId: userId,
     settings,
     dayInstances,
+    healthIntegration: null,
     notificationState,
     syncDiagnostics: null,
     exportedAt,

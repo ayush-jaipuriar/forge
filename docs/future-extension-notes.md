@@ -34,12 +34,20 @@ Phase 2 now covers:
 - operational analytics surfacing back into Today, Readiness, and Schedule
 - Firebase hardening work needed to sustain those analytics surfaces
 
-Phase 3 still begins at:
+Phase 3 now covers:
 
-- real bidirectional Calendar sync
-- notifications and reminder delivery
-- export and backup features
-- deeper sync or orchestration extraction beyond the current Firebase-plus-Functions posture
+- browser and installed-PWA notifications with scheduled evaluation foundations
+- backup export, staged restore, scheduled backups, retention, and Cloud Storage payload storage
+- primary-calendar Google Calendar read pressure plus explicit major-block write mirroring
+- health integration scaffolding with persisted local workspace state and typed normalization seams
+
+What still remains beyond Phase 3:
+
+- long-lived server-managed Calendar OAuth and background reconciliation
+- native mobile push delivery
+- full remote scheduled-backup picker and end-to-end server restore UX
+- live health-provider ingestion and sync
+- deeper sync-orchestration extraction beyond the current Firebase-plus-Functions posture
 ## Backup Payload Storage Migration
 
 This is no longer just a future note. It is now part of the official Phase 3 milestone sequence before Calendar work continues.

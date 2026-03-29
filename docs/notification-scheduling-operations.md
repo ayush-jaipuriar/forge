@@ -130,3 +130,17 @@ What Milestone 3 intentionally does not finish:
 - advanced backoff and retry administration UI
 
 Those remain later hardening or future-platform work.
+
+## Release-Ready Limits
+
+Phase 3 can honestly claim:
+
+- shared client and Functions rule semantics
+- scheduled evaluation with run metadata
+- browser and installed-PWA delivery foundations
+
+Phase 3 must not claim:
+
+- guaranteed background delivery on every device state
+- native mobile push
+- a notification inbox or delivery-admin surface

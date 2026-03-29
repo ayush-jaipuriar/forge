@@ -278,6 +278,26 @@ The earlier Firestore-only payload approach is now being retired as the main pat
 
 It remains relevant only as a migration and compatibility concern for older scheduled backup records.
 
+## Release-Ready Limits
+
+Phase 3 can honestly claim:
+
+- manual backup export and staged local restore
+- scheduled backup generation with retention and Cloud Storage payloads
+- restore-safety handling for outstanding local sync queue items
+- server-side restore foundations and restore-eligibility metadata
+
+Phase 3 must not claim:
+
+- a finished in-app picker for scheduled remote backups
+- automatic cross-device restore reconciliation
+- zero-loss guarantees across every local-only integration seam
+
+One important current boundary:
+
+- manual exports can include the browser-local health integration snapshot
+- scheduled backups currently fall back to the default health scaffold because that state is still local-first and not yet synchronized to a server-owned health record
+
 The reason for the migration was straightforward:
 
 - a full backup payload includes settings, every stored day instance, and derived analytics artifacts
