@@ -645,16 +645,16 @@ Introduce external calendar awareness without allowing Calendar to replace the F
 
 ### Checklist
 
-- [ ] Implement Google Calendar OAuth connection flow and settings state for the existing primary-calendar posture.
-- [ ] Read external events into a bounded cache or summary model appropriate for collision analysis.
-- [ ] Implement collision and pressure derivation between external events and major Forge blocks.
-- [ ] Surface collision risk and tradeoff context in Schedule, Today, and integration settings.
-- [ ] Persist connection status, sync timestamps, and event-cache metadata honestly.
+- [x] Implement Google Calendar OAuth connection flow and settings state for the existing primary-calendar posture.
+- [x] Read external events into a bounded cache or summary model appropriate for collision analysis.
+- [x] Implement collision and pressure derivation between external events and major Forge blocks.
+- [x] Surface collision risk and tradeoff context in Schedule, Today, and integration settings.
+- [x] Persist connection status, sync timestamps, and event-cache metadata honestly.
 
 ### Testing and Documentation
 
-- [ ] Add tests for collision rules, event normalization, and pressure derivation.
-- [ ] Document Google scopes, connection assumptions, and external-event limitations.
+- [x] Add tests for collision rules, event normalization, and pressure derivation.
+- [x] Document Google scopes, connection assumptions, and external-event limitations.
 
 ### Exit Criteria
 
@@ -760,7 +760,7 @@ Close Phase 3 with an operationally credible release posture across notification
 - [x] Milestone 4 complete
 - [x] Milestone 5 complete
 - [x] Milestone 6 complete
-- [ ] Milestone 7 complete
+- [x] Milestone 7 complete
 - [ ] Milestone 8 complete
 - [ ] Milestone 9 complete
 - [ ] Milestone 10 complete

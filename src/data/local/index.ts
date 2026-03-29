@@ -1,6 +1,9 @@
 import { LocalBackupOperationsRepository } from '@/data/local/localBackupOperationsRepository'
 import { LocalBackupRepository } from '@/data/local/localBackupRepository'
+import { LocalCalendarSessionRepository } from '@/data/local/localCalendarSessionRepository'
+import { LocalCalendarStateRepository } from '@/data/local/localCalendarStateRepository'
 import { LocalDayInstanceRepository } from '@/data/local/localDayInstanceRepository'
+import { LocalExternalCalendarEventRepository } from '@/data/local/localExternalCalendarEventRepository'
 import { LocalExportPayloadRepository } from '@/data/local/localExportPayloadRepository'
 import { LocalNotificationLogRepository } from '@/data/local/localNotificationLogRepository'
 import { LocalNotificationStateRepository } from '@/data/local/localNotificationStateRepository'
@@ -12,7 +15,10 @@ import { LocalSyncQueueRepository } from '@/data/local/localSyncQueueRepository'
 
 export const localBackupOperationsRepository = new LocalBackupOperationsRepository()
 export const localBackupRepository = new LocalBackupRepository()
+export const localCalendarSessionRepository = new LocalCalendarSessionRepository()
+export const localCalendarStateRepository = new LocalCalendarStateRepository()
 export const localDayInstanceRepository = new LocalDayInstanceRepository()
+export const localExternalCalendarEventRepository = new LocalExternalCalendarEventRepository()
 export const localExportPayloadRepository = new LocalExportPayloadRepository()
 export const localNotificationStateRepository = new LocalNotificationStateRepository()
 export const localNotificationLogRepository = new LocalNotificationLogRepository()

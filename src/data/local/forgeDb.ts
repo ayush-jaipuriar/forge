@@ -1,6 +1,11 @@
 import { openDB } from 'idb'
 import type { DBSchema, IDBPDatabase } from 'idb'
 import type { BackupOperationsSnapshot, BackupSnapshotRecord, ForgeExportPayload, RestoreJobRecord } from '@/domain/backup/types'
+import type {
+  CalendarSessionSnapshot,
+  CalendarSyncStateSnapshot,
+  ExternalCalendarEventCacheRecord,
+} from '@/domain/calendar/types'
 import type { AnySyncQueueItem } from '@/domain/execution/sync'
 import type { NotificationLogRecord, NotificationStateSnapshot } from '@/domain/notifications/types'
 import type { DayInstance } from '@/domain/routine/types'
@@ -76,6 +81,22 @@ type ForgeDbSchema = DBSchema & {
       byExportedAt: string
     }
   }
+  calendarState: {
+    key: string
+    value: CalendarSyncStateSnapshot
+  }
+  externalCalendarEvents: {
+    key: string
+    value: ExternalCalendarEventCacheRecord
+    indexes: {
+      byDate: string
+      byFetchedAt: string
+    }
+  }
+  calendarSessions: {
+    key: string
+    value: CalendarSessionSnapshot
+  }
 }
 
 let dbPromise: Promise<IDBPDatabase<ForgeDbSchema>> | null = null
@@ -83,7 +104,7 @@ const FORGE_DB_NAME = 'forge-db'
 
 export function getForgeDb() {
   if (!dbPromise) {
-    dbPromise = openDB<ForgeDbSchema>(FORGE_DB_NAME, 5, {
+    dbPromise = openDB<ForgeDbSchema>(FORGE_DB_NAME, 6, {
       upgrade(db) {
         if (!db.objectStoreNames.contains('dayInstances')) {
           const dayInstances = db.createObjectStore('dayInstances', {
@@ -159,6 +180,26 @@ export function getForgeDb() {
             keyPath: 'id',
           })
           exportPayloads.createIndex('byExportedAt', 'exportedAt')
+        }
+
+        if (!db.objectStoreNames.contains('calendarState')) {
+          db.createObjectStore('calendarState', {
+            keyPath: 'id',
+          })
+        }
+
+        if (!db.objectStoreNames.contains('externalCalendarEvents')) {
+          const externalCalendarEvents = db.createObjectStore('externalCalendarEvents', {
+            keyPath: 'id',
+          })
+          externalCalendarEvents.createIndex('byDate', 'date')
+          externalCalendarEvents.createIndex('byFetchedAt', 'fetchedAt')
+        }
+
+        if (!db.objectStoreNames.contains('calendarSessions')) {
+          db.createObjectStore('calendarSessions', {
+            keyPath: 'id',
+          })
         }
       },
     })

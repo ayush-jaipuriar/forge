@@ -1,6 +1,6 @@
 import { forgePrepTaxonomy, forgeRoutine, forgeWorkoutSchedule } from '@/data/seeds'
 import { localDayInstanceRepository, localSettingsRepository } from '@/data/local'
-import { googleCalendarScaffoldingService } from '@/services/calendar/calendarIntegrationService'
+import { googleCalendarIntegrationService } from '@/services/calendar/calendarIntegrationService'
 import {
   buildScheduleOperationalSignals,
   buildTodayOperationalSignals,
@@ -62,8 +62,14 @@ export async function getOrCreateTodayWorkspace(date = new Date()) {
     focusedDomains: focusedPrepDomains,
     topics: prepTopics,
   })
-  const calendarContext = await googleCalendarScaffoldingService.getRecommendationContext({
+  const calendarWorkspace = await googleCalendarIntegrationService.getDayWorkspace({
     date: dateKey,
+    blocks: dayInstance.blocks,
+    connection: settings?.calendarIntegration,
+  })
+  const calendarContext = await googleCalendarIntegrationService.getRecommendationContext({
+    date: dateKey,
+    blocks: dayInstance.blocks,
     connection: settings?.calendarIntegration,
   })
   const scorePreview = calculateDayScorePreview(dayInstance, {
@@ -98,6 +104,9 @@ export async function getOrCreateTodayWorkspace(date = new Date()) {
     sleepDurationHours: dailySignals.sleepDurationHours,
     scorePreview,
     fallbackSuggestion,
+    calendarSummary: calendarWorkspace.summary,
+    calendarSyncState: calendarWorkspace.syncState,
+    calendarEvents: calendarWorkspace.events,
     operationalSignals: buildTodayOperationalSignals({
       summary: operationalAnalytics,
       dayInstance,
@@ -147,6 +156,11 @@ export async function getOrCreateWeeklyWorkspace(anchorDate = new Date()) {
   })
 
   await localDayInstanceRepository.upsertMany(mergedWeek)
+  const calendarWorkspaces = await googleCalendarIntegrationService.refreshCache({
+    dates: mergedWeek.map((instance) => instance.date),
+    blocksByDate: Object.fromEntries(mergedWeek.map((instance) => [instance.date, instance.blocks])),
+    connection: settings?.calendarIntegration,
+  })
 
   const operationalAnalytics = await getOperationalAnalyticsSummary(anchorDate)
   const scheduleSignals = buildScheduleOperationalSignals({
@@ -161,6 +175,11 @@ export async function getOrCreateWeeklyWorkspace(anchorDate = new Date()) {
 
   return {
     globalSignals: scheduleSignals.globalSignals,
+    calendar: {
+      connectionStatus: settings?.calendarIntegration.connectionStatus ?? 'notConnected',
+      syncState: Object.values(calendarWorkspaces)[0]?.syncState ?? null,
+      constrainedDayCount: Object.values(calendarWorkspaces).filter((workspace) => workspace.summary.severity !== 'none').length,
+    },
     days: mergedWeek.map((instance) => ({
       ...instance,
       dateLabel: formatDateLabel(instance.date),
@@ -172,6 +191,7 @@ export async function getOrCreateWeeklyWorkspace(anchorDate = new Date()) {
         label: dayTypeLabels[dayType],
       })),
       operationalSignals: scheduleSignals.daySignalsByDate[instance.date] ?? [],
+      calendarSummary: calendarWorkspaces[instance.date]?.summary,
     })),
   }
 }

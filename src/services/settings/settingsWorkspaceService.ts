@@ -1,7 +1,7 @@
 import { localRestoreJobRepository, localSettingsRepository } from '@/data/local'
 import { isServerRestoreEligible } from '@/services/backup/backupPayloadStorage'
 import { getBackupOperationsWorkspace } from '@/services/backup/backupOperationsService'
-import { googleCalendarScaffoldingService } from '@/services/calendar/calendarIntegrationService'
+import { googleCalendarIntegrationService } from '@/services/calendar/calendarIntegrationService'
 import { getNotificationStateWorkspace } from '@/services/notifications/notificationStateService'
 
 export async function getSettingsWorkspace(userId?: string | null) {
@@ -11,8 +11,8 @@ export async function getSettingsWorkspace(userId?: string | null) {
     getBackupOperationsWorkspace(userId),
     localRestoreJobRepository.listRecent(3),
   ])
-  const calendarConnection = await googleCalendarScaffoldingService.getConnectionSnapshot(settings?.calendarIntegration)
-  const mirroredBlockPreview = googleCalendarScaffoldingService.getMirroredBlockPreview({
+  const calendarWorkspace = await googleCalendarIntegrationService.getSettingsWorkspace(settings?.calendarIntegration)
+  const mirroredBlockPreview = googleCalendarIntegrationService.getMirroredBlockPreview({
     blockId: 'preview-prime-deep-block',
     date: '2026-03-27',
     title: 'Prime Deep Block',
@@ -22,7 +22,8 @@ export async function getSettingsWorkspace(userId?: string | null) {
 
   return {
     settings,
-    calendarConnection,
+    calendarConnection: calendarWorkspace.connection,
+    calendarSyncState: calendarWorkspace.syncState,
     notificationState: notificationWorkspace.state,
     recentNotificationLogs: notificationWorkspace.recentLogs,
     backupOperations: backupWorkspace.operations,
@@ -48,7 +49,7 @@ export async function getSettingsWorkspace(userId?: string | null) {
     recentRestoreJobs,
     mirroredBlockPreview,
     featureFlags: {
-      readMirror: 'planned',
+      readMirror: calendarWorkspace.connection.featureGate === 'readEnabled' ? 'enabled' : 'planned',
       writeMirror: 'planned',
       collisionAwareRecommendations: true,
     },

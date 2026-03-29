@@ -1,4 +1,5 @@
 import ArchiveRoundedIcon from '@mui/icons-material/ArchiveRounded'
+import CalendarMonthRoundedIcon from '@mui/icons-material/CalendarMonthRounded'
 import DownloadRoundedIcon from '@mui/icons-material/DownloadRounded'
 import NotificationsActiveRoundedIcon from '@mui/icons-material/NotificationsActiveRounded'
 import RestoreRoundedIcon from '@mui/icons-material/RestoreRounded'
@@ -12,7 +13,10 @@ import { SurfaceCard } from '@/components/common/SurfaceCard'
 import { useAuthSession } from '@/features/auth/providers/useAuthSession'
 import { usePwaState } from '@/features/pwa/providers/usePwaState'
 import { useApplyRestoreStage } from '@/features/settings/hooks/useApplyRestoreStage'
+import { useConnectCalendarRead } from '@/features/settings/hooks/useConnectCalendarRead'
 import { useCreateManualBackup } from '@/features/settings/hooks/useCreateManualBackup'
+import { useDisconnectCalendar } from '@/features/settings/hooks/useDisconnectCalendar'
+import { useRefreshCalendarCache } from '@/features/settings/hooks/useRefreshCalendarCache'
 import { useRequestNotificationPermission } from '@/features/settings/hooks/useRequestNotificationPermission'
 import { useSettingsWorkspace } from '@/features/settings/hooks/useSettingsWorkspace'
 import { useUpdateNotificationPreference } from '@/features/settings/hooks/useUpdateNotificationPreference'
@@ -25,6 +29,9 @@ export function SettingsPage() {
   const updateNotificationPreference = useUpdateNotificationPreference()
   const requestNotificationPermission = useRequestNotificationPermission()
   const createManualBackup = useCreateManualBackup(user)
+  const connectCalendarRead = useConnectCalendarRead()
+  const disconnectCalendar = useDisconnectCalendar()
+  const refreshCalendarCache = useRefreshCalendarCache()
   const applyRestoreStage = useApplyRestoreStage()
   const restoreInputRef = useRef<HTMLInputElement | null>(null)
   const [restoreStage, setRestoreStage] = useState<RestoreStage | null>(null)
@@ -45,6 +52,7 @@ export function SettingsPage() {
     backupOperations,
     backupSource,
     calendarConnection,
+    calendarSyncState,
     featureFlags,
     latestServerRestoreReadyBackup,
     mirroredBlockPreview,
@@ -341,30 +349,84 @@ export function SettingsPage() {
         </Grid>
         <Grid size={{ xs: 12, md: 6 }}>
           <SurfaceCard
-            eyebrow="Calendar Scaffolding"
-            title="Google Calendar future boundary"
-            description="Phase 1 keeps this integration deliberately disabled while still giving the codebase a real typed seam for future event mirroring and collision-aware recommendations."
+            eyebrow="Calendar Read Integration"
+            title="Google Calendar pressure boundary"
+            description="Forge can now read your primary Google Calendar and translate outside commitments into pressure and collision context without letting Calendar rewrite the routine."
             action={
               <Chip
-                label={calendarConnection.connectionStatus}
+                label={calendarSyncState.externalEventSyncStatus}
                 size="small"
                 variant="outlined"
-                color={calendarConnection.connectionStatus === 'connected' ? 'success' : 'default'}
+                color={
+                  calendarConnection.connectionStatus === 'connected'
+                    ? calendarSyncState.externalEventSyncStatus === 'error'
+                      ? 'warning'
+                      : 'success'
+                    : 'default'
+                }
               />
             }
           >
-            <Stack spacing={0.75}>
+            <Stack spacing={1.25}>
               <Typography variant="body2" color="text.secondary">
                 Provider: {calendarConnection.provider}
               </Typography>
               <Typography variant="body2" color="text.secondary">
-                Feature gate: {calendarConnection.featureGate}
+                Connection: {calendarConnection.connectionStatus} · Feature gate: {calendarConnection.featureGate}
               </Typography>
               <Typography variant="body2" color="text.secondary">
-                Managed event mode: {calendarConnection.managedEventMode}
+                Sync status: {calendarSyncState.externalEventSyncStatus}. Last external sync: {calendarSyncState.lastExternalSyncAt ?? 'Not yet synced'}.
               </Typography>
+              <Typography variant="body2" color="text.secondary">
+                Cached event count: {calendarSyncState.cachedEventCount}. Selected calendar: {calendarConnection.selectedCalendarIds[0] ?? 'primary'}.
+              </Typography>
+              {calendarSyncState.lastSyncError ? (
+                <Alert severity="warning" variant="outlined">
+                  Calendar sync issue: {calendarSyncState.lastSyncError}
+                </Alert>
+              ) : null}
+              <Stack direction={{ xs: 'column', sm: 'row' }} spacing={1} alignItems={{ xs: 'flex-start', sm: 'center' }}>
+                <Button
+                  variant="contained"
+                  startIcon={<CalendarMonthRoundedIcon />}
+                  onClick={() => connectCalendarRead.mutate()}
+                  disabled={connectCalendarRead.isPending || status !== 'authenticated'}
+                >
+                  {calendarConnection.connectionStatus === 'connected' ? 'Reconnect Calendar' : 'Connect Calendar'}
+                </Button>
+                <Button
+                  variant="outlined"
+                  onClick={() => refreshCalendarCache.mutate()}
+                  disabled={refreshCalendarCache.isPending || calendarConnection.connectionStatus !== 'connected'}
+                >
+                  Refresh read cache
+                </Button>
+                <Button
+                  variant="text"
+                  color="inherit"
+                  onClick={() => disconnectCalendar.mutate()}
+                  disabled={disconnectCalendar.isPending || calendarConnection.connectionStatus === 'notConnected'}
+                >
+                  Disconnect
+                </Button>
+              </Stack>
+              {connectCalendarRead.isError ? (
+                <Alert severity="error" variant="outlined">
+                  {connectCalendarRead.error instanceof Error ? connectCalendarRead.error.message : 'Forge could not connect Google Calendar.'}
+                </Alert>
+              ) : null}
+              {refreshCalendarCache.isError ? (
+                <Alert severity="error" variant="outlined">
+                  {refreshCalendarCache.error instanceof Error ? refreshCalendarCache.error.message : 'Forge could not refresh the Calendar cache.'}
+                </Alert>
+              ) : null}
+              {disconnectCalendar.isError ? (
+                <Alert severity="error" variant="outlined">
+                  {disconnectCalendar.error instanceof Error ? disconnectCalendar.error.message : 'Forge could not disconnect Google Calendar.'}
+                </Alert>
+              ) : null}
               <Typography variant="body2" color="primary.light">
-                Future mirrored title convention: {mirroredBlockPreview.eventTitle}
+                Mirrored title convention for the later write phase: {mirroredBlockPreview.eventTitle}
               </Typography>
             </Stack>
           </SurfaceCard>
@@ -385,12 +447,15 @@ export function SettingsPage() {
               <Typography variant="body2" color="text.secondary">
                 Write mirror: {featureFlags.writeMirror}
               </Typography>
+              <Typography variant="body2" color="text.secondary">
+                Phase 3 read integration is primary-calendar only. Calendar writes remain intentionally deferred to the next milestone.
+              </Typography>
             </Stack>
           </SurfaceCard>
         </Grid>
       </Grid>
       <Alert severity="info" variant="outlined">
-        Notifications now have a real local rule, permission, and logging foundation. Backup and restore now provide a deterministic local safety layer. Calendar scaffolding is still architecture-only until the later Phase 3 milestones.
+        Notifications now have a real rule and delivery foundation. Backup and restore now provide deterministic local and scheduled safety. Calendar can read pressure from Google now, but it still does not own the routine and it does not write mirrored events yet.
       </Alert>
       <EmptyState
         icon={<SettingsSuggestRoundedIcon color="primary" />}

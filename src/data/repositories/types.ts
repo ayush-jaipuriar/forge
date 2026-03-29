@@ -154,6 +154,8 @@ export interface CalendarMirrorRepository {
 export interface ExternalCalendarEventRepository {
   listForDate(date: string): Promise<ExternalCalendarEventCacheRecord[]>
   upsertMany(records: ExternalCalendarEventCacheRecord[]): Promise<void>
+  replaceForDates(dates: string[], records: ExternalCalendarEventCacheRecord[]): Promise<void>
+  clearAll(): Promise<void>
 }
 
 export interface HealthIntegrationRepository {

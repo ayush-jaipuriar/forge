@@ -15,6 +15,8 @@ export type CalendarSyncStatus = 'idle' | 'syncing' | 'stale' | 'error'
 
 export type CalendarMirrorStatus = 'planned' | 'synced' | 'needsUpdate' | 'deleted' | 'error'
 
+export type CalendarAccessScope = 'https://www.googleapis.com/auth/calendar.readonly'
+
 export type CalendarConnectionSnapshot = {
   provider: CalendarProvider
   connectionStatus: CalendarConnectionStatus
@@ -39,7 +41,16 @@ export type ExternalCalendarEvent = {
 }
 
 export type ExternalCalendarEventCacheRecord = ExternalCalendarEvent & {
+  date: string
   fetchedAt: string
+}
+
+export type CalendarSessionSnapshot = {
+  id: 'default'
+  provider: CalendarProvider
+  accessScope: CalendarAccessScope
+  accessToken: string
+  grantedAt: string
 }
 
 export type MirroredRoutineBlock = {
@@ -93,6 +104,11 @@ export type CalendarSyncStateSnapshot = CalendarConnectionSnapshot & {
   lastExternalSyncAt?: string
   lastMirrorSyncAt?: string
   lastSyncError?: string
+  cachedDateRange?: {
+    startDate: string
+    endDate: string
+  }
+  cachedEventCount: number
 }
 
 export type CalendarRecommendationContext = {
@@ -119,6 +135,7 @@ export function createDefaultCalendarSyncStateSnapshot(): CalendarSyncStateSnaps
     ...createDefaultCalendarConnectionSnapshot(),
     externalEventSyncStatus: 'idle',
     mirrorSyncStatus: 'idle',
+    cachedEventCount: 0,
   }
 }
 

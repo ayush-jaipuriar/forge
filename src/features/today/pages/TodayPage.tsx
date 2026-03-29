@@ -1,5 +1,6 @@
 import AccessTimeRoundedIcon from '@mui/icons-material/AccessTimeRounded'
 import AutoGraphRoundedIcon from '@mui/icons-material/AutoGraphRounded'
+import CalendarMonthRoundedIcon from '@mui/icons-material/CalendarMonthRounded'
 import FitnessCenterRoundedIcon from '@mui/icons-material/FitnessCenterRounded'
 import KeyboardDoubleArrowRightRoundedIcon from '@mui/icons-material/KeyboardDoubleArrowRightRounded'
 import { useEffect, useState } from 'react'
@@ -60,7 +61,7 @@ export function TodayPage() {
     )
   }
 
-  const { currentBlock, dateLabel, dayInstance, energyStatus, fallbackSuggestion, focusedPrepDomains, operationalSignals, recommendation, readinessSnapshot, scorePreview, sleepStatus, topPriorities, weekdayLabel, workoutState } = data
+  const { calendarEvents, calendarSummary, calendarSyncState, currentBlock, dateLabel, dayInstance, energyStatus, fallbackSuggestion, focusedPrepDomains, operationalSignals, recommendation, readinessSnapshot, scorePreview, sleepStatus, topPriorities, weekdayLabel, workoutState } = data
   const activeMode = dayModeDetails[currentDayMode]
   const fallbackKey = fallbackSuggestion
     ? getFallbackKey(dayInstance.date, fallbackSuggestion.suggestedDayMode, fallbackSuggestion.explanation)
@@ -228,6 +229,38 @@ export function TodayPage() {
           </Stack>
         </SurfaceCard>
       ) : null}
+
+      <SurfaceCard
+        eyebrow="Calendar Pressure"
+        title="External commitments that constrain today"
+        description="Forge now reads your primary Google Calendar into the execution model. These signals are meant to protect routine integrity, not replace it."
+        action={
+          <Chip
+            icon={<CalendarMonthRoundedIcon />}
+            label={`${calendarSummary.severity.toUpperCase()} · ${calendarSyncState.externalEventSyncStatus}`}
+            size="small"
+            variant="outlined"
+            color={calendarSummary.severity === 'hard' ? 'warning' : calendarSummary.severity === 'soft' ? 'info' : 'default'}
+          />
+        }
+      >
+        <Stack spacing={1}>
+          <Typography variant="body2" color="text.secondary">
+            Cached events today: {calendarEvents.length}. Last calendar sync: {calendarSyncState.lastExternalSyncAt ?? 'Not yet synced'}.
+          </Typography>
+          {calendarSummary.constrainedWindows.length > 0 ? (
+            calendarSummary.constrainedWindows.slice(0, 3).map((window) => (
+              <Typography key={`${window.startsAt}-${window.endsAt}`} variant="body2" color="text.secondary">
+                {window.reason}
+              </Typography>
+            ))
+          ) : (
+            <Typography variant="body2" color="text.secondary">
+              No external calendar collisions are currently constraining the timed blocks in today&apos;s plan.
+            </Typography>
+          )}
+        </Stack>
+      </SurfaceCard>
 
       <SurfaceCard
         eyebrow="Quick Signals"

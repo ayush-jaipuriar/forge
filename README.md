@@ -15,7 +15,7 @@ Phase 1 now exists across the core domain, UI, persistence, scoring, recommendat
 - Phase 2 modular pattern-detection engine with confidence-aware warnings, insights, and coach summaries
 - Phase 2 disciplined gamification layer with formal streaks, deficit-driven missions, and anti-padding momentum
 - Phase 2 operational analytics surfacing across Today, Readiness, and Schedule with shared pressure signals
-- future-ready Google Calendar scaffolding with typed boundaries but no live Calendar sync yet
+- Phase 3 Google Calendar read integration with primary-calendar connection, bounded event caching, and collision-aware Today/Schedule pressure
 
 ## Setup
 
@@ -65,7 +65,7 @@ npm run preview -- --host 127.0.0.1 --port 4173
 - [Phase 3 Spec and Implementation Plan](/Users/ayushjaipuriar/Documents/GitHub/forge/docs/phase-3-spec-implementation-plan.md)
 - [Firebase Setup](/Users/ayushjaipuriar/Documents/GitHub/forge/docs/firebase-setup.md)
 - [Deployment Guide](/Users/ayushjaipuriar/Documents/GitHub/forge/docs/deployment-guide.md)
-- [Google Calendar Scaffolding](/Users/ayushjaipuriar/Documents/GitHub/forge/docs/google-calendar-scaffolding.md)
+- [Google Calendar Integration Notes](/Users/ayushjaipuriar/Documents/GitHub/forge/docs/google-calendar-scaffolding.md)
 - [Future Extension Notes](/Users/ayushjaipuriar/Documents/GitHub/forge/docs/future-extension-notes.md)
 - [Release Readiness Checklist](/Users/ayushjaipuriar/Documents/GitHub/forge/docs/release-readiness-checklist.md)
 - [Phase 2 Release Readiness Checklist](/Users/ayushjaipuriar/Documents/GitHub/forge/docs/phase-2-release-readiness-checklist.md)
@@ -85,7 +85,7 @@ Live Firebase verification has also been completed against a real project, inclu
 
 ## Known Limitations
 
-- Google Calendar integration is scaffolding only in Phase 1. The typed boundary exists, but there is no real provider read or write flow yet.
+- Google Calendar now supports read-only primary-calendar pressure in Phase 3, but write mirroring and long-lived server-managed OAuth are not complete yet.
 - Offline behavior is intentionally shell-first and action-focused. It does not attempt full query-cache persistence for every screen.
 
 ## Product Boundary

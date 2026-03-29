@@ -1,5 +1,5 @@
 export type MonitoringLevel = 'info' | 'warning' | 'error'
-export type MonitoringDomain = 'auth' | 'sync' | 'firebase' | 'security' | 'analytics' | 'backup'
+export type MonitoringDomain = 'auth' | 'sync' | 'firebase' | 'security' | 'analytics' | 'backup' | 'calendar'
 
 export type MonitoringEvent = {
   level: MonitoringLevel

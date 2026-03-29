@@ -30,7 +30,7 @@ export function SchedulePage() {
     )
   }
 
-  const { days: weekInstances, globalSignals } = weekWorkspace
+  const { calendar, days: weekInstances, globalSignals } = weekWorkspace
 
   return (
     <Stack spacing={3}>
@@ -41,14 +41,27 @@ export function SchedulePage() {
         action={<SyncIndicator status={syncStatus} />}
       />
       <SurfaceCard
-        eyebrow="Calendar Mirror"
-        title="Future calendar status placeholder"
-        description="Phase 1 keeps calendar work out of the critical path, but the Schedule screen now reserves space for that future mirror so we do not design ourselves into a corner."
-        action={<Chip icon={<CalendarMonthRoundedIcon />} label="Not Connected Yet" variant="outlined" size="small" />}
+        eyebrow="Calendar Pressure"
+        title="External commitments across the operational week"
+        description="Forge now reads Google Calendar pressure into the week view, but keeps the routine model in charge of what the week should be."
+        action={
+          <Chip
+            icon={<CalendarMonthRoundedIcon />}
+            label={`${calendar.connectionStatus} · ${calendar.syncState?.externalEventSyncStatus ?? 'idle'}`}
+            variant="outlined"
+            size="small"
+            color={calendar.constrainedDayCount > 0 ? 'warning' : 'default'}
+          />
+        }
       >
-        <Typography variant="body2" color="text.secondary">
-          When calendar scaffolding becomes real, this area should show whether outside commitments are mirrored into the operational week without letting external events rewrite the routine itself.
-        </Typography>
+        <Stack spacing={0.75}>
+          <Typography variant="body2" color="text.secondary">
+            Constrained days this week: {calendar.constrainedDayCount}. Last external sync: {calendar.syncState?.lastExternalSyncAt ?? 'Not yet synced'}.
+          </Typography>
+          <Typography variant="body2" color="text.secondary">
+            The week view now treats outside events as pressure and collision context, not as a routine editor.
+          </Typography>
+        </Stack>
       </SurfaceCard>
       {globalSignals.length > 0 ? (
         <SurfaceCard
@@ -97,6 +110,11 @@ export function SchedulePage() {
                   <Typography variant="body2" color="primary.light">
                     Active day type: {dayTypeLabels[day.dayType]}
                   </Typography>
+                  {day.calendarSummary && day.calendarSummary.severity !== 'none' ? (
+                    <Typography variant="body2" color="warning.light">
+                      Calendar pressure: {day.calendarSummary.overlappingEventCount} external event{day.calendarSummary.overlappingEventCount === 1 ? '' : 's'} overlap timed blocks.
+                    </Typography>
+                  ) : null}
                 </Stack>
 
                 <Stack spacing={1}>
