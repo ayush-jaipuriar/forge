@@ -228,12 +228,30 @@ Start Phase 4 with an explicit launch baseline rather than assuming the end of P
 
 ### Testing and Documentation
 
-- [ ] Create a Phase 4 baseline audit section in the architecture docs.
-- [ ] Document native-shell rationale and phased boundaries.
+- [x] Create a Phase 4 baseline audit section in the architecture docs.
+- [x] Document native-shell rationale and phased boundaries.
+
+### Implementation Notes
+
+- Added [docs/phase-4-launch-baseline-audit.md](/Users/ayushjaipuriar/Documents/GitHub/forge/docs/phase-4-launch-baseline-audit.md)
+  as the Milestone 0 baseline artifact. It records:
+  - what Forge can honestly ship today
+  - what is still not launch-ready
+  - current production posture across Hosting, Functions, Storage, Auth, Firestore rules, and App Check
+  - the browser/PWA/Functions/shared-domain ownership map
+  - the native-shell decision record for Capacitor
+  - the Phase 4 validation matrix
+- Updated [docs/architecture-overview.md](/Users/ayushjaipuriar/Documents/GitHub/forge/docs/architecture-overview.md)
+  to include the new Phase 4 baseline assumptions and why the current client/PWA/Functions ownership split is good enough to launch from, but not yet strong enough to stop there.
+- Linked the baseline from [README.md](/Users/ayushjaipuriar/Documents/GitHub/forge/README.md) and
+  updated [docs/future-extension-notes.md](/Users/ayushjaipuriar/Documents/GitHub/forge/docs/future-extension-notes.md)
+  so the repo’s roadmap stays consistent.
+- Phase 4 now begins from an explicit launch posture instead of from inferred memory carried forward from Phase 3.
 
 ### Exit Criteria
 
 - the team knows exactly what is launch-ready, what is scaffolded, and what Phase 4 must change before launch
+- ✅ achieved: launch posture, native-shell direction, and platform ownership map are now documented explicitly
 
 ## Milestone 1: Production Configuration and Secrets Hardening
 
@@ -487,7 +505,7 @@ Prepare a credible launch candidate after the shell and platform shifts are in p
 
 ## Phase 4 Progress Tracker
 
-- [ ] Milestone 0 complete
+- [x] Milestone 0 complete
 - [ ] Milestone 1 complete
 - [ ] Milestone 2 complete
 - [ ] Milestone 3 complete

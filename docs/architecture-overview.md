@@ -333,6 +333,15 @@ This document captures the Phase 1 architectural baseline that implementation sh
 - the operations docs for notifications, backup/restore, Calendar, deployment, and future extension boundaries now all include explicit “release-ready limits” sections; this is a product honesty win because the shipped system now states not just what works, but also what it does not claim to do yet
 - [README.md](/Users/ayushjaipuriar/Documents/GitHub/forge/README.md) now links the Phase 3 release checklist and records the most important accepted limits directly in the repo entry point: browser-only notification delivery, no finished remote-backup picker, no long-lived server-managed Calendar OAuth, and health integration remaining scaffold-only
 
+## Phase 4 Milestone 0 Launch Baseline and Ownership Audit
+
+- Phase 4 now starts from an explicit baseline in [docs/phase-4-launch-baseline-audit.md](/Users/ayushjaipuriar/Documents/GitHub/forge/docs/phase-4-launch-baseline-audit.md) rather than assuming the end of Phase 3 already explains what is launch-ready; this matters because launch work, native-shell work, and platform extraction each need a different kind of truth
+- the baseline audit records current production posture across Hosting, Functions, Storage, Auth, Firestore rules, and App Check, which gives Phase 4 a stable “what exists today” reference before any hardening or extraction changes begin
+- the most important Milestone 0 output is the ownership map: browser code still correctly owns local-first interaction, PWA runtime still correctly owns shell install/offline behavior, and Firebase Functions correctly own scheduled orchestration; this shared understanding is what will let later extraction happen selectively instead of turning into abstract backend churn
+- Phase 4 now has an explicit native-shell decision record: Capacitor is the recommended first shell because it preserves the existing React + Vite product, unlocks native packaging and future bridge capabilities, and avoids a premature React Native rewrite
+- the repo now also carries a formal Phase 4 validation matrix for browser desktop, browser mobile, installed PWA, Android native shell, and Functions/server workflows; that matrix is the starting point for launch hardening, not a future afterthought
+- the freeze boundary is now written down too: Phases 1 through 3 are treated as feature-frozen except for bugs, hardening, and integration-safe fixes, which protects Phase 4 from feature creep
+
 
 ## Layer Boundaries
 
