@@ -19,6 +19,7 @@ import {
   buildBackupSnapshotRecord,
   buildNotesMarkdown,
 } from '@/services/backup/backupSerialization'
+import { reportMonitoringError, reportMonitoringEvent } from '@/services/monitoring/monitoringService'
 
 export type ManualBackupResult = {
   backupRecord: BackupSnapshotRecord
@@ -30,44 +31,69 @@ export type ManualBackupResult = {
 }
 
 export async function createManualBackup(user: SessionUser | null): Promise<ManualBackupResult> {
-  const exportedAt = new Date().toISOString()
-  const payload = await buildExportPayload({
-    user,
-    exportedAt,
-    trigger: 'manual',
-  })
-  const jsonText = JSON.stringify(payload, null, 2)
-  const notesMarkdown = buildNotesMarkdown(payload)
-  const backupRecord = buildBackupSnapshotRecord({
-    payload,
-    exportedAt,
-    trigger: 'manual',
-    jsonText,
-  })
+  try {
+    const exportedAt = new Date().toISOString()
+    const payload = await buildExportPayload({
+      user,
+      exportedAt,
+      trigger: 'manual',
+    })
+    const jsonText = JSON.stringify(payload, null, 2)
+    const notesMarkdown = buildNotesMarkdown(payload)
+    const backupRecord = buildBackupSnapshotRecord({
+      payload,
+      exportedAt,
+      trigger: 'manual',
+      jsonText,
+    })
 
-  await Promise.all([
-    localExportPayloadRepository.save(payload),
-    localBackupRepository.upsert(backupRecord),
-    localBackupOperationsRepository.upsert(
-      buildBackupOperationsSnapshot({
-        recentBackups: [backupRecord, ...(await localBackupRepository.listRecent(20))],
-        retentionPolicy: (await localBackupOperationsRepository.getDefault())?.retentionPolicy ?? {
-          keepDaily: 7,
-          keepWeekly: 8,
-          keepManual: 20,
-        },
-        updatedAt: exportedAt,
-      }),
-    ),
-  ])
+    await Promise.all([
+      localExportPayloadRepository.save(payload),
+      localBackupRepository.upsert(backupRecord),
+      localBackupOperationsRepository.upsert(
+        buildBackupOperationsSnapshot({
+          recentBackups: [backupRecord, ...(await localBackupRepository.listRecent(20))],
+          retentionPolicy: (await localBackupOperationsRepository.getDefault())?.retentionPolicy ?? {
+            keepDaily: 7,
+            keepWeekly: 8,
+            keepManual: 20,
+          },
+          updatedAt: exportedAt,
+        }),
+      ),
+    ])
 
-  return {
-    backupRecord,
-    payload,
-    jsonText,
-    notesMarkdown,
-    suggestedJsonFilename: `forge-backup-${payload.userId}-${payload.exportedAt.slice(0, 10)}.json`,
-    suggestedNotesFilename: `forge-notes-${payload.userId}-${payload.exportedAt.slice(0, 10)}.md`,
+    reportMonitoringEvent({
+      level: 'info',
+      domain: 'backup',
+      action: 'manual-backup-created',
+      message: 'Forge created a manual backup export from the current local state.',
+      metadata: {
+        userId: payload.userId,
+        backupId: backupRecord.id,
+        recordCount: backupRecord.sourceRecordCount,
+      },
+    })
+
+    return {
+      backupRecord,
+      payload,
+      jsonText,
+      notesMarkdown,
+      suggestedJsonFilename: `forge-backup-${payload.userId}-${payload.exportedAt.slice(0, 10)}.json`,
+      suggestedNotesFilename: `forge-notes-${payload.userId}-${payload.exportedAt.slice(0, 10)}.md`,
+    }
+  } catch (error) {
+    reportMonitoringError({
+      domain: 'backup',
+      action: 'manual-backup-failed',
+      message: 'Forge could not create a manual backup export from local state.',
+      error,
+      metadata: {
+        userId: user?.uid ?? null,
+      },
+    })
+    throw error
   }
 }
 

@@ -342,6 +342,24 @@ This document captures the Phase 1 architectural baseline that implementation sh
 - the repo now also carries a formal Phase 4 validation matrix for browser desktop, browser mobile, installed PWA, Android native shell, and Functions/server workflows; that matrix is the starting point for launch hardening, not a future afterthought
 - the freeze boundary is now written down too: Phases 1 through 3 are treated as feature-frozen except for bugs, hardening, and integration-safe fixes, which protects Phase 4 from feature creep
 
+## Phase 4 Milestone 1 Production Configuration and Secrets Hardening
+
+- Phase 4 now has a dedicated operator checklist in [docs/phase-4-configuration-safety-checklist.md](/Users/ayushjaipuriar/Documents/GitHub/forge/docs/phase-4-configuration-safety-checklist.md), which separates browser build config, Functions runtime config, Hosting/Storage config, OAuth/origin boundaries, and future native-shell config into distinct classes instead of treating “Firebase setup” as one vague surface
+- root verification now includes Functions workspace commands in [package.json](/Users/ayushjaipuriar/Documents/GitHub/forge/package.json) through `functions:lint`, `functions:typecheck`, and `functions:verify`; this matters because launch hardening should not depend on remembering a second set of commands by hand
+- [functions/.env.example](/Users/ayushjaipuriar/Documents/GitHub/forge/functions/.env.example) now exists as a placeholder-only reminder that deployed Functions should prefer Firebase-managed runtime configuration and that `FIREBASE_CONFIG` should not be copied into local committed files
+- [docs/firebase-setup.md](/Users/ayushjaipuriar/Documents/GitHub/forge/docs/firebase-setup.md) now explicitly distinguishes browser build configuration, Functions runtime configuration, and future native-shell configuration boundaries; this is important because the next native-shell phase must not inherit browser popup assumptions accidentally
+- [docs/deployment-guide.md](/Users/ayushjaipuriar/Documents/GitHub/forge/docs/deployment-guide.md) now uses `npm run functions:verify` in the deploy flow and documents the current auth/origin boundary more explicitly: browser and PWA popup assumptions are real today, native-shell callback assumptions are not yet implemented
+- the main product honesty gain from Milestone 1 is that Forge now states where configuration belongs before the native shell exists, which reduces the risk of leaking guessed mobile or server settings into the current web env model
+
+## Phase 4 Milestone 2 Observability, Monitoring, and Operational Diagnostics
+
+- Forge now has a dedicated operator-facing diagnostics summary in [src/services/monitoring/operationalDiagnosticsService.ts](/Users/ayushjaipuriar/Documents/GitHub/forge/src/services/monitoring/operationalDiagnosticsService.ts) and [src/features/settings/pages/SettingsPage.tsx](/Users/ayushjaipuriar/Documents/GitHub/forge/src/features/settings/pages/SettingsPage.tsx); this matters because launch support now has one place to answer “what is broken right now?” without scanning five unrelated settings cards
+- the diagnostics summary intentionally compresses the five highest-value launch surfaces: sync replay, scheduled backup protection, notification delivery posture, Calendar integration health, and recent restore operations
+- severity is now normalized across those surfaces into `healthy`, `warning`, and `critical`, while ownership hints explicitly point the operator toward the browser queue, Firebase Functions + Storage, browser notification permission, Google Calendar OAuth/API, or local restore workflow as the first troubleshooting boundary
+- missing monitoring coverage for manual backup and local restore paths has now been closed in [src/services/backup/backupService.ts](/Users/ayushjaipuriar/Documents/GitHub/forge/src/services/backup/backupService.ts) and [src/services/backup/restoreService.ts](/Users/ayushjaipuriar/Documents/GitHub/forge/src/services/backup/restoreService.ts), so those high-risk recovery paths now emit success, partial, and failure signals through the same monitoring seam used by sync, App Check, and scheduled integration flows
+- [docs/phase-4-operational-diagnostics.md](/Users/ayushjaipuriar/Documents/GitHub/forge/docs/phase-4-operational-diagnostics.md) now records the observability model, severity meanings, ownership expectations, and blind spots, which is important because Functions logs, OS-level notification display, and some provider-side quota details still cannot be fully surfaced in-app
+- the product honesty boundary remains deliberate: the new diagnostics surface is a launch-support summary, not a live event console, because deeper forensic inspection still belongs in Firebase Console, browser devtools, and deployment tooling rather than inside the product UI
+
 
 ## Layer Boundaries
 

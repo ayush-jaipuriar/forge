@@ -267,21 +267,42 @@ Make production configuration explicit, safe, and deployable without relying on 
 
 ### Checklist
 
-- [ ] Audit all Firebase, Functions, Storage, and Google integration configuration inputs.
-- [ ] Separate local-only, deploy-time, and runtime-managed configuration expectations clearly.
-- [ ] Tighten environment and secret handling docs for web, Functions, and future native shell builds.
-- [ ] Confirm `.gitignore` and pre-commit guidance still cover all new Phase 3 and upcoming Phase 4 artifacts.
-- [ ] Add placeholder-only examples for any new platform configs.
-- [ ] Review OAuth callback/origin requirements for browser, PWA, and native shell directions.
+- [x] Audit all Firebase, Functions, Storage, and Google integration configuration inputs.
+- [x] Separate local-only, deploy-time, and runtime-managed configuration expectations clearly.
+- [x] Tighten environment and secret handling docs for web, Functions, and future native shell builds.
+- [x] Confirm `.gitignore` and pre-commit guidance still cover all new Phase 3 and upcoming Phase 4 artifacts.
+- [x] Add placeholder-only examples for any new platform configs.
+- [x] Review OAuth callback/origin requirements for browser, PWA, and native shell directions.
 
 ### Testing and Documentation
 
-- [ ] Update deployment and Firebase setup docs with production-safe configuration expectations.
-- [ ] Add a Phase 4 configuration safety checklist.
+- [x] Update deployment and Firebase setup docs with production-safe configuration expectations.
+- [x] Add a Phase 4 configuration safety checklist.
+
+### Implementation Notes
+
+- Added root-level Functions verification scripts in [package.json](/Users/ayushjaipuriar/Documents/GitHub/forge/package.json):
+  `functions:lint`, `functions:typecheck`, and `functions:verify`. This makes the launch verification path repeatable from
+  the repo root instead of depending on manual workspace navigation.
+- Added [functions/.env.example](/Users/ayushjaipuriar/Documents/GitHub/forge/functions/.env.example) as a placeholder-only
+  reminder that deployed Functions should prefer Firebase-managed runtime configuration and that injected values like
+  `FIREBASE_CONFIG` should not be mirrored into committed local files.
+- Added [docs/phase-4-configuration-safety-checklist.md](/Users/ayushjaipuriar/Documents/GitHub/forge/docs/phase-4-configuration-safety-checklist.md)
+  to separate browser build config, Functions runtime config, Hosting/Storage config, OAuth origin boundaries, and future
+  native-shell config into one operator-facing checklist.
+- Updated [docs/firebase-setup.md](/Users/ayushjaipuriar/Documents/GitHub/forge/docs/firebase-setup.md) with an explicit
+  Phase 4 configuration boundary section so browser env, Functions runtime config, and future native-shell config are no
+  longer described as one blurred setup surface.
+- Updated [docs/deployment-guide.md](/Users/ayushjaipuriar/Documents/GitHub/forge/docs/deployment-guide.md) to use
+  `npm run functions:verify` in the deploy flow and to record the current browser/PWA/native-shell auth boundary more
+  explicitly.
+- Updated [README.md](/Users/ayushjaipuriar/Documents/GitHub/forge/README.md) so the new checklist and Functions
+  verification command are visible from the repo entry point.
 
 ### Exit Criteria
 
 - production configuration can be reasoned about without guessing and without risking secret leakage
+- ✅ achieved: configuration layers, secret-handling posture, and verification commands are now explicit and repeatable
 
 ## Milestone 2: Observability, Monitoring, and Operational Diagnostics
 
@@ -297,11 +318,11 @@ Strengthen runtime supportability so launch issues can be seen and triaged quick
 
 ### Checklist
 
-- [ ] Audit current monitoring coverage for sync, notifications, backups, restore, Calendar, and Functions.
-- [ ] Add missing monitoring events for the highest-risk Phase 3 runtime paths.
-- [ ] Create an operator-facing diagnostics summary surface or document where each critical failure can be observed.
-- [ ] Improve any silent or ambiguous failure copy that still reads as a successful state.
-- [ ] Define severity and ownership expectations for common operational failures:
+- [x] Audit current monitoring coverage for sync, notifications, backups, restore, Calendar, and Functions.
+- [x] Add missing monitoring events for the highest-risk Phase 3 runtime paths.
+- [x] Create an operator-facing diagnostics summary surface or document where each critical failure can be observed.
+- [x] Improve any silent or ambiguous failure copy that still reads as a successful state.
+- [x] Define severity and ownership expectations for common operational failures:
   - scheduled notification failure
   - scheduled backup failure
   - backup retention cleanup failure
@@ -310,12 +331,21 @@ Strengthen runtime supportability so launch issues can be seen and triaged quick
 
 ### Testing and Documentation
 
-- [ ] Add tests for any new diagnostic or monitoring state transitions.
-- [ ] Document the observability model and known blind spots.
+- [x] Add tests for any new diagnostic or monitoring state transitions.
+- [x] Document the observability model and known blind spots.
 
 ### Exit Criteria
 
 - the most important launch failures are visible and interpretable without ad hoc debugging
+- ✅ achieved: Forge now aggregates launch-critical subsystem health in Settings, emits monitoring events for manual backup and local restore paths, and documents its observability blind spots explicitly
+
+### Implementation Notes
+
+- Added [src/services/monitoring/operationalDiagnosticsService.ts](/Users/ayushjaipuriar/Documents/GitHub/forge/src/services/monitoring/operationalDiagnosticsService.ts) to compress sync, backup, notification, Calendar, and restore posture into one operator-facing workspace.
+- Wired the diagnostics workspace into [src/services/settings/settingsWorkspaceService.ts](/Users/ayushjaipuriar/Documents/GitHub/forge/src/services/settings/settingsWorkspaceService.ts) and surfaced it in [src/features/settings/pages/SettingsPage.tsx](/Users/ayushjaipuriar/Documents/GitHub/forge/src/features/settings/pages/SettingsPage.tsx) as a dedicated launch-support card with severity, ownership, timestamps, and blind-spot notes.
+- Added missing monitoring coverage for manual backup and local restore paths in [src/services/backup/backupService.ts](/Users/ayushjaipuriar/Documents/GitHub/forge/src/services/backup/backupService.ts) and [src/services/backup/restoreService.ts](/Users/ayushjaipuriar/Documents/GitHub/forge/src/services/backup/restoreService.ts).
+- Added focused verification in [src/tests/services/operational-diagnostics.spec.ts](/Users/ayushjaipuriar/Documents/GitHub/forge/src/tests/services/operational-diagnostics.spec.ts), [src/tests/services/backup-export.spec.ts](/Users/ayushjaipuriar/Documents/GitHub/forge/src/tests/services/backup-export.spec.ts), and [src/tests/services/restore-service.spec.ts](/Users/ayushjaipuriar/Documents/GitHub/forge/src/tests/services/restore-service.spec.ts).
+- Documented the new observability model and blind spots in [docs/phase-4-operational-diagnostics.md](/Users/ayushjaipuriar/Documents/GitHub/forge/docs/phase-4-operational-diagnostics.md).
 
 ## Milestone 3: Release Operations and Launch QA
 
@@ -506,8 +536,8 @@ Prepare a credible launch candidate after the shell and platform shifts are in p
 ## Phase 4 Progress Tracker
 
 - [x] Milestone 0 complete
-- [ ] Milestone 1 complete
-- [ ] Milestone 2 complete
+- [x] Milestone 1 complete
+- [x] Milestone 2 complete
 - [ ] Milestone 3 complete
 - [ ] Milestone 4 complete
 - [ ] Milestone 5 complete

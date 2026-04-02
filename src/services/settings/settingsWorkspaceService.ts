@@ -1,16 +1,18 @@
-import { localRestoreJobRepository, localSettingsRepository } from '@/data/local'
+import { localRestoreJobRepository, localSettingsRepository, localSyncDiagnosticsRepository } from '@/data/local'
 import { isServerRestoreEligible } from '@/services/backup/backupPayloadStorage'
 import { getBackupOperationsWorkspace } from '@/services/backup/backupOperationsService'
 import { googleCalendarIntegrationService } from '@/services/calendar/calendarIntegrationService'
 import { healthIntegrationService } from '@/services/health/healthIntegrationService'
+import { buildOperationalDiagnosticsWorkspace } from '@/services/monitoring/operationalDiagnosticsService'
 import { getNotificationStateWorkspace } from '@/services/notifications/notificationStateService'
 
 export async function getSettingsWorkspace(userId?: string | null) {
-  const [settings, notificationWorkspace, backupWorkspace, recentRestoreJobs] = await Promise.all([
+  const [settings, notificationWorkspace, backupWorkspace, recentRestoreJobs, syncDiagnostics] = await Promise.all([
     localSettingsRepository.getDefault(),
     getNotificationStateWorkspace(),
     getBackupOperationsWorkspace(userId),
     localRestoreJobRepository.listRecent(3),
+    localSyncDiagnosticsRepository.getDefault(),
   ])
   const calendarWorkspace = await googleCalendarIntegrationService.getSettingsWorkspace(settings?.calendarIntegration)
   const mirroredBlockPreview = googleCalendarIntegrationService.getMirroredBlockPreview({
@@ -24,9 +26,19 @@ export async function getSettingsWorkspace(userId?: string | null) {
   // an honest workspace from the persisted local snapshot with a default fallback,
   // not live provider data.
   const healthWorkspace = await healthIntegrationService.getSettingsWorkspace()
+  const operationalDiagnostics = buildOperationalDiagnosticsWorkspace({
+    syncDiagnostics,
+    backupOperations: backupWorkspace.operations,
+    notificationState: notificationWorkspace.state,
+    recentNotificationLogs: notificationWorkspace.recentLogs,
+    calendarConnection: calendarWorkspace.connection,
+    calendarSyncState: calendarWorkspace.syncState,
+    recentRestoreJobs,
+  })
 
   return {
     settings,
+    syncDiagnostics,
     calendarConnection: calendarWorkspace.connection,
     calendarSyncState: calendarWorkspace.syncState,
     notificationState: notificationWorkspace.state,
@@ -61,5 +73,6 @@ export async function getSettingsWorkspace(userId?: string | null) {
     calendarMirroredBlockCount: calendarWorkspace.mirroredBlockCount,
     calendarMirrorErrorCount: calendarWorkspace.mirrorErrorCount,
     healthIntegration: healthWorkspace,
+    operationalDiagnostics,
   }
 }

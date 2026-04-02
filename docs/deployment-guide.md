@@ -27,6 +27,7 @@ This gives the closest local equivalent of the deployed Hosting shell, including
 ```bash
 npm run build
 npm run functions:install
+npm run functions:verify
 firebase deploy --only hosting,firestore:rules,firestore:indexes,functions
 ```
 
@@ -74,3 +75,13 @@ Current Hosting expectations:
 - scheduled backup payloads are now expected to live in Cloud Storage with Firestore metadata as the operational index
 - Google Calendar integration currently depends on user-interactive browser OAuth and supports the primary calendar plus explicit major-block mirroring only
 - health integration remains scaffold-only in this phase and should not be represented as a live provider ingestion system during deployment or QA signoff
+
+## Phase 4 Configuration Notes
+
+- web build configuration and Functions runtime configuration should be treated as separate layers
+- `npm run functions:verify` is now the preferred root-level pre-deploy check for the Functions workspace
+- browser popup auth assumptions currently apply to:
+  - `localhost`
+  - `127.0.0.1`
+  - the deployed web origin
+- future native-shell callback and permission behavior should be configured as native-shell-specific work, not mixed into the current web `.env`

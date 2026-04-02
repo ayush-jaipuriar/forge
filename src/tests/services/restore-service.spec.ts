@@ -1,4 +1,4 @@
-import { beforeEach, describe, expect, it } from 'vitest'
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import {
   localDayInstanceRepository,
   localNotificationStateRepository,
@@ -12,6 +12,7 @@ import { createDefaultNotificationStateSnapshot } from '@/domain/notifications/t
 import { generateDayInstance } from '@/domain/routine/generateDayInstance'
 import { createDefaultUserSettings } from '@/domain/settings/types'
 import { createManualBackup } from '@/services/backup/backupService'
+import * as monitoringService from '@/services/monitoring/monitoringService'
 import { applyRestoreStage, parseRestorePayloadText } from '@/services/backup/restoreService'
 import { createSyncQueueItem } from '@/services/sync/syncQueue'
 
@@ -20,7 +21,12 @@ describe('restore service', () => {
     await resetForgeDb()
   })
 
+  afterEach(() => {
+    vi.restoreAllMocks()
+  })
+
   it('stages and applies a restore payload while reporting partial compatibility honestly', async () => {
+    const monitoringSpy = vi.spyOn(monitoringService, 'reportMonitoringEvent')
     const settings = createDefaultUserSettings()
     settings.notificationsEnabled = false
 
@@ -64,9 +70,37 @@ describe('restore service', () => {
     expect(restoredNotificationState?.permission).toBe('granted')
     expect(restoreJobs[0]?.id).toBe(job.id)
     expect(queueItems).toHaveLength(0)
+    expect(monitoringSpy).toHaveBeenCalledWith(
+      expect.objectContaining({
+        domain: 'backup',
+        action: 'local-restore-applied',
+      }),
+    )
   })
 
   it('rejects invalid restore payloads before applying them', async () => {
     await expect(parseRestorePayloadText('{"schemaVersion":999}')).rejects.toThrow('Unsupported backup schema version')
+  })
+
+  it('reports monitoring when applying a restore fails', async () => {
+    const monitoringSpy = vi.spyOn(monitoringService, 'reportMonitoringError')
+    const backup = await createManualBackup({
+      uid: 'user-1',
+      email: 'forge@example.com',
+      displayName: 'Forge User',
+      photoURL: null,
+    })
+    const stage = await parseRestorePayloadText(backup.jsonText)
+
+    vi.spyOn(localSettingsRepository, 'upsert').mockRejectedValueOnce(new Error('settings write failed'))
+
+    await expect(applyRestoreStage(stage)).rejects.toThrow('settings write failed')
+
+    expect(monitoringSpy).toHaveBeenCalledWith(
+      expect.objectContaining({
+        domain: 'backup',
+        action: 'local-restore-failed',
+      }),
+    )
   })
 })

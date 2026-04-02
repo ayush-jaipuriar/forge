@@ -13,7 +13,10 @@
     "coverage": "vitest run --coverage",
     "preview": "vite preview",
     "functions:install": "npm --prefix functions install",
+    "functions:lint": "npm --prefix functions run lint",
+    "functions:typecheck": "npm --prefix functions run typecheck",
     "functions:build": "npm --prefix functions run build",
+    "functions:verify": "npm run functions:lint && npm run functions:typecheck && npm run functions:build",
     "functions:serve": "npm --prefix functions run serve"
   },
   "dependencies": {

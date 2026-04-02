@@ -14,10 +14,18 @@ import type { DayInstance } from '@/domain/routine/types'
 import { createDefaultUserSettings } from '@/domain/settings/types'
 import { googleCalendarIntegrationService } from '@/services/calendar/calendarIntegrationService'
 
+function getActiveMirrorDate() {
+  const date = new Date()
+  date.setDate(date.getDate() + 1)
+  return date.toISOString().slice(0, 10)
+}
+
 function createDayInstance(overrides: Partial<DayInstance> = {}): DayInstance {
+  const activeDate = overrides.date ?? getActiveMirrorDate()
+
   return {
-    id: 'day:2026-03-30',
-    date: '2026-03-30',
+    id: `day:${activeDate}`,
+    date: activeDate,
     weekday: 'monday',
     dayType: 'wfhHighOutput',
     dayMode: 'normal',
@@ -37,7 +45,7 @@ function createDayInstance(overrides: Partial<DayInstance> = {}): DayInstance {
         focusAreas: ['systemDesign'],
         requiredOutput: true,
         optional: false,
-        date: '2026-03-30',
+        date: activeDate,
       },
     ],
     ...overrides,
@@ -68,7 +76,7 @@ describe('calendar mirror integration service', () => {
       provider: 'google',
       accessScope: googleCalendarClient.GOOGLE_CALENDAR_WRITE_SCOPE,
       accessToken: 'write-token',
-      grantedAt: '2026-03-30T03:00:00.000Z',
+      grantedAt: new Date().toISOString(),
     })
 
     const result = await googleCalendarIntegrationService.connectWriteAccess('user-1')

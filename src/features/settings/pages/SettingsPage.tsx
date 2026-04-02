@@ -24,7 +24,20 @@ import { useSettingsWorkspace } from '@/features/settings/hooks/useSettingsWorks
 import { useSyncCalendarMirrors } from '@/features/settings/hooks/useSyncCalendarMirrors'
 import { useUpdateNotificationPreference } from '@/features/settings/hooks/useUpdateNotificationPreference'
 import { formatCalendarTimestamp, getCalendarStatusTone } from '@/domain/calendar/presentation'
+import type { OperationalDiagnosticSeverity } from '@/services/monitoring/operationalDiagnosticsService'
 import { parseRestorePayloadText, type RestoreStage } from '@/services/backup/restoreService'
+
+function getOperationalTone(severity: OperationalDiagnosticSeverity) {
+  if (severity === 'critical') {
+    return 'error' as const
+  }
+
+  if (severity === 'warning') {
+    return 'warning' as const
+  }
+
+  return 'success' as const
+}
 
 export function SettingsPage() {
   const { status, user } = useAuthSession()
@@ -71,6 +84,7 @@ export function SettingsPage() {
     recentRestoreJobs,
     serverRestoreReadyCount,
     settings,
+    operationalDiagnostics,
   } = data
   const calendarTone = getCalendarStatusTone({
     connectionStatus: calendarConnection.connectionStatus,
@@ -120,6 +134,55 @@ export function SettingsPage() {
         description="This screen will become the operational home for auth, integration status, installability, and future extension flags."
       />
       <Grid container spacing={2}>
+        <Grid size={{ xs: 12 }}>
+          <SurfaceCard
+            eyebrow="Operational Diagnostics"
+            title="Launch support posture"
+            description="This summary compresses the highest-risk runtime surfaces into one operator view so launch issues can be triaged without cross-reading every integration card."
+            action={
+              <Chip
+                label={operationalDiagnostics.headline}
+                size="small"
+                variant="outlined"
+                color={getOperationalTone(operationalDiagnostics.overallSeverity)}
+              />
+            }
+          >
+            <Stack spacing={1.25}>
+              <Alert severity={getOperationalTone(operationalDiagnostics.overallSeverity)} variant="outlined">
+                {operationalDiagnostics.summary}
+              </Alert>
+              {operationalDiagnostics.items.map((item) => (
+                <Stack
+                  key={item.key}
+                  direction={{ xs: 'column', sm: 'row' }}
+                  spacing={1}
+                  alignItems={{ xs: 'flex-start', sm: 'center' }}
+                  justifyContent="space-between"
+                >
+                  <Stack spacing={0.25} sx={{ flex: 1 }}>
+                    <Typography variant="body2" color="text.primary">
+                      {item.label}
+                    </Typography>
+                    <Typography variant="body2" color="text.secondary">
+                      {item.summary}
+                    </Typography>
+                    <Typography variant="caption" color="text.secondary">
+                      Owner: {item.owner}
+                      {item.lastObservedAt ? ` · Last observed ${formatCalendarTimestamp(item.lastObservedAt, 'Not observed yet')}` : ''}
+                    </Typography>
+                  </Stack>
+                  <Chip label={item.statusLabel} size="small" variant="outlined" color={getOperationalTone(item.severity)} />
+                </Stack>
+              ))}
+              {operationalDiagnostics.blindSpots.map((blindSpot) => (
+                <Alert key={blindSpot} severity="info" variant="outlined">
+                  {blindSpot}
+                </Alert>
+              ))}
+            </Stack>
+          </SurfaceCard>
+        </Grid>
         <Grid size={{ xs: 12, md: 6 }}>
           <SurfaceCard
             eyebrow="Auth Boundary"

@@ -1,6 +1,7 @@
-import { beforeEach, describe, expect, it } from 'vitest'
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import {
   localDayInstanceRepository,
+  localExportPayloadRepository,
   localNotificationStateRepository,
   localSettingsRepository,
   localSyncDiagnosticsRepository,
@@ -12,13 +13,19 @@ import { generateDayInstance } from '@/domain/routine/generateDayInstance'
 import { createDefaultUserSettings } from '@/domain/settings/types'
 import { createDefaultSyncDiagnosticsSnapshot } from '@/domain/sync/types'
 import { createManualBackup } from '@/services/backup/backupService'
+import * as monitoringService from '@/services/monitoring/monitoringService'
 
 describe('backup service', () => {
   beforeEach(async () => {
     await resetForgeDb()
   })
 
+  afterEach(() => {
+    vi.restoreAllMocks()
+  })
+
   it('creates a versioned export payload and markdown note export from local state', async () => {
+    const monitoringSpy = vi.spyOn(monitoringService, 'reportMonitoringEvent')
     const settings = createDefaultUserSettings()
     settings.dailySignals['2026-03-28'] = {
       sleepStatus: 'met',
@@ -56,5 +63,33 @@ describe('backup service', () => {
     expect(result.backupRecord.byteSize).toBeGreaterThan(0)
     expect(result.notesMarkdown).toContain('Recovered the first 45 minutes after commute delay.')
     expect(result.suggestedJsonFilename).toContain('forge-backup-user-1')
+    expect(monitoringSpy).toHaveBeenCalledWith(
+      expect.objectContaining({
+        level: 'info',
+        domain: 'backup',
+        action: 'manual-backup-created',
+      }),
+    )
+  })
+
+  it('reports monitoring when manual backup creation fails', async () => {
+    const monitoringSpy = vi.spyOn(monitoringService, 'reportMonitoringError')
+    vi.spyOn(localExportPayloadRepository, 'save').mockRejectedValueOnce(new Error('disk full'))
+
+    await expect(
+      createManualBackup({
+        uid: 'user-1',
+        email: 'forge@example.com',
+        displayName: 'Forge User',
+        photoURL: null,
+      }),
+    ).rejects.toThrow('disk full')
+
+    expect(monitoringSpy).toHaveBeenCalledWith(
+      expect.objectContaining({
+        domain: 'backup',
+        action: 'manual-backup-failed',
+      }),
+    )
   })
 })

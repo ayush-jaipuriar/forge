@@ -39,6 +39,7 @@ Useful scripts:
 - `npm run typecheck`
 - `npm run build`
 - `npm run preview`
+- `npm run functions:verify`
 
 For a production-like PWA check:
 
@@ -54,6 +55,8 @@ npm run preview -- --host 127.0.0.1 --port 4173
 - [Phase 3 Spec & Implementation Plan](/Users/ayushjaipuriar/Documents/GitHub/forge/docs/phase-3-spec-implementation-plan.md)
 - [Phase 4 Spec & Implementation Plan](/Users/ayushjaipuriar/Documents/GitHub/forge/docs/phase-4-spec-implementation-plan.md)
 - [Phase 4 Launch Baseline Audit](/Users/ayushjaipuriar/Documents/GitHub/forge/docs/phase-4-launch-baseline-audit.md)
+- [Phase 4 Configuration Safety Checklist](/Users/ayushjaipuriar/Documents/GitHub/forge/docs/phase-4-configuration-safety-checklist.md)
+- [Phase 4 Operational Diagnostics](/Users/ayushjaipuriar/Documents/GitHub/forge/docs/phase-4-operational-diagnostics.md)
 - [Architecture Overview](/Users/ayushjaipuriar/Documents/GitHub/forge/docs/architecture-overview.md)
 - [Command Center Visualization System](/Users/ayushjaipuriar/Documents/GitHub/forge/docs/command-center-visualization-system.md)
 - [Command Center Metric Definitions](/Users/ayushjaipuriar/Documents/GitHub/forge/docs/command-center-metric-definitions.md)

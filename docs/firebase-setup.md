@@ -19,6 +19,63 @@ Optional Phase 2 hardening variable:
 
 - `VITE_FIREBASE_APPCHECK_SITE_KEY`
 
+## Phase 4 Configuration Boundary
+
+Phase 4 makes one important distinction explicit:
+
+- browser build configuration
+- deployed Firebase runtime configuration
+- Functions runtime configuration
+- future native-shell configuration
+
+are not the same thing and should not be mixed casually.
+
+### Browser Build Configuration
+
+These values belong in local `.env` for web development and in the deployed web environment for the browser build:
+
+- `VITE_FIREBASE_API_KEY`
+- `VITE_FIREBASE_AUTH_DOMAIN`
+- `VITE_FIREBASE_PROJECT_ID`
+- `VITE_FIREBASE_STORAGE_BUCKET`
+- `VITE_FIREBASE_MESSAGING_SENDER_ID`
+- `VITE_FIREBASE_APP_ID`
+- optional `VITE_FIREBASE_APPCHECK_SITE_KEY`
+
+Why this matters:
+
+- these are the values the browser bundle actually reads
+- they are not a substitute for Functions runtime configuration
+
+### Functions Runtime Configuration
+
+Current Phase 4 rule:
+
+- deployed Functions should rely on Firebase-managed runtime configuration wherever possible
+- local committed files should not attempt to mirror injected runtime config like `FIREBASE_CONFIG`
+
+This repo now includes [functions/.env.example](/Users/ayushjaipuriar/Documents/GitHub/forge/functions/.env.example) only as a placeholder reminder for future emulator-local needs.
+
+Why this matters:
+
+- copying runtime-managed config into local files is an easy way to create secret drift and false confidence
+- Forge’s current scheduled backup pipeline already relies on runtime-managed Firebase config such as Storage bucket resolution
+
+### Native Shell Boundary
+
+Phase 4 has chosen Capacitor as the planned native shell direction, but the native shell is not implemented yet.
+
+That means:
+
+- do not add native-specific callback values or secrets to the web `.env`
+- do not assume browser popup auth configuration automatically covers native shell builds
+- native-shell-specific configuration should live in shell-specific files once that work begins
+
+Why this matters:
+
+- native shell work changes auth, callback, and permission assumptions
+- putting guessed native values into browser config early creates configuration debt before the shell even exists
+
 ## Phase 3 Storage Note
 
 Phase 3 scheduled backups now rely on Firebase Storage in addition to Firestore.
@@ -130,6 +187,11 @@ Recommended domain checks for local development:
 
 - confirm `localhost` is authorized
 - add `127.0.0.1` as an authorized domain if you plan to use `npm run preview -- --host 127.0.0.1 --port 4173`
+
+Current Phase 4 note:
+
+- these browser origins are the approved popup-auth assumptions today
+- native shell callback/origin handling is a later Phase 4 concern and should not be treated as already configured
 
 Why this matters:
 

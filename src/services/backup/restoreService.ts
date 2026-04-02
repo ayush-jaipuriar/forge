@@ -13,6 +13,7 @@ import {
   type RestoreJobRecord,
 } from '@/domain/backup/types'
 import { createDefaultUserSettings } from '@/domain/settings/types'
+import { reportMonitoringError, reportMonitoringEvent } from '@/services/monitoring/monitoringService'
 
 export type RestoreStage = {
   payload: ForgeExportPayload
@@ -41,88 +42,117 @@ export async function parseRestorePayloadText(text: string): Promise<RestoreStag
 
 export async function applyRestoreStage(stage: RestoreStage): Promise<RestoreJobRecord> {
   const startedAt = new Date().toISOString()
-  const appliedCounts = createEmptyRestoreCounts()
-  const warnings = [...stage.warnings]
-  const outstandingSyncItems = await localSyncQueueRepository.listOutstanding()
-  const baseSettings = stage.payload.settings ?? (stage.payload.integrations.calendar ? createDefaultUserSettings() : null)
-  const normalizedSettings = baseSettings
-    ? {
-        ...baseSettings,
-        calendarIntegration: stage.payload.integrations.calendar
-          ? {
-              provider: stage.payload.integrations.calendar.provider,
-              connectionStatus: stage.payload.integrations.calendar.connectionStatus,
-              featureGate: stage.payload.integrations.calendar.featureGate,
-              managedEventMode: stage.payload.integrations.calendar.managedEventMode,
-              selectedCalendarIds: stage.payload.integrations.calendar.selectedCalendarIds,
-              lastConnectionCheckAt: stage.payload.integrations.calendar.lastConnectionCheckAt,
-              lastSuccessfulSyncAt: stage.payload.integrations.calendar.lastSuccessfulSyncAt,
-            }
-          : baseSettings.calendarIntegration,
-      }
-    : null
 
-  if (normalizedSettings) {
-    await localSettingsRepository.upsert(normalizedSettings)
-    appliedCounts.settings = 1
-    appliedCounts.calendarState = stage.payload.integrations.calendar ? 1 : 0
-  } else {
-    warnings.push('Settings payload was empty, so Forge kept the current local settings baseline.')
+  try {
+    const appliedCounts = createEmptyRestoreCounts()
+    const warnings = [...stage.warnings]
+    const outstandingSyncItems = await localSyncQueueRepository.listOutstanding()
+    const baseSettings = stage.payload.settings ?? (stage.payload.integrations.calendar ? createDefaultUserSettings() : null)
+    const normalizedSettings = baseSettings
+      ? {
+          ...baseSettings,
+          calendarIntegration: stage.payload.integrations.calendar
+            ? {
+                provider: stage.payload.integrations.calendar.provider,
+                connectionStatus: stage.payload.integrations.calendar.connectionStatus,
+                featureGate: stage.payload.integrations.calendar.featureGate,
+                managedEventMode: stage.payload.integrations.calendar.managedEventMode,
+                selectedCalendarIds: stage.payload.integrations.calendar.selectedCalendarIds,
+                lastConnectionCheckAt: stage.payload.integrations.calendar.lastConnectionCheckAt,
+                lastSuccessfulSyncAt: stage.payload.integrations.calendar.lastSuccessfulSyncAt,
+              }
+            : baseSettings.calendarIntegration,
+        }
+      : null
+
+    if (normalizedSettings) {
+      await localSettingsRepository.upsert(normalizedSettings)
+      appliedCounts.settings = 1
+      appliedCounts.calendarState = stage.payload.integrations.calendar ? 1 : 0
+    } else {
+      warnings.push('Settings payload was empty, so Forge kept the current local settings baseline.')
+    }
+
+    if (stage.payload.dayInstances.length > 0) {
+      await localDayInstanceRepository.upsertMany(stage.payload.dayInstances)
+      appliedCounts.dayInstances = stage.payload.dayInstances.length
+    }
+
+    if (stage.payload.integrations.notificationState) {
+      await localNotificationStateRepository.upsert(stage.payload.integrations.notificationState)
+      appliedCounts.notificationState = 1
+    }
+
+    if (stage.payload.integrations.health) {
+      await localHealthIntegrationRepository.upsert(stage.payload.integrations.health)
+      appliedCounts.healthState = 1
+    }
+
+    if (stage.payload.user) {
+      warnings.push('Auth user records are managed by Firebase Auth and were not restored into local app state.')
+    }
+
+    if (stage.payload.analytics.snapshots.length > 0 || stage.payload.analytics.projection || stage.payload.analytics.streaks) {
+      warnings.push('Analytics snapshots, projections, streaks, and missions are derived state and will be regenerated rather than restored directly.')
+    }
+
+    if (stage.payload.integrations.syncDiagnostics) {
+      warnings.push('Sync diagnostics are operational telemetry and were intentionally not restored.')
+    }
+
+    if (outstandingSyncItems.length > 0) {
+      await localSyncQueueRepository.clearAll()
+      warnings.push(
+        `Cleared ${outstandingSyncItems.length} queued local sync item(s) so stale pre-restore writes cannot replay over the restored state.`,
+      )
+    }
+
+    const completedAt = new Date().toISOString()
+    const job: RestoreJobRecord = {
+      id: `restore-${stage.payload.id}-${completedAt.replaceAll(':', '-').replaceAll('.', '-')}`,
+      schemaVersion: stage.payload.schemaVersion,
+      status: warnings.length > 0 ? 'partial' : 'applied',
+      createdAt: startedAt,
+      startedAt,
+      completedAt,
+      summary:
+        warnings.length > 0
+          ? 'Restore applied with partial compatibility warnings.'
+          : 'Restore applied successfully.',
+      warnings,
+      appliedCounts,
+    }
+
+    await localRestoreJobRepository.upsert(job)
+    reportMonitoringEvent({
+      level: job.status === 'partial' ? 'warning' : 'info',
+      domain: 'backup',
+      action: 'local-restore-applied',
+      message:
+        job.status === 'partial'
+          ? 'Forge applied a local restore with compatibility warnings.'
+          : 'Forge applied a local restore successfully.',
+      metadata: {
+        backupId: stage.payload.id,
+        restoreJobId: job.id,
+        warningCount: job.warnings.length,
+      },
+    })
+
+    return job
+  } catch (error) {
+    reportMonitoringError({
+      domain: 'backup',
+      action: 'local-restore-failed',
+      message: 'Forge could not apply the staged local restore payload.',
+      error,
+      metadata: {
+        backupId: stage.payload.id,
+        schemaVersion: stage.payload.schemaVersion,
+      },
+    })
+    throw error
   }
-
-  if (stage.payload.dayInstances.length > 0) {
-    await localDayInstanceRepository.upsertMany(stage.payload.dayInstances)
-    appliedCounts.dayInstances = stage.payload.dayInstances.length
-  }
-
-  if (stage.payload.integrations.notificationState) {
-    await localNotificationStateRepository.upsert(stage.payload.integrations.notificationState)
-    appliedCounts.notificationState = 1
-  }
-
-  if (stage.payload.integrations.health) {
-    await localHealthIntegrationRepository.upsert(stage.payload.integrations.health)
-    appliedCounts.healthState = 1
-  }
-
-  if (stage.payload.user) {
-    warnings.push('Auth user records are managed by Firebase Auth and were not restored into local app state.')
-  }
-
-  if (stage.payload.analytics.snapshots.length > 0 || stage.payload.analytics.projection || stage.payload.analytics.streaks) {
-    warnings.push('Analytics snapshots, projections, streaks, and missions are derived state and will be regenerated rather than restored directly.')
-  }
-
-  if (stage.payload.integrations.syncDiagnostics) {
-    warnings.push('Sync diagnostics are operational telemetry and were intentionally not restored.')
-  }
-
-  if (outstandingSyncItems.length > 0) {
-    await localSyncQueueRepository.clearAll()
-    warnings.push(
-      `Cleared ${outstandingSyncItems.length} queued local sync item(s) so stale pre-restore writes cannot replay over the restored state.`,
-    )
-  }
-
-  const completedAt = new Date().toISOString()
-  const job: RestoreJobRecord = {
-    id: `restore-${stage.payload.id}-${completedAt.replaceAll(':', '-').replaceAll('.', '-')}`,
-    schemaVersion: stage.payload.schemaVersion,
-    status: warnings.length > 0 ? 'partial' : 'applied',
-    createdAt: startedAt,
-    startedAt,
-    completedAt,
-    summary:
-      warnings.length > 0
-        ? 'Restore applied with partial compatibility warnings.'
-        : 'Restore applied successfully.',
-    warnings,
-    appliedCounts,
-  }
-
-  await localRestoreJobRepository.upsert(job)
-
-  return job
 }
 
 export function validateRestorePayload(payload: unknown): ForgeExportPayload {
