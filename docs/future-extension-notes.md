@@ -48,6 +48,24 @@ What still remains beyond Phase 3:
 - full remote scheduled-backup picker and end-to-end server restore UX
 - live health-provider ingestion and sync
 - deeper sync-orchestration extraction beyond the current Firebase-plus-Functions posture
+
+## Phase 4 Direction
+
+Phase 4 is now the formal launch and platform phase.
+
+It covers:
+
+- production launch hardening
+- native mobile shell work
+- backend and platform extraction where ownership should move away from browser-only code
+
+The dedicated plan for this work now lives in [docs/phase-4-spec-implementation-plan.md](/Users/ayushjaipuriar/Documents/GitHub/forge/docs/phase-4-spec-implementation-plan.md).
+
+The recommended implementation posture is:
+
+- keep Phases 1 through 3 feature-frozen except for bugs and integration-safe fixes
+- use Capacitor as the first native shell strategy to preserve product reuse
+- keep Firebase plus Firebase Functions as the platform base while formalizing clearer platform-service ownership
 ## Backup Payload Storage Migration
 
 This is no longer just a future note. It is now part of the official Phase 3 milestone sequence before Calendar work continues.
