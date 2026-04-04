@@ -116,7 +116,7 @@ function getSupportNotes(runtime: PlatformRuntimeShell) {
     return [
       'Notifications still use browser-style permission and delivery from the bundled web runtime. Native push is not implemented.',
       'Backup export and restore import still rely on webview download and file-selection behavior rather than native share or document-picker flows.',
-      'Firebase auth and Google Calendar still depend on browser-oriented popup and callback assumptions.',
+      'Firebase auth and Google Calendar still depend on browser-oriented auth and callback assumptions.',
       'The shell exists, but health-provider bridges are still deferred and should not be described as connected.',
     ]
   }
@@ -140,7 +140,7 @@ function buildCapabilityDescriptors(runtime: PlatformRuntimeShell): PlatformCapa
         'auth',
         'Firebase Auth',
         'limited',
-        'Current shell behavior still relies on browser-style popup auth and does not yet claim native callback or deep-link completion as hardened.',
+        'Current shell behavior still relies on browser-style auth and does not yet claim native callback or deep-link completion as hardened.',
       ),
       capability(
         'notifications',
@@ -177,7 +177,7 @@ function buildCapabilityDescriptors(runtime: PlatformRuntimeShell): PlatformCapa
 
   if (runtime === 'installedPwa') {
     return [
-      capability('auth', 'Firebase Auth', 'supported', 'Browser popup auth remains the supported sign-in model inside the installed PWA.'),
+      capability('auth', 'Firebase Auth', 'supported', 'Installed PWA auth is supported through the browser-owned Google sign-in flow.'),
       capability(
         'notifications',
         'Notifications',
@@ -197,7 +197,7 @@ function buildCapabilityDescriptors(runtime: PlatformRuntimeShell): PlatformCapa
   }
 
   return [
-    capability('auth', 'Firebase Auth', 'supported', 'Browser popup auth is the primary supported sign-in path today.'),
+    capability('auth', 'Firebase Auth', 'supported', 'Browser auth is supported today, with redirect on hosted surfaces and popup fallback on localhost/dev.'),
     capability('notifications', 'Notifications', 'supported', 'Browser notifications are supported once permission is granted.'),
     capability('backupExport', 'Backup Export', 'supported', 'Backup export uses browser downloads.'),
     capability('restoreImport', 'Restore Import', 'supported', 'Restore import uses the browser file picker.'),

@@ -77,7 +77,7 @@ Current approved origins:
 
 Rules:
 
-- [ ] browser and PWA popup assumptions are documented as browser-origin-dependent
+- [ ] browser and PWA redirect assumptions are documented as browser-origin-dependent
 - [ ] native shell is not treated as auth-ready until its callback/origin model is explicitly implemented
 - [ ] Calendar OAuth is still documented as browser-interactive, not long-lived server-managed OAuth
 

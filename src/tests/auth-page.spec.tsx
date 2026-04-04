@@ -7,11 +7,12 @@ import type { AuthSessionValue } from '@/features/auth/types/auth'
 const authMock = vi.hoisted(() => ({
   value: {
     status: 'unauthenticated',
+    flowPhase: 'idle',
     user: null,
     errorMessage: null,
     signInWithGoogle: vi.fn(async () => {}),
     signOutUser: vi.fn(async () => {}),
-  } satisfies AuthSessionValue,
+  } as AuthSessionValue,
 }))
 
 vi.mock('@/features/auth/providers/AuthSessionProvider', () => ({
@@ -26,11 +27,12 @@ describe('AuthPage', () => {
   beforeEach(() => {
     authMock.value = {
       status: 'unauthenticated',
+      flowPhase: 'idle',
       user: null,
       errorMessage: null,
       signInWithGoogle: vi.fn(async () => {}),
       signOutUser: vi.fn(async () => {}),
-    }
+    } as AuthSessionValue
   })
 
   it('triggers Google sign-in from the real auth UI boundary', async () => {
@@ -41,5 +43,27 @@ describe('AuthPage', () => {
     await user.click(screen.getByRole('button', { name: /continue with google/i }))
 
     expect(authMock.value.signInWithGoogle).toHaveBeenCalledTimes(1)
+  })
+
+  it('keeps the sign-in button in a compact connecting state while auth is busy', () => {
+    authMock.value = {
+      ...authMock.value,
+      status: 'checking',
+      flowPhase: 'redirecting',
+    } as AuthSessionValue
+
+    const { rerender } = render(<AuthPage />)
+
+    expect(screen.getByRole('button', { name: /connecting/i })).toBeDisabled()
+
+    authMock.value = {
+      ...authMock.value,
+      status: 'checking',
+      flowPhase: 'returning',
+    } as AuthSessionValue
+
+    rerender(<AuthPage />)
+
+    expect(screen.getByRole('button', { name: /connecting/i })).toBeDisabled()
   })
 })

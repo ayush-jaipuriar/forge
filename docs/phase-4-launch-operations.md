@@ -47,7 +47,7 @@ Expected result:
 
 Operator notes:
 
-- if sign-in fails, check Firebase Auth authorized origins and browser popup blocking
+- if sign-in fails, check Firebase Auth authorized origins plus whether the current runtime should be using hosted redirect or localhost popup fallback
 - if sign-out looks partial, check whether local Calendar session state was cleared as expected
 
 ### 2. Today Execution
@@ -198,7 +198,7 @@ First checks:
 
 - Firebase Auth enabled
 - authorized origins correct
-- browser popup not blocked
+- browser redirect return lands back in Forge cleanly
 
 ### App Check or auth mismatch
 

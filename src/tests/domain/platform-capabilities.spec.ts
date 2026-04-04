@@ -105,6 +105,6 @@ describe('platform capability interpretation', () => {
 
     expect(workspace.supportNotes.length).toBeGreaterThanOrEqual(3)
     expect(workspace.supportNotes.join(' ')).toMatch(/native push/i)
-    expect(workspace.supportNotes.join(' ')).toMatch(/popup/i)
+    expect(workspace.supportNotes.join(' ')).toMatch(/auth/i)
   })
 })

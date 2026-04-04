@@ -104,10 +104,8 @@ Current Hosting expectations:
 
 - web build configuration and Functions runtime configuration should be treated as separate layers
 - `npm run functions:verify` is now the preferred root-level pre-deploy check for the Functions workspace
-- browser popup auth assumptions currently apply to:
-  - `localhost`
-  - `127.0.0.1`
-  - the deployed web origin
+- hosted browser redirect auth assumptions currently apply to the deployed web origin
+- localhost and `127.0.0.1` may still use popup fallback during local preview because Firebase redirect on non-hosted origins requires additional same-origin helper setup
 - future native-shell callback and permission behavior should be configured as native-shell-specific work, not mixed into the current web `.env`
 
 ## Native Shell Notes

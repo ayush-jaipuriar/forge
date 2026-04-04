@@ -1,16 +1,27 @@
 import type { PropsWithChildren } from 'react'
 import { useEffect, useMemo, useState } from 'react'
-import { browserLocalPersistence, onAuthStateChanged, setPersistence, signInWithPopup, signOut } from 'firebase/auth'
-import { getFirebaseAuth, getGoogleAuthProvider } from '@/lib/firebase/client'
+import {
+  browserLocalPersistence,
+  getRedirectResult,
+  onAuthStateChanged,
+  setPersistence,
+  signInWithPopup,
+  signInWithRedirect,
+  signOut,
+} from 'firebase/auth'
+import { getFirebaseAuth, getGoogleAuthProvider, getPrimaryGoogleAuthMethod } from '@/lib/firebase/client'
 import { hasFirebaseEnv, missingFirebaseEnvKeys } from '@/lib/firebase/config'
 import { AuthSessionContext } from '@/features/auth/providers/authSessionContext'
 import { bootstrapUserSession } from '@/features/auth/services/bootstrapUserSession'
-import type { AuthSessionValue, AuthStatus, SessionUser } from '@/features/auth/types/auth'
+import type { AuthFlowPhase, AuthSessionValue, AuthStatus, SessionUser } from '@/features/auth/types/auth'
 import { clearLocalCalendarSessionArtifacts } from '@/services/calendar/calendarIntegrationService'
 import { reportMonitoringError } from '@/services/monitoring/monitoringService'
 
+const GOOGLE_REDIRECT_INTENT_KEY = 'forge-auth-google-redirect'
+
 type AuthState = {
   status: AuthStatus
+  flowPhase: AuthFlowPhase
   user: SessionUser | null
   errorMessage: string | null
 }
@@ -19,6 +30,7 @@ function getInitialState(): AuthState {
   if (!hasFirebaseEnv) {
     return {
       status: 'missing_config',
+      flowPhase: 'idle',
       user: null,
       errorMessage: `Firebase configuration is incomplete. Missing: ${missingFirebaseEnvKeys.join(', ')}`,
     }
@@ -26,6 +38,7 @@ function getInitialState(): AuthState {
 
   return {
     status: 'checking',
+    flowPhase: hasPendingGoogleRedirect() ? 'returning' : 'idle',
     user: null,
     errorMessage: null,
   }
@@ -46,46 +59,109 @@ export function AuthSessionProvider({ children }: PropsWithChildren) {
     }
 
     let active = true
-    const unsubscribe = onAuthStateChanged(
-      auth,
-      async (firebaseUser) => {
-        if (!active) {
-          return
-        }
+    let unsubscribe = () => {}
 
-        if (!firebaseUser) {
-          setState({
-            status: 'unauthenticated',
-            user: null,
-            errorMessage: null,
-          })
-
-          return
-        }
-
+    const initializeAuth = async () => {
+      if (hasPendingGoogleRedirect()) {
         setState((current) => ({
           ...current,
           status: 'checking',
+          flowPhase: 'returning',
           errorMessage: null,
         }))
 
         try {
-          await bootstrapUserSession(firebaseUser)
+          await getRedirectResult(auth)
+        } catch (error) {
+          reportMonitoringError({
+            domain: 'auth',
+            action: 'complete-google-redirect',
+            message: 'Google redirect sign-in failed after returning to Forge.',
+            error,
+          })
 
+          clearPendingGoogleRedirect()
+
+          if (active) {
+            setState({
+              status: 'unauthenticated',
+              flowPhase: 'idle',
+              user: null,
+              errorMessage: getReadableAuthError(error),
+            })
+          }
+        }
+
+        clearPendingGoogleRedirect()
+      }
+
+      if (!active) {
+        return
+      }
+
+      unsubscribe = onAuthStateChanged(
+        auth,
+        async (firebaseUser) => {
           if (!active) {
             return
           }
 
-          setState({
-            status: 'authenticated',
-            user: mapFirebaseUser(firebaseUser),
+          if (!firebaseUser) {
+            setState((current) => ({
+              status: 'unauthenticated',
+              flowPhase: 'idle',
+              user: null,
+              errorMessage: current.errorMessage,
+            }))
+
+            return
+          }
+
+          setState((current) => ({
+            ...current,
+            status: 'checking',
+            flowPhase: 'returning',
             errorMessage: null,
-          })
-        } catch (error) {
+          }))
+
+          try {
+            await bootstrapUserSession(firebaseUser)
+
+            if (!active) {
+              return
+            }
+
+            setState({
+              status: 'authenticated',
+              flowPhase: 'idle',
+              user: mapFirebaseUser(firebaseUser),
+              errorMessage: null,
+            })
+          } catch (error) {
+            reportMonitoringError({
+              domain: 'auth',
+              action: 'bootstrap-user-session',
+              message: 'Failed to bootstrap the authenticated Firebase session.',
+              error,
+            })
+
+            if (!active) {
+              return
+            }
+
+            setState({
+              status: 'error',
+              flowPhase: 'idle',
+              user: null,
+              errorMessage: getReadableAuthError(error),
+            })
+          }
+        },
+        (error) => {
           reportMonitoringError({
             domain: 'auth',
-            action: 'bootstrap-user-session',
-            message: 'Failed to bootstrap the authenticated Firebase session.',
+            action: 'observe-auth-state',
+            message: 'Firebase auth state observation failed.',
             error,
           })
 
@@ -95,30 +171,15 @@ export function AuthSessionProvider({ children }: PropsWithChildren) {
 
           setState({
             status: 'error',
+            flowPhase: 'idle',
             user: null,
             errorMessage: getReadableAuthError(error),
           })
-        }
-      },
-      (error) => {
-        reportMonitoringError({
-          domain: 'auth',
-          action: 'observe-auth-state',
-          message: 'Firebase auth state observation failed.',
-          error,
-        })
+        },
+      )
+    }
 
-        if (!active) {
-          return
-        }
-
-        setState({
-          status: 'error',
-          user: null,
-          errorMessage: getReadableAuthError(error),
-        })
-      },
-    )
+    void initializeAuth()
 
     return () => {
       active = false
@@ -133,6 +194,7 @@ export function AuthSessionProvider({ children }: PropsWithChildren) {
         if (!hasFirebaseEnv) {
           setState({
             status: 'missing_config',
+            flowPhase: 'idle',
             user: null,
             errorMessage: `Firebase configuration is incomplete. Missing: ${missingFirebaseEnvKeys.join(', ')}`,
           })
@@ -145,6 +207,7 @@ export function AuthSessionProvider({ children }: PropsWithChildren) {
         if (!auth) {
           setState({
             status: 'error',
+            flowPhase: 'idle',
             user: null,
             errorMessage: 'Firebase Auth could not be initialized.',
           })
@@ -155,13 +218,24 @@ export function AuthSessionProvider({ children }: PropsWithChildren) {
         setState((current) => ({
           ...current,
           status: 'checking',
+          flowPhase: 'redirecting',
           errorMessage: null,
         }))
 
         try {
           await setPersistence(auth, browserLocalPersistence)
+          const authMethod = getPrimaryGoogleAuthMethod()
+
+          if (authMethod === 'redirect') {
+            markPendingGoogleRedirect()
+            await signInWithRedirect(auth, getGoogleAuthProvider())
+            return
+          }
+
           await signInWithPopup(auth, getGoogleAuthProvider())
         } catch (error) {
+          clearPendingGoogleRedirect()
+
           reportMonitoringError({
             domain: 'auth',
             action: 'sign-in-with-google',
@@ -171,6 +245,7 @@ export function AuthSessionProvider({ children }: PropsWithChildren) {
 
           setState({
             status: 'unauthenticated',
+            flowPhase: 'idle',
             user: null,
             errorMessage: getReadableAuthError(error),
           })
@@ -211,4 +286,28 @@ function getReadableAuthError(error: unknown) {
   }
 
   return 'An unknown authentication error occurred.'
+}
+
+function hasPendingGoogleRedirect() {
+  if (typeof window === 'undefined') {
+    return false
+  }
+
+  return window.sessionStorage.getItem(GOOGLE_REDIRECT_INTENT_KEY) === 'pending'
+}
+
+function markPendingGoogleRedirect() {
+  if (typeof window === 'undefined') {
+    return
+  }
+
+  window.sessionStorage.setItem(GOOGLE_REDIRECT_INTENT_KEY, 'pending')
+}
+
+function clearPendingGoogleRedirect() {
+  if (typeof window === 'undefined') {
+    return
+  }
+
+  window.sessionStorage.removeItem(GOOGLE_REDIRECT_INTENT_KEY)
 }

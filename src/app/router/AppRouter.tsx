@@ -32,13 +32,17 @@ export function AppRouter() {
 }
 
 function ProtectedLayout() {
-  const { status } = useAuthSession()
+  const { flowPhase, status } = useAuthSession()
 
   if (status === 'checking') {
     return (
       <AuthStatusScreen
-        title="Verifying your command surface"
-        description="Forge is restoring your session and preparing your authenticated workspace."
+        title={flowPhase === 'returning' ? 'Completing Google sign-in' : 'Verifying your command surface'}
+        description={
+          flowPhase === 'returning'
+            ? 'Forge is finishing the Google redirect and restoring your authenticated workspace.'
+            : 'Forge is restoring your session and preparing your authenticated workspace.'
+        }
         loading
       />
     )
@@ -52,13 +56,19 @@ function ProtectedLayout() {
 }
 
 function PublicOnlyRoute() {
-  const { status } = useAuthSession()
+  const { flowPhase, status } = useAuthSession()
 
   if (status === 'checking') {
     return (
       <AuthStatusScreen
-        title="Connecting to Forge"
-        description="Checking Firebase Auth state before exposing the sign-in surface."
+        title={flowPhase === 'redirecting' ? 'Redirecting to Google' : 'Connecting to Forge'}
+        description={
+          flowPhase === 'redirecting'
+            ? 'Forge is handing this session to Google Sign-In and will return you here once authentication completes.'
+            : flowPhase === 'returning'
+              ? 'Google has returned to Forge. Restoring your authenticated session before exposing the app.'
+              : 'Checking Firebase Auth state before exposing the sign-in surface.'
+        }
         loading
       />
     )

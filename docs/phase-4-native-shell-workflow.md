@@ -123,7 +123,7 @@ Current verified shell behavior:
 
 Current honesty boundary:
 
-- browser popup auth assumptions are still the real implemented auth model
+- hosted browser redirect auth assumptions are still the real preferred implemented model
 - native callback handling, deep-link auth completion, and mobile-specific OAuth ergonomics are not yet declared finished in this milestone
 - native push and health-provider bridges are still future work
 
@@ -172,7 +172,7 @@ Current honest support posture:
 
 Current native-shell caveats:
 
-- Firebase Auth still depends on browser-oriented popup and callback assumptions
+- Firebase Auth still depends on browser-oriented auth and callback assumptions, with localhost/dev retaining popup fallback and hosted surfaces preferring redirect
 - Google Calendar reconnect and mirroring still depend on browser-style Google session behavior
 - notifications still use browser-style delivery from the bundled web runtime; native push is not implemented
 - backup export and restore import still rely on webview download and file-selection behavior rather than native share or document-picker flows

@@ -68,7 +68,7 @@ Phase 4 has chosen Capacitor as the planned native shell direction, but the nati
 That means:
 
 - do not add native-specific callback values or secrets to the web `.env`
-- do not assume browser popup auth configuration automatically covers native shell builds
+- do not assume browser redirect auth configuration automatically covers native shell builds
 - native-shell-specific configuration should live in shell-specific files once that work begins
 
 Why this matters:
@@ -190,14 +190,14 @@ Recommended domain checks for local development:
 
 Current Phase 4 note:
 
-- these browser origins are the approved popup-auth assumptions today
+- these browser origins are the approved redirect-auth assumptions today
 - native shell callback/origin handling is a later Phase 4 concern and should not be treated as already configured
 
 Why this matters:
 
-- Forge uses Google popup sign-in only
+- Forge uses Google redirect sign-in on hosted browser and installed-PWA surfaces, with popup fallback on localhost/dev preview where redirect needs extra same-origin setup
 - if Google is not enabled, the sign-in button may appear but the auth flow will fail
-- popup-based auth is sensitive to origin/domain mismatches
+- redirect-based auth is still sensitive to origin/domain mismatches
 
 ### 5. Create Firestore
 
@@ -260,12 +260,12 @@ Why this matters:
 
 ### 8. Sign in with Google
 
-Click `Continue with Google` and complete the popup flow.
+Click `Continue with Google`.
 
 Expected outcome:
 
-- the popup succeeds
-- the app moves from `/auth` into the authenticated shell
+- on hosted browser surfaces, Google redirects back to Forge and the session restores automatically
+- on localhost/dev preview, Forge may use a popup fallback so local sign-in stays reliable
 
 Why this matters:
 
@@ -308,7 +308,7 @@ Why this matters:
 
 For this repo, Milestone 2 is operationally complete when all of these are true:
 
-- Google popup sign-in succeeds
+- the supported Google sign-in path for the current runtime succeeds
 - first-login bootstrap creates `users/{uid}`
 - first-login bootstrap creates `users/{uid}/settings/default`
 - a real post-login user action results in Firestore writes for settings or day instances
@@ -338,7 +338,7 @@ Milestone 2 now wires:
 
 - Firebase app initialization
 - Firebase Auth session observation
-- Google Sign-In via popup
+- Google Sign-In via the runtime-appropriate browser flow
 - Firestore bootstrap flows for the first signed-in user
 
 ## Auth Flow
@@ -358,7 +358,7 @@ Without real Firebase project values in `.env`, the app will honestly show a con
 
 Milestone 2 has now been verified against a real Firebase project:
 
-- Google Sign-In popup succeeded
+- Google Sign-In succeeded
 - first-login bootstrap created `users/{uid}`
 - first-login bootstrap created `users/{uid}/settings/default`
 

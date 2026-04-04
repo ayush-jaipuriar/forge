@@ -8,6 +8,7 @@ import type { AuthSessionValue } from '@/features/auth/types/auth'
 const authMock = vi.hoisted(() => {
   const baseValue: AuthSessionValue = {
     status: 'authenticated',
+    flowPhase: 'idle',
     user: {
       uid: 'user-1',
       email: 'operator@forge.test',
@@ -148,6 +149,7 @@ describe('App', () => {
     window.history.pushState({}, '', '/')
     authMock.value = {
       status: 'authenticated',
+      flowPhase: 'idle',
       user: {
         uid: 'user-1',
         email: 'operator@forge.test',
@@ -272,6 +274,7 @@ describe('App', () => {
     authMock.value = {
       ...authMock.value,
       status: 'unauthenticated',
+      flowPhase: 'idle',
       user: null,
     }
 
@@ -318,5 +321,19 @@ describe('App', () => {
 
     expect(await screen.findByRole('heading', { name: /command center could not load/i })).toBeInTheDocument()
     expect(screen.getByText(/indexeddb could not be opened/i)).toBeInTheDocument()
+  })
+
+  it('shows the redirect-return status copy while the protected shell is restoring a Google sign-in', () => {
+    authMock.value = {
+      ...authMock.value,
+      status: 'checking',
+      flowPhase: 'returning',
+      user: null,
+    }
+
+    render(<App />)
+
+    expect(screen.getByRole('heading', { name: /completing google sign-in/i })).toBeInTheDocument()
+    expect(screen.getByText(/finishing the google redirect/i)).toBeInTheDocument()
   })
 })

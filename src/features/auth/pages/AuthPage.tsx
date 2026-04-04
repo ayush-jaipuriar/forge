@@ -1,5 +1,5 @@
 import GoogleIcon from '@mui/icons-material/Google'
-import { Alert, Box, Button, Card, CardContent, Divider, Stack, Typography } from '@mui/material'
+import { Alert, Box, Button, Card, CardContent, Stack, Typography } from '@mui/material'
 import { missingFirebaseEnvKeys } from '@/lib/firebase/config'
 import { useAuthSession } from '@/features/auth/providers/useAuthSession'
 
@@ -23,9 +23,7 @@ export function AuthPage() {
               Entry Gate
             </Typography>
             <Typography variant="h2">Sign in to Forge</Typography>
-            <Typography color="text.secondary">
-              Forge now uses real Firebase Auth boundaries. Google Sign-In is the only allowed entry path for Phase 1.
-            </Typography>
+            <Typography color="text.secondary">Continue with Google to enter Forge.</Typography>
             {status === 'missing_config' ? (
               <Alert severity="warning" variant="outlined">
                 Firebase configuration is incomplete. Add the missing keys to your local `.env` file:
@@ -46,11 +44,6 @@ export function AuthPage() {
             >
               {status === 'checking' ? 'Connecting...' : 'Continue with Google'}
             </Button>
-            <Divider flexItem />
-            <Typography variant="body2" color="text.secondary">
-              First successful sign-in will also bootstrap your user document and default settings document in
-              Firestore.
-            </Typography>
           </Stack>
         </CardContent>
       </Card>

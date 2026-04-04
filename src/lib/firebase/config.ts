@@ -7,7 +7,7 @@ type FirebaseConfig = {
   appId: string
 }
 
-const firebaseConfig: FirebaseConfig = {
+const rawFirebaseConfig: FirebaseConfig = {
   apiKey: import.meta.env.VITE_FIREBASE_API_KEY ?? '',
   authDomain: import.meta.env.VITE_FIREBASE_AUTH_DOMAIN ?? '',
   projectId: import.meta.env.VITE_FIREBASE_PROJECT_ID ?? '',
@@ -16,7 +16,7 @@ const firebaseConfig: FirebaseConfig = {
   appId: import.meta.env.VITE_FIREBASE_APP_ID ?? '',
 }
 
-export const missingFirebaseEnvKeys = Object.entries(firebaseConfig)
+export const missingFirebaseEnvKeys = Object.entries(rawFirebaseConfig)
   .filter(([, value]) => !value)
   .map(([key]) => key)
 
@@ -24,4 +24,20 @@ export const hasFirebaseEnv = missingFirebaseEnvKeys.length === 0
 export const firebaseAppCheckSiteKey = import.meta.env.VITE_FIREBASE_APPCHECK_SITE_KEY ?? ''
 export const hasAppCheckSiteKey = firebaseAppCheckSiteKey.length > 0
 
-export { firebaseConfig }
+export function getFirebaseConfig(): FirebaseConfig {
+  if (typeof window === 'undefined') {
+    return rawFirebaseConfig
+  }
+
+  const hostname = window.location.hostname
+  const isLocalHost = hostname === 'localhost' || hostname === '127.0.0.1'
+
+  if (isLocalHost) {
+    return rawFirebaseConfig
+  }
+
+  return {
+    ...rawFirebaseConfig,
+    authDomain: window.location.host,
+  }
+}

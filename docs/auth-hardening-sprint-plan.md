@@ -10,7 +10,8 @@ The next correct step is to change the browser sign-in model itself.
 
 For this sprint:
 
-- Google redirect becomes the **primary** sign-in flow for web and installed PWA use
+- Google redirect becomes the **primary** sign-in flow on hosted browser and installed PWA surfaces where Forge can use a same-origin helper boundary correctly
+- localhost and non-hosted dev surfaces may keep a popup fallback when Firebase redirect constraints would otherwise break sign-in
 - the browser/PWA path is optimized first
 - the Capacitor/native-shell path is explicitly treated as a follow-on validation concern, not the primary implementation target
 - small auth-surface copy and loading-state adjustments are allowed when they improve clarity around the redirect handoff
@@ -30,7 +31,7 @@ Popup auth gave us two problems:
 1. repeated popup-return console noise after real Google sign-in
 2. a browser behavior profile that is less stable than it should be for the production reference runtime
 
-Redirect auth is the more appropriate browser-first model for Forge because:
+Redirect auth is the more appropriate browser-first model for Forge on hosted browser surfaces because:
 
 - it avoids the popup close lifecycle entirely
 - it behaves more predictably in installed-PWA contexts
@@ -40,17 +41,18 @@ Redirect auth is the more appropriate browser-first model for Forge because:
 
 These decisions come from the clarified product direction:
 
-- redirect is the primary Google sign-in flow everywhere Forge can reasonably support it today
+- redirect is the primary Google sign-in flow where Forge can support it cleanly today
 - browser/PWA is the first-class target for this sprint
 - the sprint is not constrained by preserving the current popup-centered one-click ceremony
-- if redirect is the cleanest browser behavior, it is acceptable for Forge to adopt it as the main path
+- if localhost or non-hosted dev preview cannot support redirect cleanly without extra Firebase setup, popup fallback is acceptable and more honest
 - small follow-on auth copy and loading-state improvements are in scope
 
 ## Scope
 
 This sprint is limited to:
 
-- redirect-first Google sign-in for browser/PWA
+- redirect-first Google sign-in for hosted browser/PWA surfaces
+- popup fallback for localhost/dev when redirect would be unreliable
 - redirect-return result handling and error recovery
 - session restoration behavior after redirect return
 - auth-surface copy and loading-state updates needed to explain redirect transitions honestly
@@ -95,7 +97,8 @@ This sprint explicitly does **not** include:
 
 By the end of this sprint:
 
-- browser/PWA Google sign-in should use redirect as the primary path
+- hosted browser/PWA Google sign-in should use redirect as the primary path
+- localhost/dev preview should keep a working sign-in path instead of a broken redirect loop
 - a returning signed-in user should land back in Forge without being asked to sign in again
 - redirect return should feel intentional, not like a broken page refresh
 - auth loading states should tell the truth about what Forge is doing
@@ -106,7 +109,7 @@ By the end of this sprint:
 
 ### Goal
 
-Replace the popup-centered browser auth path with a redirect-first flow that restores the same authenticated application boundary.
+Replace the popup-centered hosted-browser auth path with a redirect-first flow while preserving a reliable localhost/dev fallback.
 
 ### Why This Matters
 
@@ -125,11 +128,12 @@ That means we do **not** need to redesign routing from scratch. We need to chang
 ### Checklist
 
 - [ ] Audit the current provider lifecycle around `setPersistence`, `signInWithPopup`, and `onAuthStateChanged`.
-- [ ] Replace the primary browser sign-in initiation with `signInWithRedirect`.
+- [x] Replace the primary hosted-browser sign-in initiation with `signInWithRedirect`.
 - [ ] Decide whether Forge should still keep popup auth anywhere in code as:
   - a non-default fallback
   - a native-shell-only fallback later
   - or not at all for this sprint
+- [x] Keep popup auth as the localhost/dev fallback because Firebase redirect requires additional same-origin setup on non-hosted origins.
 - [ ] Ensure redirect initiation does not leave the provider in a misleading permanent `checking` state before navigation leaves the app.
 - [ ] Preserve the existing bootstrap flow after Firebase reports the signed-in user.
 - [ ] Keep sign-out behavior unchanged unless redirect handling requires a small state cleanup improvement.
@@ -141,7 +145,8 @@ That means we do **not** need to redesign routing from scratch. We need to chang
 
 ### Exit Criteria
 
-- browser/PWA sign-in starts through redirect, not popup
+- hosted browser/PWA sign-in starts through redirect
+- localhost/dev retains a working popup fallback
 - the provider still reaches `authenticated` only after bootstrap succeeds
 - the primary auth path no longer relies on popup close behavior
 
@@ -193,11 +198,11 @@ If we do not structure this carefully, users can experience flicker, redundant s
 
 ### Goal
 
-Update the auth UX so it tells the truth about redirect-based sign-in and return-state preparation.
+Update the auth UX so it tells the truth about redirect-based sign-in where it applies, without making the login surface verbose.
 
 ### Why This Matters
 
-When a flow changes from popup to redirect, even subtle copy becomes misleading if it still implies an in-place handoff.
+When a flow changes from popup to redirect on some runtimes, even subtle copy can become misleading if it over-explains one path or claims one model applies everywhere.
 
 The user should understand:
 
@@ -209,13 +214,13 @@ This reduces confusion and makes the redirect flow feel deliberate instead of ja
 
 ### Checklist
 
-- [ ] Review `AuthPage` button label and supporting copy for redirect truthfulness.
+- [x] Review `AuthPage` button label and supporting copy for runtime-truthful, compact wording.
 - [ ] Review `AuthStatusScreen` copy for redirect-return states.
 - [ ] Decide whether Forge needs a slightly different message for:
   - sending the user to Google
   - returning from Google
   - restoring the authenticated workspace
-- [ ] Keep the UI compact and serious; do not over-explain or add ceremony just because redirect exists.
+- [x] Keep the UI compact and serious; do not over-explain or add ceremony just because redirect exists.
 - [ ] Update any capability or settings copy that still claims popup auth is the primary supported browser path.
 
 ### Primary Files
@@ -226,14 +231,14 @@ This reduces confusion and makes the redirect flow feel deliberate instead of ja
 
 ### Exit Criteria
 
-- UI copy matches the real redirect behavior
+- UI copy matches the real auth behavior without over-explaining the transport details
 - no important auth surface still describes popup as the primary browser model
 
 ## Workstream 4: Browser/PWA Verification
 
 ### Goal
 
-Prove that redirect-first auth behaves cleanly in the production reference runtime.
+Prove that hosted redirect auth is clean where it should be, and that localhost/dev no longer regresses sign-in.
 
 ### Why This Matters
 
@@ -248,14 +253,15 @@ That means success is not “the code compiles.” Success is:
 
 ### Checklist
 
-- [ ] Extend automated auth tests for redirect-first behavior and provider state transitions.
-- [ ] Run the full repo verification suite:
+- [x] Extend automated auth tests for redirect-first behavior and provider state transitions.
+- [x] Run the full repo verification suite:
   - `npm run lint`
   - `npm run typecheck`
   - `npm run test:run`
   - `npm run build`
 - [ ] Run a real local browser verification using the built or previewed app.
-- [ ] Verify a full Google redirect round-trip with a real account.
+- [ ] Verify the local localhost/dev auth path now works again through popup fallback.
+- [ ] Verify a hosted Google redirect round-trip with a real account if the runtime is served from the final hosted origin.
 - [ ] Verify that a signed-in revisit restores the session without re-prompting for login.
 - [ ] Check browser console output after redirect return and record whether remaining noise exists.
 
@@ -268,7 +274,8 @@ That means success is not “the code compiles.” Success is:
 ### Exit Criteria
 
 - automated verification is green
-- real browser redirect auth is confirmed
+- local browser auth path is confirmed again
+- hosted redirect auth is confirmed where the runtime supports it
 - signed-in revisit behavior is confirmed
 
 ## Workstream 5: Capacitor/Native Follow-On Check
@@ -288,7 +295,7 @@ That means the native-shell work here is not a redesign. It is a truthfulness ch
 
 ### Checklist
 
-- [ ] Review whether Capacitor/native-shell uses the same browser redirect flow without obvious breakage.
+- [ ] Review whether Capacitor/native-shell uses the same browser auth boundary without obvious breakage.
 - [ ] If practical, run a local native-shell smoke validation after the browser/PWA change.
 - [ ] Document any limitation honestly instead of pretending the shell path is fully solved if it is not.
 - [ ] Decide whether the native path should remain:
@@ -329,19 +336,80 @@ This sprint should end with:
 
 This sprint is done when:
 
-- redirect is the primary Google sign-in path for browser/PWA
+- redirect is the primary Google sign-in path on hosted browser/PWA surfaces
+- localhost/dev auth works again instead of looping back to `/auth`
 - returning users are restored into the app without needless re-login
 - the auth UI tells the truth about redirect behavior
-- popup-return console noise is no longer part of the primary supported web/PWA auth path
+- popup-return console noise is no longer part of the primary hosted web/PWA auth path
 - automated verification is green
 - the native-shell impact is checked and documented honestly
 
 ## Implementation Notes Placeholder
 
-To be filled in during implementation:
+## Implementation Notes
 
-- files changed
-- provider strategy actually chosen
-- test additions
-- live verification outcome
-- native-shell follow-on result
+### Completion Status
+
+- [x] Redirect-first hosted-browser auth strategy implemented
+- [x] Localhost/dev popup fallback restored
+- [x] Auth page copy simplified
+- [x] Auth/provider automated coverage extended
+- [x] Final live localhost/browser verification recorded in this doc
+- [ ] Hosted redirect verification recorded in this doc
+- [ ] Native-shell follow-on result recorded in this doc
+
+### Implemented
+
+- Forge now resolves the Firebase config dynamically so hosted surfaces can use the current app host as `authDomain`, which is required for same-origin redirect behavior on Firebase Hosting and `web.app` surfaces.
+- Forge now chooses its Google auth method by runtime:
+  - hosted browser and installed-PWA surfaces prefer redirect
+  - localhost and `127.0.0.1` fall back to popup because Firebase redirect requires extra same-origin helper setup on non-hosted origins
+- The auth page is now intentionally quieter and no longer explains the full transport model on the screen itself.
+- The auth status surfaces still explain real redirect-return behavior during checking states, but the sign-in card itself stays concise.
+- Platform capability copy was updated so Forge no longer falsely claims a single auth mode everywhere.
+
+### Files Changed During Implementation
+
+- [src/lib/firebase/config.ts](/Users/ayushjaipuriar/Documents/GitHub/forge/src/lib/firebase/config.ts)
+- [src/lib/firebase/client.ts](/Users/ayushjaipuriar/Documents/GitHub/forge/src/lib/firebase/client.ts)
+- [src/features/auth/providers/AuthSessionProvider.tsx](/Users/ayushjaipuriar/Documents/GitHub/forge/src/features/auth/providers/AuthSessionProvider.tsx)
+- [src/features/auth/pages/AuthPage.tsx](/Users/ayushjaipuriar/Documents/GitHub/forge/src/features/auth/pages/AuthPage.tsx)
+- [src/app/router/AppRouter.tsx](/Users/ayushjaipuriar/Documents/GitHub/forge/src/app/router/AppRouter.tsx)
+- [src/domain/platform/capabilities.ts](/Users/ayushjaipuriar/Documents/GitHub/forge/src/domain/platform/capabilities.ts)
+- [src/tests/auth-session-provider.spec.tsx](/Users/ayushjaipuriar/Documents/GitHub/forge/src/tests/auth-session-provider.spec.tsx)
+- [src/tests/auth-page.spec.tsx](/Users/ayushjaipuriar/Documents/GitHub/forge/src/tests/auth-page.spec.tsx)
+- [src/tests/app.spec.tsx](/Users/ayushjaipuriar/Documents/GitHub/forge/src/tests/app.spec.tsx)
+- [src/tests/settings-page.spec.tsx](/Users/ayushjaipuriar/Documents/GitHub/forge/src/tests/settings-page.spec.tsx)
+- [src/tests/domain/platform-capabilities.spec.ts](/Users/ayushjaipuriar/Documents/GitHub/forge/src/tests/domain/platform-capabilities.spec.ts)
+- [docs/firebase-setup.md](/Users/ayushjaipuriar/Documents/GitHub/forge/docs/firebase-setup.md)
+- [docs/deployment-guide.md](/Users/ayushjaipuriar/Documents/GitHub/forge/docs/deployment-guide.md)
+- [docs/phase-4-native-shell-workflow.md](/Users/ayushjaipuriar/Documents/GitHub/forge/docs/phase-4-native-shell-workflow.md)
+- [docs/phase-4-configuration-safety-checklist.md](/Users/ayushjaipuriar/Documents/GitHub/forge/docs/phase-4-configuration-safety-checklist.md)
+- [docs/phase-4-launch-operations.md](/Users/ayushjaipuriar/Documents/GitHub/forge/docs/phase-4-launch-operations.md)
+
+### Validation Outcome So Far
+
+- `npm run typecheck` passed
+- `npm run lint` passed
+- `npm run test:run` passed with `61` files and `224` tests
+- `npm run build` passed
+
+### Live Verification Outcome
+
+- Local preview auth at `http://127.0.0.1:4176/auth` was rechecked after the localhost fallback change.
+- The previous broken redirect loop on local preview is resolved.
+- Local sign-in now succeeds again because Forge uses popup fallback on localhost/dev instead of forcing redirect where Firebase needs extra same-origin setup.
+- The auth page is also quieter now and no longer over-explains the transport model on the card itself.
+
+### Remaining Honest Caveat
+
+- Hosted redirect behavior still needs to be revalidated directly on the deployed Firebase Hosting origin.
+- That hosted check remains important because the final production intent is:
+  - hosted browser and installed-PWA surfaces prefer redirect
+  - localhost/dev preview uses popup fallback
+- Native-shell follow-on validation is still pending and should be recorded separately rather than implied by the browser result.
+
+### Remaining Manual Validation
+
+- confirm hosted redirect behavior on the final Firebase-hosted origin
+- document native-shell follow-on observations honestly

@@ -3,16 +3,17 @@ import { getAuth, GoogleAuthProvider } from 'firebase/auth'
 import { getFirestore } from 'firebase/firestore'
 import { getFunctions } from 'firebase/functions'
 import { getStorage } from 'firebase/storage'
-import { firebaseConfig, hasFirebaseEnv } from '@/lib/firebase/config'
+import { getFirebaseConfig, hasFirebaseEnv } from '@/lib/firebase/config'
 
 let cachedProvider: GoogleAuthProvider | null = null
+export type GoogleAuthMethod = 'redirect' | 'popup'
 
 export function getFirebaseApp() {
   if (!hasFirebaseEnv) {
     return null
   }
 
-  return getApps().length > 0 ? getApp() : initializeApp(firebaseConfig)
+  return getApps().length > 0 ? getApp() : initializeApp(getFirebaseConfig())
 }
 
 export function getFirebaseAuth() {
@@ -48,4 +49,17 @@ export function getGoogleAuthProvider() {
   }
 
   return cachedProvider
+}
+
+export function getPrimaryGoogleAuthMethod() {
+  if (typeof window === 'undefined') {
+    return 'redirect' as const
+  }
+
+  const hostname = window.location.hostname
+  if (hostname === 'localhost' || hostname === '127.0.0.1') {
+    return 'popup' as const
+  }
+
+  return 'redirect' as const
 }

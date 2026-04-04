@@ -1,0 +1,9 @@
+- generic [ref=e6]:
+  - generic [ref=e7]: Entry Gate
+  - heading "Sign in to Forge" [level=2] [ref=e8]
+  - paragraph [ref=e9]: Forge now uses Google redirect sign-in as the primary browser entry path. After Google returns you to Forge, the authenticated workspace should restore automatically.
+  - button "Continue with Google" [ref=e10] [cursor=pointer]:
+    - img [ref=e12]
+    - text: Continue with Google
+  - separator [ref=e14]
+  - paragraph [ref=e15]: First successful sign-in will also bootstrap your user document and default settings document in Firestore.
