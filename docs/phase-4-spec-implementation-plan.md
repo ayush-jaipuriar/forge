@@ -557,20 +557,28 @@ Prepare a credible launch candidate after the shell and platform shifts are in p
 
 ### Checklist
 
-- [ ] Re-run the full quality matrix across web, PWA, Android shell, and Functions.
-- [ ] Review all user-facing integration copy for honesty after Phase 4 changes.
-- [ ] Confirm documentation consistency across README, deployment, Firebase setup, operations docs, and future notes.
-- [ ] Confirm no Phase 5 or future-scope work leaked into the launch candidate.
-- [ ] Produce a short launch-candidate summary with known accepted limits.
+- [x] Re-run the full quality matrix across web, PWA, Android shell, and Functions.
+- [x] Review all user-facing integration copy for honesty after Phase 4 changes.
+- [x] Confirm documentation consistency across README, deployment, Firebase setup, operations docs, and future notes.
+- [x] Confirm no Phase 5 or future-scope work leaked into the launch candidate.
+- [x] Produce a short launch-candidate summary with known accepted limits.
 
 ### Testing and Documentation
 
-- [ ] Add a Phase 4 release-readiness checklist.
-- [ ] Record the final accepted limitations and deferred items explicitly.
+- [x] Add a Phase 4 release-readiness checklist.
+- [x] Record the final accepted limitations and deferred items explicitly.
 
 ### Exit Criteria
 
 - Forge has a documented launch candidate across browser, PWA, native shell, and server workflows
+
+### Implementation Notes
+
+- Re-ran the full launch-candidate quality matrix across the root app, Functions workspace, and Android shell. The current candidate now has green verification for [package.json](/Users/ayushjaipuriar/Documents/GitHub/forge/package.json) `launch:verify`, `native:doctor`, `android:assemble`, Android install over `adb`, and Android activity resume verification for `com.forge.executionos/.MainActivity`.
+- Tightened launch honesty in [docs/phase-4-launch-operations.md](/Users/ayushjaipuriar/Documents/GitHub/forge/docs/phase-4-launch-operations.md) by correcting the stale backup language. Forge now honestly claims staged restore from restore-ready scheduled backups, while still documenting that a full backup-management console and automatic cross-device recovery are not part of the current candidate.
+- Updated [docs/phase-4-release-readiness-checklist.md](/Users/ayushjaipuriar/Documents/GitHub/forge/docs/phase-4-release-readiness-checklist.md) so the release gate now reflects the real candidate posture instead of only the earlier web-first checklist. The Android shell now has explicit doctor, assemble, install, and launch verification items alongside the browser/PWA matrix.
+- Added [docs/phase-4-launch-candidate-summary.md](/Users/ayushjaipuriar/Documents/GitHub/forge/docs/phase-4-launch-candidate-summary.md) as the Milestone 8 closeout artifact. It records what was verified, what is included, and which limitations are accepted rather than silently unresolved.
+- Updated downstream docs so the known-limits story is consistent: [README.md](/Users/ayushjaipuriar/Documents/GitHub/forge/README.md), [docs/deployment-guide.md](/Users/ayushjaipuriar/Documents/GitHub/forge/docs/deployment-guide.md), [docs/firebase-setup.md](/Users/ayushjaipuriar/Documents/GitHub/forge/docs/firebase-setup.md), [docs/future-extension-notes.md](/Users/ayushjaipuriar/Documents/GitHub/forge/docs/future-extension-notes.md), and [docs/architecture-overview.md](/Users/ayushjaipuriar/Documents/GitHub/forge/docs/architecture-overview.md) are now expected to describe the same launch-candidate boundary.
 
 ## Phase 4 Progress Tracker
 
@@ -582,7 +590,9 @@ Prepare a credible launch candidate after the shell and platform shifts are in p
 - [x] Milestone 5 complete
 - [x] Milestone 6 complete
 - [x] Milestone 7 complete
-- [ ] Milestone 8 complete
+- [x] Milestone 8 complete
+
+Phase 4 is now complete as the current launch and platform baseline.
 
 ## Recommended Immediate Execution Order
 

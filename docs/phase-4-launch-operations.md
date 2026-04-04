@@ -260,6 +260,6 @@ Launch QA must respect the current support boundary:
 - primary-calendar Google Calendar support only
 - explicit operator-triggered Calendar mirroring only
 - health scaffolding is not live provider ingestion
-- remote scheduled-backup picker is still not a finished user-facing flow
+- scheduled remote backups can be staged for restore, but Forge still does not provide a full backup-management console or automatic cross-device recovery
 
 If QA expects any of those future capabilities, that is a scope mismatch, not necessarily a product defect.

@@ -45,7 +45,7 @@ What still remains beyond Phase 3:
 
 - long-lived server-managed Calendar OAuth and background reconciliation
 - native mobile push delivery
-- full remote scheduled-backup picker and end-to-end server restore UX
+- full backup-management console and automatic cross-device recovery
 - live health-provider ingestion and sync
 - deeper sync-orchestration extraction beyond the current Firebase-plus-Functions posture
 

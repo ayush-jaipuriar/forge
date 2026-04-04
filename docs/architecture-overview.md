@@ -401,6 +401,13 @@ This document captures the Phase 1 architectural baseline that implementation sh
 - [src/services/settings/settingsWorkspaceService.ts](/Users/ayushjaipuriar/Documents/GitHub/forge/src/services/settings/settingsWorkspaceService.ts) and [src/features/settings/pages/SettingsPage.tsx](/Users/ayushjaipuriar/Documents/GitHub/forge/src/features/settings/pages/SettingsPage.tsx) now surface that ownership map directly, which is a launch-hardening win because operators no longer have to guess whether a failing flow should be debugged in the active browser session or in Firebase Functions
 - the milestone is deliberately about correcting ownership, not about broad backend extraction: long-lived integration token handling and richer cross-runtime diagnostics are now documented as planned Functions-owned boundaries, but they remain deferred until the browser is clearly the wrong owner rather than being prematurely implemented
 
+## Phase 4 Milestone 8 Launch Candidate Hardening
+
+- Phase 4 now closes with a documented launch-candidate artifact in [docs/phase-4-launch-candidate-summary.md](/Users/ayushjaipuriar/Documents/GitHub/forge/docs/phase-4-launch-candidate-summary.md), which is important because launch hardening should end with an operator-readable statement of what was verified and what remains an accepted limit
+- the release gate in [docs/phase-4-release-readiness-checklist.md](/Users/ayushjaipuriar/Documents/GitHub/forge/docs/phase-4-release-readiness-checklist.md) now reflects the real candidate matrix rather than a web-only subset: root app verification, Functions verification, Android doctor, Android assemble, Android install, and Android activity launch are all part of the current launch posture
+- [docs/phase-4-launch-operations.md](/Users/ayushjaipuriar/Documents/GitHub/forge/docs/phase-4-launch-operations.md) now uses the honest backup boundary after the Milestone 6 recovery work: scheduled remote backups can be staged for restore, but Forge still does not pretend to have a full backup-management console or automatic cross-device recovery
+- the main architecture lesson from Milestone 8 is that launch readiness is a boundary-definition problem as much as a code-quality problem. The candidate is strong because the repo now aligns code, validation commands, operator runbooks, and accepted limitations instead of letting each of those tell a slightly different story
+
 
 ## Layer Boundaries
 

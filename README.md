@@ -63,6 +63,7 @@ npm run preview -- --host 127.0.0.1 --port 4173
 - [Phase 4 Configuration Safety Checklist](/Users/ayushjaipuriar/Documents/GitHub/forge/docs/phase-4-configuration-safety-checklist.md)
 - [Phase 4 Launch Operations](/Users/ayushjaipuriar/Documents/GitHub/forge/docs/phase-4-launch-operations.md)
 - [Phase 4 Release Readiness Checklist](/Users/ayushjaipuriar/Documents/GitHub/forge/docs/phase-4-release-readiness-checklist.md)
+- [Phase 4 Launch Candidate Summary](/Users/ayushjaipuriar/Documents/GitHub/forge/docs/phase-4-launch-candidate-summary.md)
 - [Phase 4 Operational Diagnostics](/Users/ayushjaipuriar/Documents/GitHub/forge/docs/phase-4-operational-diagnostics.md)
 - [Phase 4 Native Shell Workflow](/Users/ayushjaipuriar/Documents/GitHub/forge/docs/phase-4-native-shell-workflow.md)
 - [Architecture Overview](/Users/ayushjaipuriar/Documents/GitHub/forge/docs/architecture-overview.md)
