@@ -19,6 +19,12 @@ export type RestoreStage = {
   payload: ForgeExportPayload
   summary: string
   warnings: string[]
+  source: {
+    kind: 'localFile' | 'serverBackup'
+    label: string
+    backupId?: string
+    createdAt?: string
+  }
 }
 
 export async function parseRestorePayloadText(text: string): Promise<RestoreStage> {
@@ -37,6 +43,10 @@ export async function parseRestorePayloadText(text: string): Promise<RestoreStag
     payload,
     warnings,
     summary: `Restore payload includes ${payload.dayInstances.length} day instance(s), ${payload.analytics.snapshots.length} analytics snapshot(s), and ${payload.analytics.missions.length} mission record(s).`,
+    source: {
+      kind: 'localFile',
+      label: 'Loaded from a local backup file',
+    },
   }
 }
 

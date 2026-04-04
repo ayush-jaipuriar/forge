@@ -16,6 +16,7 @@ Phase 1 now exists across the core domain, UI, persistence, scoring, recommendat
 - Phase 2 disciplined gamification layer with formal streaks, deficit-driven missions, and anti-padding momentum
 - Phase 2 operational analytics surfacing across Today, Readiness, and Schedule with shared pressure signals
 - Phase 3 Google Calendar integration with primary-calendar read pressure, bounded event caching, and explicit major-block write mirroring
+- Phase 4 native shell foundation with explicit platform-capability boundaries and Functions-backed operator actions for backups, notifications, and analytics regeneration
 
 ## Setup
 
@@ -104,12 +105,13 @@ Live Firebase verification has also been completed against a real project, inclu
 ## Known Limitations
 
 - Notifications are browser and installed-PWA only. Scheduled Functions create evaluation records and candidate metadata, but they do not provide native mobile push delivery.
-- Scheduled backups are durable and versioned, but the in-app picker for remote scheduled backups is still not finished.
+- Scheduled backups are durable and versioned, and recent restore-ready backups can now be staged from Settings, but Forge still does not provide a full backup-management console or automatic cross-device recovery.
 - Google Calendar now supports primary-calendar pressure plus explicit major-block write mirroring in Phase 3, but long-lived server-managed OAuth and background reconciliation are not complete yet.
 - Health integration is a persisted scaffold and typed normalization seam, not a live provider sync system yet.
 - Offline behavior is intentionally shell-first and action-focused. It does not attempt full query-cache persistence for every screen.
 - Native shell now exists through Capacitor on Android, but native auth callback handling, native push delivery, and native health bridges are still not complete yet.
 - Phase 4 now surfaces explicit runtime-capability boundaries in-product, so browser, installed-PWA, and native-shell support posture are visible instead of implied.
+- Phase 4 also documents planned Functions-owned boundaries like long-lived integration token handling and richer remote diagnostics, but those are still intentionally deferred rather than half-implemented.
 
 ## Product Boundary
 

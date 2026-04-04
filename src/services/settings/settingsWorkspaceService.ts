@@ -5,6 +5,7 @@ import { googleCalendarIntegrationService } from '@/services/calendar/calendarIn
 import { healthIntegrationService } from '@/services/health/healthIntegrationService'
 import { buildOperationalDiagnosticsWorkspace } from '@/services/monitoring/operationalDiagnosticsService'
 import { getNotificationStateWorkspace } from '@/services/notifications/notificationStateService'
+import { getPlatformServiceWorkspace } from '@/services/platform/platformOwnershipService'
 
 export async function getSettingsWorkspace(userId?: string | null) {
   const [settings, notificationWorkspace, backupWorkspace, recentRestoreJobs, syncDiagnostics] = await Promise.all([
@@ -26,6 +27,7 @@ export async function getSettingsWorkspace(userId?: string | null) {
   // an honest workspace from the persisted local snapshot with a default fallback,
   // not live provider data.
   const healthWorkspace = await healthIntegrationService.getSettingsWorkspace()
+  const platformServices = getPlatformServiceWorkspace()
   const operationalDiagnostics = buildOperationalDiagnosticsWorkspace({
     syncDiagnostics,
     backupOperations: backupWorkspace.operations,
@@ -70,6 +72,7 @@ export async function getSettingsWorkspace(userId?: string | null) {
       writeMirror: calendarWorkspace.connection.featureGate === 'writeEnabled' ? 'enabled' : 'planned',
       collisionAwareRecommendations: true,
     },
+    platformServices,
     calendarMirroredBlockCount: calendarWorkspace.mirroredBlockCount,
     calendarMirrorErrorCount: calendarWorkspace.mirrorErrorCount,
     healthIntegration: healthWorkspace,

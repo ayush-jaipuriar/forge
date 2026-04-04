@@ -480,20 +480,27 @@ Finish the recovery path that Phase 3 intentionally left as foundation-only.
 
 ### Checklist
 
-- [ ] Build a user-facing picker for eligible scheduled backups.
-- [ ] Add a restore-selection confirmation flow with strong warnings and schema checks.
-- [ ] Ensure remote restore clearly distinguishes local-only versus remote-backed state.
-- [ ] Confirm restore still clears or reconciles unsafe queued writes before apply.
-- [ ] Review retention-expired and not-restore-ready behavior for clarity.
+- [x] Build a user-facing picker for eligible scheduled backups.
+- [x] Add a restore-selection confirmation flow with strong warnings and schema checks.
+- [x] Ensure remote restore clearly distinguishes local-only versus remote-backed state.
+- [x] Confirm restore still clears or reconciles unsafe queued writes before apply.
+- [x] Review retention-expired and not-restore-ready behavior for clarity.
 
 ### Testing and Documentation
 
-- [ ] Add tests for remote backup selection and retrieval flows.
-- [ ] Update backup-and-restore operations docs with end-to-end remote restore behavior.
+- [x] Add tests for remote backup selection and retrieval flows.
+- [x] Update backup-and-restore operations docs with end-to-end remote restore behavior.
 
 ### Exit Criteria
 
 - Forge has a complete, honest, user-facing scheduled-backup recovery path
+
+### Implementation Notes
+
+- Extended [src/services/backup/restoreService.ts](/Users/ayushjaipuriar/Documents/GitHub/forge/src/services/backup/restoreService.ts) so every staged restore now carries explicit source metadata, which lets the UI distinguish local file restores from scheduled server-backed restores without creating a second apply path.
+- Added the remote staging seam in [src/services/backup/serverBackupRestoreService.ts](/Users/ayushjaipuriar/Documents/GitHub/forge/src/services/backup/serverBackupRestoreService.ts) and [src/features/settings/hooks/useLoadServerRestoreStage.ts](/Users/ayushjaipuriar/Documents/GitHub/forge/src/features/settings/hooks/useLoadServerRestoreStage.ts), so selecting a restore-ready scheduled backup now resolves the remote payload, validates the schema, and produces the same `RestoreStage` object used by local files.
+- Updated [src/features/settings/pages/SettingsPage.tsx](/Users/ayushjaipuriar/Documents/GitHub/forge/src/features/settings/pages/SettingsPage.tsx) with a scheduled-backup picker, restore-ready versus ineligible status messaging, and source-aware staged-restore feedback. The important product boundary is that remote selection only stages a restore; the existing apply button and warning surface remain the final confirmation step.
+- Added regression coverage in [src/tests/services/restore-service.spec.ts](/Users/ayushjaipuriar/Documents/GitHub/forge/src/tests/services/restore-service.spec.ts) and [src/tests/hooks/use-load-server-restore-stage.spec.ts](/Users/ayushjaipuriar/Documents/GitHub/forge/src/tests/hooks/use-load-server-restore-stage.spec.ts) to protect both local-file and remote-backup staging semantics.
 
 ## Milestone 7: Platform Service Extraction Inside Firebase Functions
 
@@ -509,24 +516,32 @@ Move the highest-risk orchestration paths toward clearer server ownership withou
 
 ### Checklist
 
-- [ ] Identify which Phase 3 services should remain client-owned and which should gain server-owned companions.
-- [ ] Extract or formalize server-owned orchestration for:
+- [x] Identify which Phase 3 services should remain client-owned and which should gain server-owned companions.
+- [x] Extract or formalize server-owned orchestration for:
   - scheduled backup/recovery metadata
   - scheduled notification operations
   - future integration token/state handling preparation
   - platform diagnostics aggregation where justified
-- [ ] Define a clear contract between client repositories and Functions-backed operational services.
-- [ ] Avoid duplicating domain rule logic by keeping shared pure logic in reusable modules where possible.
-- [ ] Document what still does not justify extraction.
+- [x] Define a clear contract between client repositories and Functions-backed operational services.
+- [x] Avoid duplicating domain rule logic by keeping shared pure logic in reusable modules where possible.
+- [x] Document what still does not justify extraction.
 
 ### Testing and Documentation
 
-- [ ] Add or expand Functions verification coverage for the extracted orchestration seams.
-- [ ] Update architecture docs with the new platform-ownership map.
+- [x] Add or expand Functions verification coverage for the extracted orchestration seams.
+- [x] Update architecture docs with the new platform-ownership map.
 
 ### Exit Criteria
 
 - the system has clearer ownership boundaries and less accidental browser-only operational responsibility
+
+### Implementation Notes
+
+- Added the platform-ownership contract in [src/domain/platform/ownership.ts](/Users/ayushjaipuriar/Documents/GitHub/forge/src/domain/platform/ownership.ts), which explicitly maps browser-owned, PWA-runtime-owned, and Firebase-Functions-owned responsibilities. The important architectural choice is that this file documents ownership truth, not deployment wishes: only scheduled backups, scheduled notifications, and analytics snapshot regeneration are treated as active Functions-backed operations today.
+- Added [src/services/platform/platformOwnershipService.ts](/Users/ayushjaipuriar/Documents/GitHub/forge/src/services/platform/platformOwnershipService.ts) and [src/services/platform/platformFunctionService.ts](/Users/ayushjaipuriar/Documents/GitHub/forge/src/services/platform/platformFunctionService.ts) so the app can both describe and invoke the current server-owned companion operations through a shared seam instead of scattering callable names around Settings.
+- Expanded [src/lib/firebase/client.ts](/Users/ayushjaipuriar/Documents/GitHub/forge/src/lib/firebase/client.ts) with a region-bound Firebase Functions client helper, then added [src/features/settings/hooks/useInvokePlatformOperation.ts](/Users/ayushjaipuriar/Documents/GitHub/forge/src/features/settings/hooks/useInvokePlatformOperation.ts) to handle mutation wiring and targeted query invalidation for backup, notification, and analytics regeneration operations.
+- Updated [src/services/settings/settingsWorkspaceService.ts](/Users/ayushjaipuriar/Documents/GitHub/forge/src/services/settings/settingsWorkspaceService.ts) and [src/features/settings/pages/SettingsPage.tsx](/Users/ayushjaipuriar/Documents/GitHub/forge/src/features/settings/pages/SettingsPage.tsx) so Settings now surfaces a real ownership map with manual Functions-backed operator actions. This is intentionally an operator boundary view, not a generic “run random admin jobs” console.
+- Added focused coverage in [src/tests/domain/platform-ownership.spec.ts](/Users/ayushjaipuriar/Documents/GitHub/forge/src/tests/domain/platform-ownership.spec.ts) and [src/tests/services/platform-function-service.spec.ts](/Users/ayushjaipuriar/Documents/GitHub/forge/src/tests/services/platform-function-service.spec.ts), then verified the full root app plus Functions workflow. The main honesty boundary remains unchanged: long-lived integration token handling and richer cross-runtime diagnostics are documented as planned Functions-owned areas, but not prematurely implemented.
 
 ## Milestone 8: Launch Candidate Hardening
 
@@ -564,9 +579,9 @@ Prepare a credible launch candidate after the shell and platform shifts are in p
 - [x] Milestone 2 complete
 - [x] Milestone 3 complete
 - [x] Milestone 4 complete
-- [ ] Milestone 5 complete
-- [ ] Milestone 6 complete
-- [ ] Milestone 7 complete
+- [x] Milestone 5 complete
+- [x] Milestone 6 complete
+- [x] Milestone 7 complete
 - [ ] Milestone 8 complete
 
 ## Recommended Immediate Execution Order

@@ -220,13 +220,13 @@ Current recovery posture is:
 
 - manual restore still restores from user-provided backup JSON
 - scheduled backups now create Firestore metadata plus Cloud Storage-backed payload bodies
-- Forge can now resolve scheduled-backup metadata into a real payload fetch path, which is the foundation required for later in-app restore from server-side scheduled backups
+- Forge can now load restore-ready scheduled backups directly into the staged restore flow from Settings
 - restore safety still clears local queued sync items before completion so stale pre-restore writes cannot replay
 
 Current limitation:
 
-- the app does not yet expose a browser picker for server-side scheduled backup history
-- retrieval and restore contracts are now in place, but user-facing selection and apply flows for server-side scheduled backups remain a later milestone
+- the app still does not provide a broad backup-management console beyond the recent restore-ready list surfaced in Settings
+- remote restore still depends on explicit user selection and confirmation; Forge does not auto-apply scheduled backups
 
 ## Scheduled Backup Payload Storage
 
@@ -264,13 +264,16 @@ Forge now has a dedicated retrieval foundation for scheduled backup payloads:
 - the client can resolve a scheduled backup record into either a Cloud Storage object or a legacy Firestore payload document
 - restore eligibility is now tracked explicitly instead of being implied by backup existence alone
 
-This is intentionally a foundation layer, not the final user workflow.
+The workflow is now complete enough for honest end-user recovery:
+
+- Settings shows restore-ready scheduled backups from remote metadata
+- selecting a backup loads and validates the payload into the same staged-restore surface used by local files
+- apply remains a second explicit confirmation step so warnings are visible before local state changes
 
 What still remains for later work:
 
-- server-backup picker UI
-- explicit user confirmation flow for selecting one scheduled remote backup over another
-- end-to-end restore-from-server interaction design
+- a broader backup-management surface with filtering and history beyond the recent restore-ready list
+- more advanced multi-device recovery ergonomics
 
 ## Previous Scale Limit
 
@@ -285,11 +288,10 @@ Phase 3 can honestly claim:
 - manual backup export and staged local restore
 - scheduled backup generation with retention and Cloud Storage payloads
 - restore-safety handling for outstanding local sync queue items
-- server-side restore foundations and restore-eligibility metadata
+- server-side restore foundations, restore-eligibility metadata, and user-facing staged recovery from recent restore-ready scheduled backups
 
 Phase 3 must not claim:
 
-- a finished in-app picker for scheduled remote backups
 - automatic cross-device restore reconciliation
 - zero-loss guarantees across every local-only integration seam
 

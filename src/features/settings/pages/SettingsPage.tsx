@@ -18,6 +18,8 @@ import { useConnectCalendarRead } from '@/features/settings/hooks/useConnectCale
 import { useConnectCalendarWrite } from '@/features/settings/hooks/useConnectCalendarWrite'
 import { useCreateManualBackup } from '@/features/settings/hooks/useCreateManualBackup'
 import { useDisconnectCalendar } from '@/features/settings/hooks/useDisconnectCalendar'
+import { useLoadServerRestoreStage } from '@/features/settings/hooks/useLoadServerRestoreStage'
+import { useInvokePlatformOperation } from '@/features/settings/hooks/useInvokePlatformOperation'
 import { useRefreshCalendarCache } from '@/features/settings/hooks/useRefreshCalendarCache'
 import { useRequestNotificationPermission } from '@/features/settings/hooks/useRequestNotificationPermission'
 import { useSettingsWorkspace } from '@/features/settings/hooks/useSettingsWorkspace'
@@ -68,6 +70,8 @@ export function SettingsPage() {
   const updateNotificationPreference = useUpdateNotificationPreference()
   const requestNotificationPermission = useRequestNotificationPermission()
   const createManualBackup = useCreateManualBackup(user)
+  const loadServerRestoreStage = useLoadServerRestoreStage(user?.uid)
+  const invokePlatformOperation = useInvokePlatformOperation()
   const connectCalendarRead = useConnectCalendarRead()
   const connectCalendarWrite = useConnectCalendarWrite()
   const disconnectCalendar = useDisconnectCalendar()
@@ -107,7 +111,10 @@ export function SettingsPage() {
     serverRestoreReadyCount,
     settings,
     operationalDiagnostics,
+    platformServices,
   } = data
+  const eligibleServerBackups = recentBackups.filter((backup) => backup.restoreEligibility?.status === 'eligible')
+  const ineligibleServerBackups = recentBackups.filter((backup) => backup.restoreEligibility?.status !== 'eligible')
   const calendarTone = getCalendarStatusTone({
     connectionStatus: calendarConnection.connectionStatus,
     externalSyncStatus: calendarSyncState.externalEventSyncStatus,
@@ -208,6 +215,76 @@ export function SettingsPage() {
                   {blindSpot}
                 </Alert>
               ))}
+            </Stack>
+          </SurfaceCard>
+        </Grid>
+        <Grid size={{ xs: 12 }}>
+          <SurfaceCard
+            eyebrow="Platform Ownership"
+            title="Browser vs Functions operational boundaries"
+            description="Phase 4 formalizes which responsibilities still belong to the active browser session and which now have an explicit Functions-backed platform contract."
+            action={
+              <Chip
+                label={`${platformServices.functionsOwned.length} Functions-owned`}
+                size="small"
+                variant="outlined"
+                color="primary"
+              />
+            }
+          >
+            <Stack spacing={1.5}>
+              {platformServices.boundaries.map((boundary) => (
+                <Stack
+                  key={boundary.key}
+                  direction={{ xs: 'column', md: 'row' }}
+                  spacing={1.25}
+                  justifyContent="space-between"
+                  alignItems={{ xs: 'flex-start', md: 'center' }}
+                >
+                  <Stack spacing={0.35} sx={{ flex: 1 }}>
+                    <Typography variant="body2" color="text.primary">
+                      {boundary.label}
+                    </Typography>
+                    <Typography variant="body2" color="text.secondary">
+                      {boundary.description}
+                    </Typography>
+                    <Typography variant="caption" color="text.secondary">
+                      Why this owner is correct: {boundary.rationale}
+                    </Typography>
+                  </Stack>
+                  <Stack direction={{ xs: 'column', sm: 'row' }} spacing={1} alignItems={{ xs: 'flex-start', sm: 'center' }}>
+                    <Chip label={boundary.owner} size="small" variant="outlined" color={boundary.owner === 'firebaseFunctions' ? 'primary' : 'default'} />
+                    <Chip label={boundary.status} size="small" variant="outlined" color={boundary.status === 'active' ? 'success' : 'default'} />
+                    {boundary.callableName ? (
+                      <Button
+                        variant="outlined"
+                        size="small"
+                        disabled={invokePlatformOperation.isPending || status !== 'authenticated'}
+                        onClick={() => invokePlatformOperation.mutate(boundary.key as 'scheduledBackups' | 'scheduledNotifications' | 'analyticsSnapshots')}
+                      >
+                        {invokePlatformOperation.isPending && invokePlatformOperation.variables === boundary.key
+                          ? 'Running...'
+                          : boundary.manualTriggerLabel ?? 'Run now'}
+                      </Button>
+                    ) : null}
+                  </Stack>
+                </Stack>
+              ))}
+              {invokePlatformOperation.isError ? (
+                <Alert severity="error" variant="outlined" aria-live="polite">
+                  {invokePlatformOperation.error instanceof Error
+                    ? invokePlatformOperation.error.message
+                    : 'Forge could not run the selected Functions-backed platform operation.'}
+                </Alert>
+              ) : null}
+              {invokePlatformOperation.data ? (
+                <Alert severity="success" variant="outlined" aria-live="polite">
+                  Ran {invokePlatformOperation.data.callableName} through Firebase Functions for {invokePlatformOperation.data.key}.
+                </Alert>
+              ) : null}
+              <Alert severity="info" variant="outlined">
+                Planned Functions-owned areas like integration token handling and richer remote diagnostics are documented here intentionally, but they are not prematurely implemented.
+              </Alert>
             </Stack>
           </SurfaceCard>
         </Grid>
@@ -377,7 +454,7 @@ export function SettingsPage() {
                 Status source: {backupSource.operations}. Recent backup list source: {backupSource.recentBackups}.
               </Typography>
               <Typography variant="body2" color="text.secondary">
-                Server restore foundation: {serverRestoreReadyCount} restore-ready scheduled backup{serverRestoreReadyCount === 1 ? '' : 's'} in the current view.
+                Server restore posture: {serverRestoreReadyCount} restore-ready scheduled backup{serverRestoreReadyCount === 1 ? '' : 's'} in the current view.
                 {latestServerRestoreReadyBackup ? ` Latest restore-ready backup: ${latestServerRestoreReadyBackup.createdAt}.` : ' No server restore-ready backup is visible yet.'}
               </Typography>
               {backupExportCapability ? (
@@ -397,7 +474,7 @@ export function SettingsPage() {
               ) : null}
               {serverRestoreReadyCount === 0 ? (
                 <Alert severity="info" variant="outlined">
-                  Forge now has the retrieval foundation for server-side scheduled backup restore, but the in-app backup picker is still a later milestone.
+                  No restore-ready scheduled backups are visible right now, so recovery still depends on local file restore until the next successful scheduled backup appears.
                 </Alert>
               ) : null}
               {backupOperations.latestFailureMessage ? (
@@ -461,9 +538,74 @@ export function SettingsPage() {
               <Typography variant="body2" color="text.secondary">
                 Restore applies core local state first and reports partial compatibility honestly for analytics or provider-owned metadata that Forge prefers to regenerate.
               </Typography>
+              <Typography variant="body2" color="text.secondary">
+                Current restore source: {restoreStage ? restoreStage.source.label : 'No restore staged yet.'}
+              </Typography>
+              {eligibleServerBackups.length > 0 ? (
+                <SurfaceCard
+                  eyebrow="Scheduled Backup Recovery"
+                  title="Stage a restore from server-backed protection"
+                  description="These backups are already marked restore-eligible from remote metadata. Loading one here only stages it; Forge still waits for explicit apply confirmation."
+                  contentSx={{ p: 0 }}
+                >
+                  <Stack spacing={1.25}>
+                    {eligibleServerBackups.map((backup) => (
+                      <Stack
+                        key={backup.id}
+                        direction={{ xs: 'column', sm: 'row' }}
+                        spacing={1}
+                        justifyContent="space-between"
+                        alignItems={{ xs: 'flex-start', sm: 'center' }}
+                      >
+                        <Stack spacing={0.25} sx={{ flex: 1 }}>
+                          <Typography variant="body2" color="text.primary">
+                            Scheduled backup · {formatCalendarTimestamp(backup.createdAt, backup.createdAt)}
+                          </Typography>
+                          <Typography variant="body2" color="text.secondary">
+                            Status: {backup.status} · Records: {backup.sourceRecordCount} · Source: {backupSource.recentBackups}
+                          </Typography>
+                          <Typography variant="caption" color="text.secondary">
+                            Payload: {backup.payloadPointer?.provider ?? 'legacy metadata'} · Eligibility checked {backup.restoreEligibility?.checkedAt ?? 'during backup load'}
+                          </Typography>
+                        </Stack>
+                        <Button
+                          variant="outlined"
+                          startIcon={loadServerRestoreStage.isPending ? <CircularProgress size={16} color="inherit" /> : <RestoreRoundedIcon />}
+                          disabled={loadServerRestoreStage.isPending || applyRestoreStage.isPending}
+                          onClick={() =>
+                            loadServerRestoreStage.mutate(backup, {
+                              onSuccess: (stage) => {
+                                setRestoreStage(stage)
+                                setRestoreError(null)
+                                setBackupNotice(`Staged remote restore from ${formatCalendarTimestamp(backup.createdAt, backup.createdAt)}.`)
+                              },
+                            })
+                          }
+                        >
+                          {loadServerRestoreStage.isPending ? 'Loading remote backup...' : 'Stage restore'}
+                        </Button>
+                      </Stack>
+                    ))}
+                  </Stack>
+                </SurfaceCard>
+              ) : null}
+              {ineligibleServerBackups.length > 0 ? (
+                <Alert severity="info" variant="outlined">
+                  Some recent scheduled backups are not restore-ready yet: {ineligibleServerBackups
+                    .map((backup) => `${backup.id} (${backup.restoreEligibility?.status ?? 'unknown'})`)
+                    .join(' · ')}
+                </Alert>
+              ) : null}
               {restoreError ? (
                 <Alert severity="error" variant="outlined" aria-live="polite">
                   {restoreError}
+                </Alert>
+              ) : null}
+              {loadServerRestoreStage.isError ? (
+                <Alert severity="error" variant="outlined" aria-live="polite">
+                  {loadServerRestoreStage.error instanceof Error
+                    ? loadServerRestoreStage.error.message
+                    : 'Forge could not load the selected scheduled backup.'}
                 </Alert>
               ) : null}
               {createManualBackup.isError ? (
@@ -480,7 +622,7 @@ export function SettingsPage() {
               ) : null}
               {restoreStage ? (
                 <Alert severity="info" variant="outlined" aria-live="polite">
-                  {restoreStage.summary}
+                  {restoreStage.summary} Source: {restoreStage.source.label}.
                   {restoreStage.warnings.length > 0 ? ` Warnings: ${restoreStage.warnings.join(' ')}` : ''}
                 </Alert>
               ) : null}

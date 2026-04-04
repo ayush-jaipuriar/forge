@@ -62,6 +62,8 @@ describe('restore service', () => {
     const queueItems = await localSyncQueueRepository.listOutstanding()
 
     expect(stage.summary).toContain('day instance')
+    expect(stage.source.kind).toBe('localFile')
+    expect(stage.source.label).toContain('local backup file')
     expect(job.status).toBe('partial')
     expect(job.warnings.some((warning) => warning.includes('derived state'))).toBe(true)
     expect(job.warnings.some((warning) => warning.includes('Cleared 1 queued local sync item'))).toBe(true)

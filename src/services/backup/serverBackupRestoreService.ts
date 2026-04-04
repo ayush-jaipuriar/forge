@@ -151,5 +151,15 @@ export async function buildServerBackupRestoreStage({
   })
 
   const serialized = JSON.stringify(payload)
-  return parseRestorePayloadText(serialized)
+  const stage = await parseRestorePayloadText(serialized)
+
+  return {
+    ...stage,
+    source: {
+      kind: 'serverBackup',
+      label: `Loaded from scheduled backup ${backup.id}`,
+      backupId: backup.id,
+      createdAt: backup.createdAt,
+    },
+  }
 }
