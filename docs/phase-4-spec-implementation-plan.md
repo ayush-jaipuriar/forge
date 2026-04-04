@@ -361,8 +361,8 @@ Convert the Phase 3 release posture into a production launch process that can ac
 
 ### Checklist
 
-- [ ] Build a formal browser/PWA/manual QA matrix for all critical user flows.
-- [ ] Define launch smoke tests for:
+- [x] Build a formal browser/PWA/manual QA matrix for all critical user flows.
+- [x] Define launch smoke tests for:
   - auth
   - Today execution
   - Schedule overrides
@@ -370,18 +370,26 @@ Convert the Phase 3 release posture into a production launch process that can ac
   - backup export/restore
   - Calendar read
   - Calendar write mirroring
-- [ ] Define rollback expectations for Hosting and Functions deploys.
-- [ ] Confirm data-recovery expectations and support steps for common failure modes.
-- [ ] Review copy and product honesty around all external-integration surfaces.
+- [x] Define rollback expectations for Hosting and Functions deploys.
+- [x] Confirm data-recovery expectations and support steps for common failure modes.
+- [x] Review copy and product honesty around all external-integration surfaces.
 
 ### Testing and Documentation
 
-- [ ] Add a Phase 4 release/launch checklist doc or expand the release docs to include launch operations.
-- [ ] Update README and deployment docs with launch-focused references.
+- [x] Add a Phase 4 release/launch checklist doc or expand the release docs to include launch operations.
+- [x] Update README and deployment docs with launch-focused references.
 
 ### Exit Criteria
 
 - launch can be executed and repeated using docs rather than memory
+- ✅ achieved: Forge now has a repeatable launch verification command, a launch runbook, a release checklist, and explicit rollback/support notes for the highest-risk flows
+
+### Implementation Notes
+
+- Added `launch:verify` to [package.json](/Users/ayushjaipuriar/Documents/GitHub/forge/package.json) so release verification now runs the root app and Functions workspace as one repeatable operator command instead of a remembered sequence.
+- Added [docs/phase-4-launch-operations.md](/Users/ayushjaipuriar/Documents/GitHub/forge/docs/phase-4-launch-operations.md) with the browser/PWA smoke-test matrix, rollback notes, and first-response support steps for auth, sync, backup, restore, notifications, and Calendar issues.
+- Added [docs/phase-4-release-readiness-checklist.md](/Users/ayushjaipuriar/Documents/GitHub/forge/docs/phase-4-release-readiness-checklist.md) as the operator-facing Phase 4 launch gate.
+- Updated [docs/deployment-guide.md](/Users/ayushjaipuriar/Documents/GitHub/forge/docs/deployment-guide.md) and [README.md](/Users/ayushjaipuriar/Documents/GitHub/forge/README.md) so the launch-focused docs and verification path are discoverable from the repo entry points.
 
 ## Milestone 4: Native Shell Foundation with Capacitor
 
@@ -397,21 +405,30 @@ Create the first real native mobile shell while reusing the current product.
 
 ### Checklist
 
-- [ ] Add Capacitor to the project with a repo-managed native-shell setup.
-- [ ] Create the Android shell project and wire it to the built web assets.
-- [ ] Verify local Android build and run flow.
-- [ ] Define how environment configuration should work for native shell builds.
-- [ ] Confirm shell boot behavior, deep-link or auth callback assumptions, and offline startup behavior.
-- [ ] Keep the current web/PWA path intact without degrading it.
+- [x] Add Capacitor to the project with a repo-managed native-shell setup.
+- [x] Create the Android shell project and wire it to the built web assets.
+- [x] Verify local Android build and run flow.
+- [x] Define how environment configuration should work for native shell builds.
+- [x] Confirm shell boot behavior, deep-link or auth callback assumptions, and offline startup behavior.
+- [x] Keep the current web/PWA path intact without degrading it.
 
 ### Testing and Documentation
 
-- [ ] Document the local native-shell build workflow and prerequisites.
-- [ ] Add shell verification notes for emulator and device runs.
+- [x] Document the local native-shell build workflow and prerequisites.
+- [x] Add shell verification notes for emulator and device runs.
 
 ### Exit Criteria
 
 - Forge can be built and run as a native Android shell locally without breaking the existing web product
+- ✅ achieved: Forge now has a repo-managed Capacitor shell, a generated Android project, a verified local build/install/launch flow, and explicit native workflow docs
+
+### Implementation Notes
+
+- Added Capacitor dependencies and native scripts in [package.json](/Users/ayushjaipuriar/Documents/GitHub/forge/package.json): `native:doctor`, `native:sync`, `android:sync`, `android:assemble`, `android:install`, `android:open`, and `android:run`.
+- Added repo-managed Capacitor config in [capacitor.config.ts](/Users/ayushjaipuriar/Documents/GitHub/forge/capacitor.config.ts) with `dist/` as the native web asset source and an explicit Android shell boundary.
+- Generated the Android shell project in [android](/Users/ayushjaipuriar/Documents/GitHub/forge/android), including Gradle wrapper, app module, and Capacitor asset sync wiring.
+- Verified the local native path with `npm run native:doctor`, `npm run build`, `./gradlew assembleDebug`, `adb install -r android/app/build/outputs/apk/debug/app-debug.apk`, and emulator launch confirmation for `com.forge.executionos/.MainActivity`.
+- Documented prerequisites, environment posture, boot assumptions, and emulator/device notes in [docs/phase-4-native-shell-workflow.md](/Users/ayushjaipuriar/Documents/GitHub/forge/docs/phase-4-native-shell-workflow.md).
 
 ## Milestone 5: Native Capability Boundaries and Mobile Supportability
 
@@ -538,8 +555,8 @@ Prepare a credible launch candidate after the shell and platform shifts are in p
 - [x] Milestone 0 complete
 - [x] Milestone 1 complete
 - [x] Milestone 2 complete
-- [ ] Milestone 3 complete
-- [ ] Milestone 4 complete
+- [x] Milestone 3 complete
+- [x] Milestone 4 complete
 - [ ] Milestone 5 complete
 - [ ] Milestone 6 complete
 - [ ] Milestone 7 complete

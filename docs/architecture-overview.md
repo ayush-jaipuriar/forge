@@ -360,6 +360,23 @@ This document captures the Phase 1 architectural baseline that implementation sh
 - [docs/phase-4-operational-diagnostics.md](/Users/ayushjaipuriar/Documents/GitHub/forge/docs/phase-4-operational-diagnostics.md) now records the observability model, severity meanings, ownership expectations, and blind spots, which is important because Functions logs, OS-level notification display, and some provider-side quota details still cannot be fully surfaced in-app
 - the product honesty boundary remains deliberate: the new diagnostics surface is a launch-support summary, not a live event console, because deeper forensic inspection still belongs in Firebase Console, browser devtools, and deployment tooling rather than inside the product UI
 
+## Phase 4 Milestone 3 Release Operations and Launch QA
+
+- launch verification is now intentionally repeatable from one root command in [package.json](/Users/ayushjaipuriar/Documents/GitHub/forge/package.json): `npm run launch:verify` runs lint, typecheck, tests, build, and the Functions verification flow together, which matters because a launch gate that depends on human memory is not a real launch gate
+- the operator runbook now lives in [docs/phase-4-launch-operations.md](/Users/ayushjaipuriar/Documents/GitHub/forge/docs/phase-4-launch-operations.md), where auth, Today, Schedule, notifications, backup/restore, Calendar read, and Calendar write mirroring all have explicit smoke-test expectations plus first-response support steps
+- rollback expectations are now written down instead of implied: Hosting rollback, Functions rollback, and rules rollback are treated as independent decisions with post-rollback revalidation requirements, which is important because Forge now spans browser shell, scheduled orchestration, and storage-backed recovery
+- [docs/phase-4-release-readiness-checklist.md](/Users/ayushjaipuriar/Documents/GitHub/forge/docs/phase-4-release-readiness-checklist.md) now acts as the Phase 4 launch gate, while [docs/deployment-guide.md](/Users/ayushjaipuriar/Documents/GitHub/forge/docs/deployment-guide.md) and [README.md](/Users/ayushjaipuriar/Documents/GitHub/forge/README.md) both point operators at the launch docs directly
+- the key architecture win in this milestone is not a new feature; it is that launch behavior, rollback behavior, and support behavior are now repo-owned artifacts instead of tribal knowledge carried across sessions
+
+## Phase 4 Milestone 4 Native Shell Foundation with Capacitor
+
+- Capacitor is no longer just a roadmap decision record; the repo now has a live shell boundary through [capacitor.config.ts](/Users/ayushjaipuriar/Documents/GitHub/forge/capacitor.config.ts), which points the native layer at the built `dist/` web assets and keeps the current React + Vite product as the rendering core
+- the Android shell now exists as a repo-managed project in [android](/Users/ayushjaipuriar/Documents/GitHub/forge/android), which matters because future native-only behaviors can now be layered onto a real shell instead of being planned abstractly
+- [package.json](/Users/ayushjaipuriar/Documents/GitHub/forge/package.json) now exposes explicit native workflow commands for doctor, sync, assemble, install, open, and run; that keeps native-shell work aligned with the same “repeatable from the repo root” principle used for launch verification and Functions verification
+- the current native environment model is deliberately conservative: the Android shell consumes the same built web assets and build-time Firebase web config as the browser product, while a more separated native config story is deferred until later milestones define native capability boundaries more explicitly
+- Milestone 4 has already verified the local Android path end to end on this machine: the Capacitor Android project syncs successfully, `./gradlew assembleDebug` succeeds, a debug APK is produced, `adb install -r` succeeds, and the emulator shows `com.forge.executionos/.MainActivity` as the resumed activity
+- [docs/phase-4-native-shell-workflow.md](/Users/ayushjaipuriar/Documents/GitHub/forge/docs/phase-4-native-shell-workflow.md) now records the local prerequisites, build/install commands, environment posture, boot assumptions, and emulator/device notes so native-shell setup is teachable and repeatable rather than terminal-luck
+
 
 ## Layer Boundaries
 

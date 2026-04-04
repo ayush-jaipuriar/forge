@@ -25,10 +25,9 @@ This gives the closest local equivalent of the deployed Hosting shell, including
 ## Firebase Hosting Deployment
 
 ```bash
-npm run build
 npm run functions:install
-npm run functions:verify
-firebase deploy --only hosting,firestore:rules,firestore:indexes,functions
+npm run launch:verify
+firebase deploy --only hosting,firestore:rules,firestore:indexes,storage,functions
 ```
 
 Current Hosting expectations:
@@ -69,6 +68,18 @@ Current Hosting expectations:
 - local development intentionally skips App Check on `localhost` and `127.0.0.1`; treat enforcement as a deployed-environment rollout step, not a local prerequisite
 - the Functions workspace has its own install/build lifecycle; run `npm run functions:install` before first deploy or emulator use
 
+## Phase 4 Launch Operations
+
+- use [docs/phase-4-launch-operations.md](/Users/ayushjaipuriar/Documents/GitHub/forge/docs/phase-4-launch-operations.md) as the repeatable smoke-test and rollback runbook
+- use [docs/phase-4-release-readiness-checklist.md](/Users/ayushjaipuriar/Documents/GitHub/forge/docs/phase-4-release-readiness-checklist.md) as the launch gate
+- `npm run launch:verify` is now the preferred pre-deploy verification path because it exercises the root app plus the Functions workspace together
+
+## Rollback Notes
+
+- Hosting rollback should be treated independently from Functions rollback when the fault is clearly shell-only or server-only
+- after any rollback, re-check the Settings diagnostics surface plus the highest-risk smoke tests before treating the system as recovered
+- rules rollback should target the specific Firestore or Storage ruleset that regressed rather than broad unrelated deploy changes
+
 ## Phase 3 Operational Notes
 
 - browser and installed-PWA notifications are the only supported delivery channels today; scheduled Functions can evaluate and persist candidates, but they do not create native mobile push by themselves
@@ -85,3 +96,9 @@ Current Hosting expectations:
   - `127.0.0.1`
   - the deployed web origin
 - future native-shell callback and permission behavior should be configured as native-shell-specific work, not mixed into the current web `.env`
+
+## Native Shell Notes
+
+- use [docs/phase-4-native-shell-workflow.md](/Users/ayushjaipuriar/Documents/GitHub/forge/docs/phase-4-native-shell-workflow.md) for local Capacitor and Android shell setup
+- the current native shell is a local build/install/launch foundation, not a separate production deployment target yet
+- native-shell builds currently bundle the same built web assets and web Firebase config assumptions used by the browser product

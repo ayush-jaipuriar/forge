@@ -39,7 +39,11 @@ Useful scripts:
 - `npm run typecheck`
 - `npm run build`
 - `npm run preview`
+- `npm run launch:verify`
 - `npm run functions:verify`
+- `npm run native:doctor`
+- `npm run android:assemble`
+- `npm run android:install`
 
 For a production-like PWA check:
 
@@ -56,7 +60,10 @@ npm run preview -- --host 127.0.0.1 --port 4173
 - [Phase 4 Spec & Implementation Plan](/Users/ayushjaipuriar/Documents/GitHub/forge/docs/phase-4-spec-implementation-plan.md)
 - [Phase 4 Launch Baseline Audit](/Users/ayushjaipuriar/Documents/GitHub/forge/docs/phase-4-launch-baseline-audit.md)
 - [Phase 4 Configuration Safety Checklist](/Users/ayushjaipuriar/Documents/GitHub/forge/docs/phase-4-configuration-safety-checklist.md)
+- [Phase 4 Launch Operations](/Users/ayushjaipuriar/Documents/GitHub/forge/docs/phase-4-launch-operations.md)
+- [Phase 4 Release Readiness Checklist](/Users/ayushjaipuriar/Documents/GitHub/forge/docs/phase-4-release-readiness-checklist.md)
 - [Phase 4 Operational Diagnostics](/Users/ayushjaipuriar/Documents/GitHub/forge/docs/phase-4-operational-diagnostics.md)
+- [Phase 4 Native Shell Workflow](/Users/ayushjaipuriar/Documents/GitHub/forge/docs/phase-4-native-shell-workflow.md)
 - [Architecture Overview](/Users/ayushjaipuriar/Documents/GitHub/forge/docs/architecture-overview.md)
 - [Command Center Visualization System](/Users/ayushjaipuriar/Documents/GitHub/forge/docs/command-center-visualization-system.md)
 - [Command Center Metric Definitions](/Users/ayushjaipuriar/Documents/GitHub/forge/docs/command-center-metric-definitions.md)
@@ -78,12 +85,17 @@ npm run preview -- --host 127.0.0.1 --port 4173
 
 ## Verification Status
 
-The repo currently passes:
+The repo currently passes the full Phase 4 launch path:
+
+- `npm run launch:verify`
+
+That launch path currently covers:
 
 - `npm run lint`
 - `npm run test:run`
 - `npm run typecheck`
 - `npm run build`
+- `npm run functions:verify`
 
 Desktop Chromium verification has also been completed for the built PWA shell, including manifest visibility, service-worker control, and forced offline reload of the auth shell.
 Android Chrome verification has now also been completed on a real `adb`-connected device, including successful shell rendering, visible install surface, and cached-shell reload after the local preview origin was stopped.
@@ -96,6 +108,7 @@ Live Firebase verification has also been completed against a real project, inclu
 - Google Calendar now supports primary-calendar pressure plus explicit major-block write mirroring in Phase 3, but long-lived server-managed OAuth and background reconciliation are not complete yet.
 - Health integration is a persisted scaffold and typed normalization seam, not a live provider sync system yet.
 - Offline behavior is intentionally shell-first and action-focused. It does not attempt full query-cache persistence for every screen.
+- Native shell now exists through Capacitor on Android, but native auth callback handling, native push delivery, and native health bridges are still not complete yet.
 
 ## Product Boundary
 
