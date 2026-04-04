@@ -3,6 +3,7 @@ import { Alert, Button, CircularProgress, Grid, Stack, TextField, Typography } f
 import { MetricTile } from '@/components/common/MetricTile'
 import { SectionHeader } from '@/components/common/SectionHeader'
 import { SurfaceCard } from '@/components/common/SurfaceCard'
+import { usePlatformWorkspace } from '@/features/platform/hooks/usePlatformWorkspace'
 import { usePhysicalWorkspace } from '@/features/physical/hooks/usePhysicalWorkspace'
 import { useUpdateWorkoutLog } from '@/features/physical/hooks/useUpdateWorkoutLog'
 import { useUpdateDailySignals } from '@/features/today/hooks/useUpdateDailySignals'
@@ -11,6 +12,7 @@ const sleepDurationOptions = [6, 7, 7.5, 8, 8.5, 9]
 
 export function PhysicalPage() {
   const { data, isLoading } = usePhysicalWorkspace()
+  const platformWorkspace = usePlatformWorkspace()
   const updateWorkoutMutation = useUpdateWorkoutLog()
   const updateSignalsMutation = useUpdateDailySignals()
   const [workoutNoteDraft, setWorkoutNoteDraft] = useState<string | null>(null)
@@ -230,7 +232,9 @@ export function PhysicalPage() {
             </Typography>
           ))}
           <Alert severity="info" variant="outlined">
-            Sleep duration is logged manually in Phase 3. When Apple Health or Google Health Connect integration lands in a future phase, automated sleep data will flow through the normalized signal contract and appear here automatically without manual entry.
+            {platformWorkspace.runtime === 'nativeShell'
+              ? 'The native shell now exists, but automated sleep and recovery ingestion still requires real provider bridges and native permission work. Sleep duration remains manual until those bridges land.'
+              : 'Sleep duration is logged manually in Phase 3. When Apple Health or Google Health Connect integration lands in a future phase, automated sleep data will flow through the normalized signal contract and appear here automatically without manual entry.'}
           </Alert>
         </Stack>
       </SurfaceCard>

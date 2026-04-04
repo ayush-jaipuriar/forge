@@ -109,6 +109,7 @@ Live Firebase verification has also been completed against a real project, inclu
 - Health integration is a persisted scaffold and typed normalization seam, not a live provider sync system yet.
 - Offline behavior is intentionally shell-first and action-focused. It does not attempt full query-cache persistence for every screen.
 - Native shell now exists through Capacitor on Android, but native auth callback handling, native push delivery, and native health bridges are still not complete yet.
+- Phase 4 now surfaces explicit runtime-capability boundaries in-product, so browser, installed-PWA, and native-shell support posture are visible instead of implied.
 
 ## Product Boundary
 

@@ -102,3 +102,5 @@ Current Hosting expectations:
 - use [docs/phase-4-native-shell-workflow.md](/Users/ayushjaipuriar/Documents/GitHub/forge/docs/phase-4-native-shell-workflow.md) for local Capacitor and Android shell setup
 - the current native shell is a local build/install/launch foundation, not a separate production deployment target yet
 - native-shell builds currently bundle the same built web assets and web Firebase config assumptions used by the browser product
+- Milestone 5 now makes native support boundaries explicit in-product: auth, Calendar, backup export, and restore import are still browser-constrained inside the shell even though launch/install is real
+- do not treat the native shell as evidence that native push, native auth callback completion, or health-provider bridges are production-ready

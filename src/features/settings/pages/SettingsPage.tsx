@@ -12,7 +12,7 @@ import { EmptyState } from '@/components/common/EmptyState'
 import { SectionHeader } from '@/components/common/SectionHeader'
 import { SurfaceCard } from '@/components/common/SurfaceCard'
 import { useAuthSession } from '@/features/auth/providers/useAuthSession'
-import { usePwaState } from '@/features/pwa/providers/usePwaState'
+import { usePlatformWorkspace } from '@/features/platform/hooks/usePlatformWorkspace'
 import { useApplyRestoreStage } from '@/features/settings/hooks/useApplyRestoreStage'
 import { useConnectCalendarRead } from '@/features/settings/hooks/useConnectCalendarRead'
 import { useConnectCalendarWrite } from '@/features/settings/hooks/useConnectCalendarWrite'
@@ -24,6 +24,8 @@ import { useSettingsWorkspace } from '@/features/settings/hooks/useSettingsWorks
 import { useSyncCalendarMirrors } from '@/features/settings/hooks/useSyncCalendarMirrors'
 import { useUpdateNotificationPreference } from '@/features/settings/hooks/useUpdateNotificationPreference'
 import { formatCalendarTimestamp, getCalendarStatusTone } from '@/domain/calendar/presentation'
+import { getPlatformCapability } from '@/domain/platform/capabilities'
+import type { PlatformCapabilityStatus, PlatformWorkspace } from '@/domain/platform/types'
 import type { OperationalDiagnosticSeverity } from '@/services/monitoring/operationalDiagnosticsService'
 import { parseRestorePayloadText, type RestoreStage } from '@/services/backup/restoreService'
 
@@ -39,9 +41,29 @@ function getOperationalTone(severity: OperationalDiagnosticSeverity) {
   return 'success' as const
 }
 
+function getCapabilityTone(status: PlatformCapabilityStatus) {
+  if (status === 'limited') {
+    return 'warning' as const
+  }
+
+  if (status === 'planned') {
+    return 'default' as const
+  }
+
+  return 'success' as const
+}
+
+function getShellTone(workspace: PlatformWorkspace) {
+  if (workspace.runtime === 'nativeShell') {
+    return 'warning' as const
+  }
+
+  return 'success' as const
+}
+
 export function SettingsPage() {
   const { status, user } = useAuthSession()
-  const { canInstall, isInstalled, isOnline, needRefresh, offlineReady } = usePwaState()
+  const platformWorkspace = usePlatformWorkspace()
   const { data, isLoading } = useSettingsWorkspace(user?.uid)
   const updateNotificationPreference = useUpdateNotificationPreference()
   const requestNotificationPermission = useRequestNotificationPermission()
@@ -103,6 +125,12 @@ export function SettingsPage() {
             : syncCalendarMirrors.isPending
               ? 'Reconciling mirrored blocks...'
               : null
+  const notificationCapability = getPlatformCapability(platformWorkspace, 'notifications')
+  const backupExportCapability = getPlatformCapability(platformWorkspace, 'backupExport')
+  const restoreImportCapability = getPlatformCapability(platformWorkspace, 'restoreImport')
+  const authCapability = getPlatformCapability(platformWorkspace, 'auth')
+  const calendarCapability = getPlatformCapability(platformWorkspace, 'calendar')
+  const healthCapability = getPlatformCapability(platformWorkspace, 'health')
 
   async function handleRestoreFileSelected(event: ChangeEvent<HTMLInputElement>) {
     const file = event.target.files?.[0]
@@ -197,21 +225,62 @@ export function SettingsPage() {
         </Grid>
         <Grid size={{ xs: 12, md: 6 }}>
           <SurfaceCard
-            eyebrow="PWA Surface"
-            title="Installability and shell readiness"
-            description="Milestone 9 made the app installable and offline-aware; this card exposes that platform state inside the product."
-            action={<Chip label={isOnline ? 'Online' : 'Offline'} size="small" variant="outlined" color={isOnline ? 'success' : 'warning'} />}
+            eyebrow="Runtime Boundary"
+            title="Platform and shell support posture"
+            description="Phase 4 now distinguishes browser, installed-PWA, and native-shell contexts explicitly so capability claims stay tied to the runtime that actually owns them."
+            action={
+              <Chip
+                label={platformWorkspace.shellLabel}
+                size="small"
+                variant="outlined"
+                color={getShellTone(platformWorkspace)}
+              />
+            }
           >
-            <Stack spacing={0.75}>
+            <Stack spacing={1.25}>
               <Typography variant="body2" color="text.secondary">
-                Installed: {isInstalled ? 'Yes' : 'Not yet'}
+                {platformWorkspace.summary}
               </Typography>
               <Typography variant="body2" color="text.secondary">
-                Install prompt available: {canInstall ? 'Yes' : 'No'}
+                Support tier: {platformWorkspace.shellSupportLabel}
               </Typography>
               <Typography variant="body2" color="text.secondary">
-                Pending update: {needRefresh ? 'Yes' : 'No'} · Offline shell ready: {offlineReady ? 'Yes' : 'No'}
+                Install posture: {platformWorkspace.installSurfaceLabel}
               </Typography>
+              <Typography variant="body2" color="text.secondary">
+                Pending update: {platformWorkspace.needRefresh ? 'Yes' : 'No'} · Offline shell ready: {platformWorkspace.offlineReady ? 'Yes' : 'No'}
+              </Typography>
+              {platformWorkspace.supportNotes.map((note) => (
+                <Alert key={note} severity="info" variant="outlined">
+                  {note}
+                </Alert>
+              ))}
+              <Stack spacing={1}>
+                {platformWorkspace.capabilities.map((capability) => (
+                  <Stack
+                    key={capability.key}
+                    direction={{ xs: 'column', sm: 'row' }}
+                    spacing={1}
+                    justifyContent="space-between"
+                    alignItems={{ xs: 'flex-start', sm: 'center' }}
+                  >
+                    <Stack spacing={0.25} sx={{ flex: 1 }}>
+                      <Typography variant="body2" color="text.primary">
+                        {capability.label}
+                      </Typography>
+                      <Typography variant="body2" color="text.secondary">
+                        {capability.summary}
+                      </Typography>
+                    </Stack>
+                    <Chip
+                      label={capability.status}
+                      size="small"
+                      variant="outlined"
+                      color={getCapabilityTone(capability.status)}
+                    />
+                  </Stack>
+                ))}
+              </Stack>
             </Stack>
           </SurfaceCard>
         </Grid>
@@ -251,6 +320,11 @@ export function SettingsPage() {
               <Typography variant="body2" color="text.secondary">
                 Permission: {notificationState.permission}. Delivered today: {notificationState.countersByDate[new Date().toISOString().slice(0, 10)]?.delivered ?? 0}. Suppressed today: {notificationState.countersByDate[new Date().toISOString().slice(0, 10)]?.suppressed ?? 0}.
               </Typography>
+              {notificationCapability ? (
+                <Alert severity={notificationCapability.status === 'limited' ? 'warning' : 'info'} variant="outlined">
+                  {notificationCapability.summary}
+                </Alert>
+              ) : null}
               <Stack direction={{ xs: 'column', sm: 'row' }} spacing={1} alignItems={{ xs: 'flex-start', sm: 'center' }}>
                 <Button
                   variant="contained"
@@ -306,6 +380,16 @@ export function SettingsPage() {
                 Server restore foundation: {serverRestoreReadyCount} restore-ready scheduled backup{serverRestoreReadyCount === 1 ? '' : 's'} in the current view.
                 {latestServerRestoreReadyBackup ? ` Latest restore-ready backup: ${latestServerRestoreReadyBackup.createdAt}.` : ' No server restore-ready backup is visible yet.'}
               </Typography>
+              {backupExportCapability ? (
+                <Alert severity={backupExportCapability.status === 'limited' ? 'warning' : 'info'} variant="outlined">
+                  {backupExportCapability.summary}
+                </Alert>
+              ) : null}
+              {restoreImportCapability ? (
+                <Alert severity={restoreImportCapability.status === 'limited' ? 'warning' : 'info'} variant="outlined">
+                  {restoreImportCapability.summary}
+                </Alert>
+              ) : null}
               {backupSource.operations !== backupSource.recentBackups ? (
                 <Alert severity="info" variant="outlined">
                   Forge loaded backup health from {backupSource.operations} state, but the recent backup list is currently using {backupSource.recentBackups} fallback data.
@@ -460,6 +544,16 @@ export function SettingsPage() {
               <Typography variant="body2" color="text.secondary">
                 Connection: {calendarConnection.connectionStatus} · Feature gate: {calendarConnection.featureGate} · Managed mode: {calendarConnection.managedEventMode}
               </Typography>
+              {authCapability ? (
+                <Alert severity={authCapability.status === 'limited' ? 'warning' : 'info'} variant="outlined">
+                  {authCapability.summary}
+                </Alert>
+              ) : null}
+              {calendarCapability ? (
+                <Alert severity={calendarCapability.status === 'limited' ? 'warning' : 'info'} variant="outlined">
+                  {calendarCapability.summary}
+                </Alert>
+              ) : null}
               <Typography variant="body2" color="text.secondary">
                 Read sync: {calendarSyncState.externalEventSyncStatus}. Last external sync: {formatCalendarTimestamp(calendarSyncState.lastExternalSyncAt)}.
               </Typography>
@@ -593,6 +687,11 @@ export function SettingsPage() {
               <Typography variant="body2" color="text.secondary">
                 {healthIntegration.statusSummaryLabel}
               </Typography>
+              {healthCapability ? (
+                <Alert severity="info" variant="outlined">
+                  {healthCapability.summary}
+                </Alert>
+              ) : null}
               <Typography variant="body2" color="text.secondary">
                 Available signals: {healthIntegration.availableSignalCount} of {healthIntegration.totalSignalCount} (0 connected in Phase 3)
               </Typography>
@@ -610,7 +709,7 @@ export function SettingsPage() {
                 </Stack>
               ))}
               <Alert severity="info" variant="outlined">
-                Health integration seams are typed and ready for future providers. No fake connectivity or dead buttons exist here. Connect flows will land in a dedicated future phase once the native mobile shell exists.
+                Health integration seams are typed and ready for future providers. No fake connectivity or dead buttons exist here. The native shell now exists, but real provider bridges and permission flows are still deferred to a later milestone.
               </Alert>
             </Stack>
           </SurfaceCard>

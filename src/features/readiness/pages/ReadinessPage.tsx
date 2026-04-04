@@ -4,10 +4,12 @@ import { MetricTile } from '@/components/common/MetricTile'
 import { OperationalSignalCard } from '@/components/common/OperationalSignalCard'
 import { SectionHeader } from '@/components/common/SectionHeader'
 import { SurfaceCard } from '@/components/common/SurfaceCard'
+import { usePlatformWorkspace } from '@/features/platform/hooks/usePlatformWorkspace'
 import { useReadinessWorkspace } from '@/features/readiness/hooks/useReadinessWorkspace'
 
 export function ReadinessPage() {
   const { data, isLoading } = useReadinessWorkspace()
+  const platformWorkspace = usePlatformWorkspace()
 
   if (isLoading || !data) {
     return (
@@ -130,7 +132,9 @@ export function ReadinessPage() {
               </Typography>
             ))}
           <Alert severity="info" variant="outlined">
-            Recovery Score is not yet factored into readiness because no health provider is connected. When Fitbit or Apple Health integration lands, recovery signals will be normalized and weighted into the readiness model through a typed seam that already exists in the domain layer.
+            {platformWorkspace.runtime === 'nativeShell'
+              ? 'Recovery Score is still not factored into readiness, even inside the native shell, because no health provider bridge is connected yet. The typed seam already exists; the missing piece is real native provider ingestion.'
+              : 'Recovery Score is not yet factored into readiness because no health provider is connected. When Fitbit or Apple Health integration lands, recovery signals will be normalized and weighted into the readiness model through a typed seam that already exists in the domain layer.'}
           </Alert>
         </Stack>
       </SurfaceCard>

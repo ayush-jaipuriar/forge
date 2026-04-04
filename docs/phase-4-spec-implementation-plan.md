@@ -444,20 +444,27 @@ Make the new native shell operationally honest and ready for future native-only 
 
 ### Checklist
 
-- [ ] Add platform-detection seams so Forge can distinguish browser, installed PWA, and native shell contexts.
-- [ ] Define native permission boundaries for notifications, storage access, and later health-provider integrations.
-- [ ] Review mobile interaction quality inside the native shell, especially around auth, restore, backup export, and Calendar flows.
-- [ ] Add native-shell-specific fallback copy where browser-only assumptions no longer apply cleanly.
-- [ ] Document what Phase 4 native shell supports and what remains deferred.
+- [x] Add platform-detection seams so Forge can distinguish browser, installed PWA, and native shell contexts.
+- [x] Define native permission boundaries for notifications, storage access, and later health-provider integrations.
+- [x] Review mobile interaction quality inside the native shell, especially around auth, restore, backup export, and Calendar flows.
+- [x] Add native-shell-specific fallback copy where browser-only assumptions no longer apply cleanly.
+- [x] Document what Phase 4 native shell supports and what remains deferred.
 
 ### Testing and Documentation
 
-- [ ] Add tests for platform-detection and capability interpretation helpers.
-- [ ] Update mobile and deployment docs with shell-specific support boundaries.
+- [x] Add tests for platform-detection and capability interpretation helpers.
+- [x] Update mobile and deployment docs with shell-specific support boundaries.
 
 ### Exit Criteria
 
 - the native shell is not just running; it is explainable, supportable, and honest about its current capabilities
+
+### Implementation Notes
+
+- Added the platform capability seam in [src/domain/platform/types.ts](/Users/ayushjaipuriar/Documents/GitHub/forge/src/domain/platform/types.ts), [src/domain/platform/capabilities.ts](/Users/ayushjaipuriar/Documents/GitHub/forge/src/domain/platform/capabilities.ts), and [src/services/platform/platformCapabilitiesService.ts](/Users/ayushjaipuriar/Documents/GitHub/forge/src/services/platform/platformCapabilitiesService.ts) so Forge now distinguishes browser tabs, installed PWAs, and the Capacitor shell through one shared interpretation layer instead of scattered UI checks.
+- Added [src/features/platform/hooks/usePlatformWorkspace.ts](/Users/ayushjaipuriar/Documents/GitHub/forge/src/features/platform/hooks/usePlatformWorkspace.ts) and threaded its output into [src/features/settings/pages/SettingsPage.tsx](/Users/ayushjaipuriar/Documents/GitHub/forge/src/features/settings/pages/SettingsPage.tsx) to surface honest runtime-specific guardrails for auth, notifications, backup export, restore import, Calendar, and health-provider integrations.
+- Updated [src/features/physical/pages/PhysicalPage.tsx](/Users/ayushjaipuriar/Documents/GitHub/forge/src/features/physical/pages/PhysicalPage.tsx) and [src/features/readiness/pages/ReadinessPage.tsx](/Users/ayushjaipuriar/Documents/GitHub/forge/src/features/readiness/pages/ReadinessPage.tsx) so health-provider messaging stays explicit even when the native shell exists: shell foundation is real, provider bridges are still deferred.
+- Added focused runtime-capability coverage in [src/tests/domain/platform-capabilities.spec.ts](/Users/ayushjaipuriar/Documents/GitHub/forge/src/tests/domain/platform-capabilities.spec.ts).
 
 ## Milestone 6: Remote Restore and Recovery Completion
 

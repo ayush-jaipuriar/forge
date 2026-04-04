@@ -377,6 +377,14 @@ This document captures the Phase 1 architectural baseline that implementation sh
 - Milestone 4 has already verified the local Android path end to end on this machine: the Capacitor Android project syncs successfully, `./gradlew assembleDebug` succeeds, a debug APK is produced, `adb install -r` succeeds, and the emulator shows `com.forge.executionos/.MainActivity` as the resumed activity
 - [docs/phase-4-native-shell-workflow.md](/Users/ayushjaipuriar/Documents/GitHub/forge/docs/phase-4-native-shell-workflow.md) now records the local prerequisites, build/install commands, environment posture, boot assumptions, and emulator/device notes so native-shell setup is teachable and repeatable rather than terminal-luck
 
+## Phase 4 Milestone 5 Native Capability Boundaries and Mobile Supportability
+
+- Forge now has a dedicated platform-capability interpretation layer in [src/domain/platform/types.ts](/Users/ayushjaipuriar/Documents/GitHub/forge/src/domain/platform/types.ts), [src/domain/platform/capabilities.ts](/Users/ayushjaipuriar/Documents/GitHub/forge/src/domain/platform/capabilities.ts), and [src/services/platform/platformCapabilitiesService.ts](/Users/ayushjaipuriar/Documents/GitHub/forge/src/services/platform/platformCapabilitiesService.ts), which means browser tabs, installed PWAs, and the Capacitor shell no longer have to infer support posture from ad hoc UI conditionals
+- the key architectural choice is that runtime support is treated as environment truth rather than persisted user data: the platform workspace is derived live from PWA state plus Capacitor runtime detection, not stored inside settings
+- [src/features/settings/pages/SettingsPage.tsx](/Users/ayushjaipuriar/Documents/GitHub/forge/src/features/settings/pages/SettingsPage.tsx) now surfaces capability-specific guardrails for auth, notifications, backup export, restore import, Calendar, and health providers; this matters because the Android shell could otherwise look more “finished” than it really is just because it launches
+- [src/features/physical/pages/PhysicalPage.tsx](/Users/ayushjaipuriar/Documents/GitHub/forge/src/features/physical/pages/PhysicalPage.tsx) and [src/features/readiness/pages/ReadinessPage.tsx](/Users/ayushjaipuriar/Documents/GitHub/forge/src/features/readiness/pages/ReadinessPage.tsx) now keep the health message honest too: the shell exists, but native health bridges and permission flows are still future work
+- the support boundary is now explicit: browser remains the primary runtime, installed PWA remains the strongest installed runtime, and the native shell is a verified foundation runtime whose auth, Calendar, export/import, notification, and health behavior still largely inherit web constraints
+
 
 ## Layer Boundaries
 

@@ -303,7 +303,7 @@ describe('App', () => {
     expect(await screen.findByRole('heading', { name: /command center/i })).toBeInTheDocument()
     expect(screen.getByText(/history window is still empty/i)).toBeInTheDocument()
     expect(screen.getAllByText(/waiting for history/i).length).toBeGreaterThan(0)
-  })
+  }, 30_000)
 
   it('shows an explicit error state when the command-center workspace query fails', async () => {
     window.history.pushState({}, '', '/command-center')

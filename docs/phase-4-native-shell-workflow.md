@@ -159,3 +159,26 @@ Useful checks:
 - native auth callback handling is not yet declared complete
 - native notification delivery is not yet implemented
 - health-provider ingestion remains scaffold-only
+
+## Capability Boundary After Milestone 5
+
+Forge now exposes explicit runtime-capability boundaries inside Settings instead of treating the Android shell as equivalent to the browser product.
+
+Current honest support posture:
+
+- browser tab: primary supported runtime for auth, Calendar, backup export, and restore import
+- installed PWA: supported installed web runtime using the same browser-owned permission and download behavior
+- native shell: real launchable shell, but still a foundation runtime for several integration surfaces
+
+Current native-shell caveats:
+
+- Firebase Auth still depends on browser-oriented popup and callback assumptions
+- Google Calendar reconnect and mirroring still depend on browser-style Google session behavior
+- notifications still use browser-style delivery from the bundled web runtime; native push is not implemented
+- backup export and restore import still rely on webview download and file-selection behavior rather than native share or document-picker flows
+- health-provider bridges are not implemented yet even though the shell now exists
+
+Why this matters:
+
+- a running shell can create false confidence if capability boundaries stay implicit
+- Milestone 5 turns those boundaries into product-visible support notes so QA and launch work do not overclaim native readiness
