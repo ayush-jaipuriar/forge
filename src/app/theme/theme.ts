@@ -114,6 +114,10 @@ export const forgeTheme = createTheme({
           backgroundColor: alpha(forgeTokens.palette.accent.ember, 0.38),
           color: forgeTokens.palette.text.primary,
         },
+        '*:focus-visible': {
+          outline: `2px solid ${alpha(forgeTokens.palette.accent.gold, 0.9)}`,
+          outlineOffset: 2,
+        },
       },
     },
     MuiPaper: {
@@ -138,19 +142,19 @@ export const forgeTheme = createTheme({
       styleOverrides: {
         root: {
           borderRadius: 6,
-          border: `1px solid ${alpha(forgeTokens.palette.border.strong, 0.82)}`,
-          backgroundColor: alpha(forgeTokens.palette.background.elevated, 0.52),
+          border: `1px solid ${alpha(forgeTokens.palette.border.strong, 0.64)}`,
+          backgroundColor: alpha(forgeTokens.palette.background.elevated, 0.42),
           fontFamily: '"Plus Jakarta Sans", "Inter", "Segoe UI", sans-serif',
-          fontSize: '0.69rem',
+          fontSize: '0.66rem',
           fontWeight: 600,
-          letterSpacing: '0.015em',
-          height: 28,
+          letterSpacing: '0.01em',
+          height: 26,
         },
         icon: {
-          marginLeft: 7,
+          marginLeft: 6,
         },
         label: {
-          paddingInline: 10,
+          paddingInline: 8,
         },
       },
     },
@@ -160,6 +164,9 @@ export const forgeTheme = createTheme({
           borderRadius: 10,
           paddingInline: 16,
           minHeight: 40,
+          '&.Mui-focusVisible': {
+            boxShadow: `0 0 0 2px ${alpha(forgeTokens.palette.background.shell, 0.9)}, 0 0 0 4px ${alpha(forgeTokens.palette.accent.gold, 0.48)}`,
+          },
         },
         containedPrimary: {
           background: forgeTokens.palette.accent.ember,
@@ -181,6 +188,19 @@ export const forgeTheme = createTheme({
       styleOverrides: {
         root: {
           borderRadius: 10,
+          '&.Mui-focusVisible': {
+            boxShadow: `0 0 0 2px ${alpha(forgeTokens.palette.background.shell, 0.9)}, 0 0 0 4px ${alpha(forgeTokens.palette.accent.gold, 0.48)}`,
+          },
+        },
+      },
+    },
+    MuiButtonBase: {
+      styleOverrides: {
+        root: {
+          '&.Mui-focusVisible': {
+            outline: `2px solid ${alpha(forgeTokens.palette.accent.gold, 0.9)}`,
+            outlineOffset: 2,
+          },
         },
       },
     },

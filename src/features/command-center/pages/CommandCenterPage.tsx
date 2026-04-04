@@ -101,7 +101,7 @@ export function CommandCenterPage() {
           <SectionHeader
             eyebrow="Command Center"
             title="Command Center"
-            description="See the pattern, not just the day. This surface is where warnings, projections, trend shifts, and continuity signals become usable strategic judgment instead of disconnected charts."
+            description="See the pattern, not just the day."
             action={
               <Stack direction={{ xs: 'column', sm: 'row' }} spacing={1} alignItems={{ xs: 'flex-start', sm: 'center' }}>
                 {primaryStatusChip ? <Chip label={primaryStatusChip.label} color={primaryStatusChip.color} size="small" /> : null}
@@ -209,7 +209,7 @@ export function CommandCenterPage() {
           <SurfaceCard
             eyebrow="Primary Diagnostics"
             title="The main pace and output questions"
-            description="These charts carry the most strategic weight because they tell you whether readiness, score quality, and output are actually moving together."
+            description="The charts with the most strategic weight."
           >
             <Stack spacing={2}>
               <Box

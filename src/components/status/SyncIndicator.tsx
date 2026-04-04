@@ -3,49 +3,56 @@ import CloudDoneRoundedIcon from '@mui/icons-material/CloudDoneRounded'
 import CloudUploadRoundedIcon from '@mui/icons-material/CloudUploadRounded'
 import ErrorOutlineRoundedIcon from '@mui/icons-material/ErrorOutlineRounded'
 import WarningAmberRoundedIcon from '@mui/icons-material/WarningAmberRounded'
-import { Chip } from '@mui/material'
+import { Box, Stack, Typography } from '@mui/material'
 import { alpha } from '@mui/material/styles'
 import type { SyncStatus } from '@/domain/common/types'
 import { forgeTokens } from '@/app/theme/tokens'
 
 type SyncIndicatorProps = {
   status: SyncStatus
+  compact?: boolean
 }
 
 const statusMap = {
   stable: {
     label: 'Synced',
+    compactLabel: 'Synced',
     color: 'success' as const,
     icon: <CloudDoneRoundedIcon fontSize="small" />,
   },
   syncing: {
     label: 'Syncing',
+    compactLabel: 'Syncing',
     color: 'warning' as const,
     icon: <SyncRoundedIcon fontSize="small" />,
   },
   queued: {
     label: 'Queued to Sync',
+    compactLabel: 'Queued',
     color: 'default' as const,
     icon: <CloudUploadRoundedIcon fontSize="small" />,
   },
   stale: {
     label: 'Sync Stale',
+    compactLabel: 'Stale',
     color: 'warning' as const,
     icon: <WarningAmberRoundedIcon fontSize="small" />,
   },
   conflicted: {
     label: 'Sync Conflict',
+    compactLabel: 'Conflict',
     color: 'error' as const,
     icon: <ErrorOutlineRoundedIcon fontSize="small" />,
   },
   degraded: {
     label: 'Sync Degraded',
+    compactLabel: 'Degraded',
     color: 'error' as const,
     icon: <WarningAmberRoundedIcon fontSize="small" />,
   },
 }
 
-export function SyncIndicator({ status }: SyncIndicatorProps) {
+export function SyncIndicator({ status, compact = false }: SyncIndicatorProps) {
   const config = statusMap[status]
   const palette = {
     default: forgeTokens.palette.text.secondary,
@@ -55,19 +62,46 @@ export function SyncIndicator({ status }: SyncIndicatorProps) {
   }[config.color]
 
   return (
-    <Chip
-      icon={config.icon}
-      label={config.label}
-      size="small"
-      variant="outlined"
+    <Box
+      component="span"
       sx={{
+        display: 'inline-flex',
+        alignItems: 'center',
+        minHeight: compact ? 24 : 26,
+        px: compact ? 0.9 : 1,
+        borderRadius: 2,
         color: palette,
-        borderColor: alpha(palette, 0.24),
-        backgroundColor: alpha(palette, 0.05),
-        '& .MuiChip-icon': {
-          color: palette,
-        },
+        border: '1px solid',
+        borderColor: alpha(palette, 0.2),
+        backgroundColor: alpha(palette, 0.045),
       }}
-    />
+    >
+      <Stack direction="row" spacing={0.55} alignItems="center">
+        <Box
+          component="span"
+          sx={{
+            display: 'inline-flex',
+            alignItems: 'center',
+            color: palette,
+            '& svg': {
+              fontSize: compact ? '0.95rem' : '1rem',
+            },
+          }}
+        >
+          {config.icon}
+        </Box>
+        <Typography
+          component="span"
+          sx={{
+            fontFamily: '"Plus Jakarta Sans", "Inter", "Segoe UI", sans-serif',
+            fontSize: compact ? '0.68rem' : '0.72rem',
+            fontWeight: 600,
+            lineHeight: 1,
+          }}
+        >
+          {compact ? config.compactLabel : config.label}
+        </Typography>
+      </Stack>
+    </Box>
   )
 }

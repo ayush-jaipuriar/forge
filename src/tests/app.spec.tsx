@@ -334,6 +334,7 @@ describe('App', () => {
     render(<App />)
 
     expect(screen.getByRole('heading', { name: /completing google sign-in/i })).toBeInTheDocument()
-    expect(screen.getByText(/finishing the google redirect/i)).toBeInTheDocument()
+    expect(screen.getByText(/finishing sign-in and restoring forge/i)).toBeInTheDocument()
   })
+
 })

@@ -46,7 +46,7 @@ export function AppShell() {
         sx={{
           minHeight: '100vh',
           display: { xs: 'block', md: 'grid' },
-          gridTemplateColumns: { md: '112px minmax(0, 1fr)' },
+          gridTemplateColumns: { md: '124px minmax(0, 1fr)' },
         }}
       >
         <Box
@@ -57,12 +57,12 @@ export function AppShell() {
             height: '100vh',
             display: { xs: 'none', md: 'flex' },
             flexDirection: 'column',
-            gap: 2.5,
+            gap: 2,
             borderRight: '1px solid',
             borderColor: 'divider',
             backgroundColor: alpha(forgeTokens.palette.background.nav, 0.92),
             backdropFilter: 'blur(18px)',
-            px: 1.25,
+            px: 1.5,
             py: 2,
           }}
         >
@@ -79,6 +79,7 @@ export function AppShell() {
           <Stack spacing={0.75} sx={{ flex: 1 }}>
             {navigationItems.map(({ icon: Icon, label, path }) => {
               const isActive = isRouteActive(location.pathname, path)
+              const compactLabel = getCompactRailLabel(label)
 
               return (
                 <Tooltip key={path} title={label} placement="right">
@@ -93,7 +94,7 @@ export function AppShell() {
                       alignItems: 'center',
                       justifyContent: 'center',
                       px: 1,
-                      py: 1.2,
+                      py: 1.05,
                       borderRadius: 3,
                       color: isActive ? 'text.primary' : 'text.secondary',
                       textDecoration: 'none',
@@ -118,24 +119,27 @@ export function AppShell() {
                         backgroundColor: alpha(forgeTokens.palette.background.elevated, 0.72),
                         borderColor: alpha(forgeTokens.palette.text.secondary, 0.18),
                       },
+                      '&:focus-visible': {
+                        backgroundColor: alpha(forgeTokens.palette.background.elevated, 0.72),
+                      },
                     }}
                   >
-                      <Stack spacing={0.35} alignItems="center">
-                        <Icon fontSize="small" />
-                        <Typography
-                          sx={{
-                            fontSize: '0.58rem',
-                            lineHeight: 1,
-                            color: isActive ? 'text.primary' : 'text.secondary',
-                            fontWeight: isActive ? 700 : 600,
-                            letterSpacing: '0.02em',
-                            textAlign: 'center',
-                            maxWidth: 66,
-                          }}
-                        >
-                          {getCompactRailLabel(label)}
-                        </Typography>
-                      </Stack>
+                    <Stack spacing={0.35} alignItems="center">
+                      <Icon fontSize="small" />
+                      <Typography
+                        sx={{
+                          fontSize: '0.62rem',
+                          lineHeight: 1.1,
+                          color: isActive ? 'text.primary' : 'text.secondary',
+                          fontWeight: isActive ? 700 : 600,
+                          letterSpacing: '0.015em',
+                          textAlign: 'center',
+                          maxWidth: 76,
+                        }}
+                      >
+                        {compactLabel}
+                      </Typography>
+                    </Stack>
                   </Box>
                 </Tooltip>
               )
@@ -220,7 +224,7 @@ export function AppShell() {
 
                 <Stack direction="row" spacing={1} alignItems="center" sx={{ minWidth: 0 }}>
                   <Box sx={{ display: { xs: 'none', sm: 'block' } }}>
-                    <SyncIndicator status={syncStatus} />
+                    <SyncIndicator status={syncStatus} compact />
                   </Box>
                   <Button
                     variant="outlined"
@@ -255,7 +259,7 @@ export function AppShell() {
                   <Typography
                     variant="caption"
                     color="text.secondary"
-                    sx={{ display: { xs: 'none', md: 'block' } }}
+                    sx={{ display: { xs: 'none', lg: 'block' } }}
                   >
                     {user?.displayName ?? user?.email ?? 'Authenticated Operator'}
                   </Typography>
@@ -293,7 +297,7 @@ export function AppShell() {
             </Typography>
             <Typography variant="h3">Execution surfaces</Typography>
             <Typography color="text.secondary">
-              The mobile shell keeps quick access tight and moves the full workspace map into a single focused drawer.
+              Quick routes stay in the bar. The full map stays in this drawer.
             </Typography>
           </Stack>
 
@@ -322,7 +326,7 @@ export function AppShell() {
           <Stack direction="row" spacing={1} flexWrap="wrap" useFlexGap>
             <StatusBadge label={warState === 'onTrack' ? 'On Track' : titleFromToken(warState)} tone={warState} />
             <StatusBadge label={titleFromToken(dayMode)} tone={dayMode} />
-            <SyncIndicator status={syncStatus} />
+            <SyncIndicator status={syncStatus} compact />
           </Stack>
 
           <Button
@@ -380,39 +384,65 @@ export function AppShell() {
                   border: '1px solid',
                   borderColor: isActive ? forgeTokens.palette.border.accent : 'transparent',
                   color: isActive ? 'text.primary' : 'text.secondary',
+                  '&:focus-visible': {
+                    backgroundColor: alpha(forgeTokens.palette.background.elevated, 0.72),
+                  },
                 }}
               >
                 <Stack spacing={0.35} alignItems="center">
                   <Icon fontSize="small" />
-                  {isActive ? (
-                    <Typography
-                      sx={{
-                        fontFamily: '"Plus Jakarta Sans", "Inter", "Segoe UI", sans-serif',
-                        fontSize: '0.6rem',
-                        fontWeight: 700,
-                        lineHeight: 1,
-                      }}
-                    >
-                      {getCompactNavigationLabel(label)}
-                    </Typography>
-                  ) : null}
+                  <Typography
+                    sx={{
+                      fontFamily: '"Plus Jakarta Sans", "Inter", "Segoe UI", sans-serif',
+                      fontSize: '0.54rem',
+                      fontWeight: isActive ? 700 : 600,
+                      lineHeight: 1,
+                    }}
+                  >
+                    {getCompactNavigationLabel(label)}
+                  </Typography>
                 </Stack>
               </Box>
             )
           })}
 
-          <IconButton
+          <Box
+            component="button"
+            type="button"
             aria-label="Open navigation drawer"
             onClick={() => setMobileMenuOpen(true)}
             sx={{
-              alignSelf: 'stretch',
+              flex: 1,
+              minWidth: 0,
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              textDecoration: 'none',
+              borderRadius: 3,
+              px: 0.75,
+              py: 0.75,
               border: '1px solid',
               borderColor: 'divider',
               color: 'text.secondary',
+              backgroundColor: 'transparent',
+              appearance: 'none',
+              cursor: 'pointer',
             }}
           >
-            <MenuRoundedIcon fontSize="small" />
-          </IconButton>
+            <Stack spacing={0.35} alignItems="center">
+              <MenuRoundedIcon fontSize="small" />
+              <Typography
+                sx={{
+                  fontFamily: '"Plus Jakarta Sans", "Inter", "Segoe UI", sans-serif',
+                  fontSize: '0.54rem',
+                  fontWeight: 600,
+                  lineHeight: 1,
+                }}
+              >
+                Menu
+              </Typography>
+            </Stack>
+          </Box>
         </Stack>
       </Box>
     </Box>
@@ -423,6 +453,8 @@ function getCompactNavigationLabel(label: string) {
   switch (label) {
     case 'Command Center':
       return 'Command'
+    case 'Settings':
+      return 'Settings'
     default:
       return label
   }

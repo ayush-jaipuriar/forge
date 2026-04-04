@@ -7,7 +7,7 @@ import { useAuthSession } from '@/features/auth/providers/useAuthSession'
 import type { GoogleAuthMethod } from '@/lib/firebase/client'
 
 const authModuleMock = vi.hoisted(() => ({
-  auth: { name: 'firebase-auth' },
+  auth: { name: 'firebase-auth', currentUser: null as null | { uid: string; email: string | null; displayName: string | null; photoURL: string | null } },
   provider: { providerId: 'google.com' },
 }))
 
@@ -88,6 +88,7 @@ describe('AuthSessionProvider', () => {
   beforeEach(() => {
     vi.clearAllMocks()
     window.sessionStorage.clear()
+    authModuleMock.auth.currentUser = null
     vi.mocked(setPersistence).mockResolvedValue(undefined)
     vi.mocked(signInWithRedirect).mockResolvedValue(undefined as never)
     vi.mocked(signInWithPopup).mockResolvedValue({} as never)
@@ -126,6 +127,12 @@ describe('AuthSessionProvider', () => {
 
   it('completes a redirect return and authenticates the restored session', async () => {
     window.sessionStorage.setItem('forge-auth-google-redirect', 'pending')
+    authModuleMock.auth.currentUser = {
+      uid: 'user-1',
+      email: 'operator@forge.test',
+      displayName: 'Forge Operator',
+      photoURL: null,
+    }
 
     vi.mocked(onAuthStateChanged).mockImplementation((_auth, onNext) => {
       callAuthObserver(onNext, {
@@ -147,6 +154,29 @@ describe('AuthSessionProvider', () => {
     })
 
     expect(window.sessionStorage.getItem('forge-auth-google-redirect')).toBeNull()
+  })
+
+  it('preserves an already-known Firebase user while bootstrap finishes', async () => {
+    authModuleMock.auth.currentUser = {
+      uid: 'user-2',
+      email: 'known@forge.test',
+      displayName: 'Known Operator',
+      photoURL: null,
+    }
+
+    vi.mocked(onAuthStateChanged).mockImplementation((_auth, onNext) => {
+      callAuthObserver(onNext, authModuleMock.auth.currentUser)
+      return () => {}
+    })
+
+    renderProvider()
+
+    expect(screen.getByText('authenticated')).toBeInTheDocument()
+    expect(screen.getByText('known@forge.test')).toBeInTheDocument()
+
+    await waitFor(() => {
+      expect(bootstrapUserSessionMock).toHaveBeenCalled()
+    })
   })
 
   it('surfaces redirect-return errors without leaving the redirect intent stuck', async () => {

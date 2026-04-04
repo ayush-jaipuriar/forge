@@ -30,7 +30,7 @@ export function ReadinessPage() {
       <SectionHeader
         eyebrow="Readiness"
         title="Pressure should become readable early."
-        description="This page should tell you whether the target date, topic coverage, and current pace still support the plan, without sending you back into a heavier analytics surface first."
+        description="See whether the target date, topic coverage, and current pace still support the plan."
       />
 
       <Grid container spacing={2} alignItems="stretch">
@@ -92,7 +92,7 @@ export function ReadinessPage() {
             <SurfaceCard
               eyebrow="Focused Domains"
               title="Where today is already exposed"
-              description="These prep domains are closest to the generated plan and should be the first place to look when readiness feels thin."
+              description="The first prep domains to check when readiness feels thin."
             >
               {data.focusedDomains.length > 0 ? (
                 <Stack spacing={1.1} divider={<Divider flexItem />}>
@@ -115,7 +115,7 @@ export function ReadinessPage() {
             <SurfaceCard
               eyebrow="Intervention Count"
               title={operationalSignals.length > 0 ? `${operationalSignals.length} signals need attention` : 'No acute intervention signal'}
-              description="This count stays small on purpose. If the page shouts too often, it stops helping."
+              description="This count stays small on purpose."
             >
               <Typography variant="body2" color="text.secondary">
                 {operationalSignals.length > 0
@@ -131,7 +131,7 @@ export function ReadinessPage() {
         <SurfaceCard
           eyebrow="Intervention Layer"
           title="Where readiness is actually under pressure"
-          description="These signals should tell you where the target model is becoming operationally expensive, without turning the page into a warning wall."
+          description="Signals that show where the target model is becoming operationally expensive."
         >
           <Grid container spacing={1.5}>
             {operationalSignals.map((signal) => (
@@ -151,7 +151,7 @@ export function ReadinessPage() {
       <SurfaceCard
         eyebrow="Domain Readiness"
         title="Coverage and confidence across the prep map"
-        description="The page should keep domain weakness visible enough to act on, not bury it below secondary support copy."
+        description="Keep domain weakness visible enough to act on."
       >
         <Grid container spacing={2}>
           {readinessSnapshot.domainStates.map((domain) => (
@@ -181,7 +181,7 @@ export function ReadinessPage() {
       <SurfaceCard
         eyebrow="Recovery Signal Scaffolding"
         title="Future provider contribution points"
-        description="Recovery signals still sit behind a typed seam. They do not influence readiness until real provider ingestion exists."
+        description="Recovery signals stay behind a typed seam until real provider ingestion exists."
       >
         <Grid container spacing={2}>
           <Grid size={{ xs: 12, lg: 7 }}>

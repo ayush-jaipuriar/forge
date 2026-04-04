@@ -1,4 +1,4 @@
-import { Chip } from '@mui/material'
+import { Box, Typography } from '@mui/material'
 import { alpha } from '@mui/material/styles'
 import type { DayMode, WarState } from '@/domain/common/types'
 import { forgeTokens } from '@/app/theme/tokens'
@@ -28,15 +28,31 @@ export function StatusBadge({ label, tone }: StatusBadgeProps) {
   }[toneMap[tone]]
 
   return (
-    <Chip
-      label={label}
-      size="small"
-      variant="outlined"
+    <Box
+      component="span"
       sx={{
+        display: 'inline-flex',
+        alignItems: 'center',
+        minHeight: 24,
+        px: 1,
+        borderRadius: 2,
         color: palette,
-        borderColor: alpha(palette, 0.24),
-        backgroundColor: alpha(palette, 0.05),
+        border: '1px solid',
+        borderColor: alpha(palette, 0.2),
+        backgroundColor: alpha(palette, 0.045),
       }}
-    />
+    >
+      <Typography
+        component="span"
+        sx={{
+          fontFamily: '"Plus Jakarta Sans", "Inter", "Segoe UI", sans-serif',
+          fontSize: '0.7rem',
+          fontWeight: 600,
+          lineHeight: 1,
+        }}
+      >
+        {label}
+      </Typography>
+    </Box>
   )
 }

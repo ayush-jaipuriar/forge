@@ -184,7 +184,7 @@ export function TodayPage() {
           <SurfaceCard
             eyebrow="Execution Context"
             title={dayInstance.label}
-            description="These support signals should orient the day quickly without competing with the live execution stack."
+            description="Support signals for the current day."
           >
             <Stack spacing={1.5}>
               <SupportDataRow label="Day Type" value={dayInstance.dayType} detail="Routine engine source" />
@@ -212,8 +212,8 @@ export function TodayPage() {
 
           <SurfaceCard
             eyebrow="Quick Signals"
-            title="Log sleep and energy without breaking flow."
-            description="These inputs should stay fast, because they directly influence recommendation and score pressure."
+            title="Log sleep and energy fast."
+            description="These inputs directly influence recommendation and score pressure."
           >
             <Stack spacing={2}>
               <SignalToggleGroup<SleepStatus>
@@ -246,7 +246,7 @@ export function TodayPage() {
           <SurfaceCard
             eyebrow="Mode Override"
             title={activeMode.label}
-            description="Adjust the execution posture without changing the underlying seeded routine."
+            description="Adjust posture without changing the seeded routine."
             action={
               <Stack direction="row" spacing={1} useFlexGap flexWrap="wrap">
                 <StatusBadge label={activeMode.label} tone={currentDayMode} />

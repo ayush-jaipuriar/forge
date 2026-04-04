@@ -66,8 +66,8 @@ export function PwaStatusCard({
             </Stack>
             <Typography variant="body2" color="text.secondary">
               {canInstall
-                ? 'Install Forge for one-tap entry without letting this platform prompt dominate the page.'
-                : 'The shell is cached for offline use and the runtime truth has already been acknowledged.'}
+                ? 'Install Forge for one-tap entry.'
+                : 'Shell cached and acknowledged.'}
             </Typography>
           </Stack>
 
@@ -111,7 +111,7 @@ export function PwaStatusCard({
               Install Forge
             </Button>
             <Typography variant="body2" color="text.secondary">
-              Installing the app keeps the execution surface one tap away and gives the cached shell a more native-feeling entry point.
+              Install for one-tap entry and a stronger app-like launch surface.
             </Typography>
           </Stack>
         ) : null}
@@ -122,7 +122,7 @@ export function PwaStatusCard({
               Apply update
             </Button>
             <Typography variant="body2" color="text.secondary">
-              A newer cached version of Forge is ready. Applying it now refreshes the shell and activates the latest service worker.
+              A newer shell is ready to activate.
             </Typography>
           </Stack>
         ) : null}
@@ -133,7 +133,7 @@ export function PwaStatusCard({
               Dismiss
             </Button>
             <Typography variant="body2" color="text.secondary">
-              The shell is cached for offline use. This does not guarantee fresh remote data, but it does keep the primary execution UI recoverable.
+              The shell is cached for offline recovery.
             </Typography>
           </Stack>
         ) : null}

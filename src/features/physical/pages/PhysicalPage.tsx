@@ -58,7 +58,7 @@ export function PhysicalPage() {
       <SectionHeader
         eyebrow="Physical"
         title="Physical support should stay tied to execution."
-        description={`${data.dayInstance.label} carries workout state, sleep logging, and weekly training shape in one place so the day reads like a support system, not a separate health app.`}
+        description={`${data.dayInstance.label} keeps workout state, sleep logging, and weekly training shape in one place.`}
       />
 
       <Grid container spacing={2}>
@@ -192,10 +192,10 @@ export function PhysicalPage() {
 
         <Grid size={{ xs: 12, xl: 5 }}>
           <Stack spacing={2} height="100%">
-            <SurfaceCard
-              eyebrow="Sleep Support"
-              title="Manual sleep signal"
-              description="Sleep remains fast to log because the point is support quality, not sleep-tracker detail."
+          <SurfaceCard
+            eyebrow="Sleep Support"
+            title="Manual sleep signal"
+            description="Sleep stays fast to log because the goal is support quality, not tracker detail."
             >
               <Stack spacing={2}>
                 <Stack direction="row" spacing={1} useFlexGap flexWrap="wrap">
@@ -240,10 +240,10 @@ export function PhysicalPage() {
               </Stack>
             </SurfaceCard>
 
-            <SurfaceCard
-              eyebrow="Weekly Training Shape"
-              title={`${data.weeklyWorkoutSummary.scheduledCount} scheduled sessions + ${data.weeklyWorkoutSummary.optionalCount} optional windows`}
-              description="This week view should answer whether physical execution actually happened often enough to support the larger routine."
+              <SurfaceCard
+                eyebrow="Weekly Training Shape"
+                title={`${data.weeklyWorkoutSummary.scheduledCount} scheduled sessions + ${data.weeklyWorkoutSummary.optionalCount} optional windows`}
+                description="A quick read on whether physical execution is supporting the larger routine."
             >
               <Stack spacing={1.1} divider={<Divider flexItem />}>
                 {data.weeklyWorkoutSummary.labels.map((label) => (
@@ -257,10 +257,10 @@ export function PhysicalPage() {
         </Grid>
       </Grid>
 
-      <SurfaceCard
-        eyebrow="Health Provider Integration"
-        title="Recovery and sleep provider seam"
-        description={healthWorkspace.phaseNotice}
+          <SurfaceCard
+            eyebrow="Health Provider Integration"
+            title="Recovery and sleep provider seam"
+            description="Provider work stays scaffolded and future-facing."
       >
         <Grid container spacing={2}>
           <Grid size={{ xs: 12, lg: 7 }}>

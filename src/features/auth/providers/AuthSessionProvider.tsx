@@ -36,10 +36,14 @@ function getInitialState(): AuthState {
     }
   }
 
+  const auth = getFirebaseAuth()
+  const currentUser = auth?.currentUser ?? null
+  const mappedUser = currentUser ? mapFirebaseUser(currentUser) : null
+
   return {
-    status: 'checking',
+    status: mappedUser ? 'authenticated' : 'checking',
     flowPhase: hasPendingGoogleRedirect() ? 'returning' : 'idle',
-    user: null,
+    user: mappedUser,
     errorMessage: null,
   }
 }
@@ -65,7 +69,7 @@ export function AuthSessionProvider({ children }: PropsWithChildren) {
       if (hasPendingGoogleRedirect()) {
         setState((current) => ({
           ...current,
-          status: 'checking',
+          status: current.user ? 'authenticated' : 'checking',
           flowPhase: 'returning',
           errorMessage: null,
         }))
@@ -117,10 +121,12 @@ export function AuthSessionProvider({ children }: PropsWithChildren) {
             return
           }
 
+          const mappedUser = mapFirebaseUser(firebaseUser)
           setState((current) => ({
             ...current,
-            status: 'checking',
-            flowPhase: 'returning',
+            status: 'authenticated',
+            flowPhase: current.flowPhase === 'returning' ? 'returning' : 'idle',
+            user: mappedUser,
             errorMessage: null,
           }))
 
@@ -134,7 +140,7 @@ export function AuthSessionProvider({ children }: PropsWithChildren) {
             setState({
               status: 'authenticated',
               flowPhase: 'idle',
-              user: mapFirebaseUser(firebaseUser),
+              user: mappedUser,
               errorMessage: null,
             })
           } catch (error) {

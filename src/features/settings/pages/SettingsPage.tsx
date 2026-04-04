@@ -167,7 +167,7 @@ export function SettingsPage() {
           <SectionHeader
             eyebrow="Settings"
             title="Control the runtime, recovery, and integrations."
-            description="This is Forge’s operator surface: launch posture, backup and restore, calendar boundaries, notifications, platform capabilities, and future-provider seams all live here."
+            description="Launch posture, recovery, calendar boundaries, notifications, and future-provider seams live here."
             action={
               <Stack direction={{ xs: 'column', sm: 'row' }} spacing={1}>
                 <Chip
@@ -233,7 +233,7 @@ export function SettingsPage() {
           <SurfaceCard
             eyebrow="Recovery & Protection"
             title="Backup posture and controlled restore"
-            description="These controls stay close together because backup creation, staged restore, and restore-source truth all belong to the same operator workflow."
+            description="Backup creation, staged restore, and restore-source truth stay together here."
             action={
               <Chip
                 label={recentBackups[0]?.status ?? 'No backups yet'}
@@ -353,7 +353,7 @@ export function SettingsPage() {
                     onChange={handleRestoreFileSelected}
                   />
                   <Typography variant="body2" color="text.secondary">
-                    Restore applies core local state first and reports partial compatibility honestly for analytics or provider-owned metadata that Forge prefers to regenerate.
+                    Restore applies core local state first and reports partial compatibility honestly.
                   </Typography>
                 </Stack>
               </SettingsSubsection>
@@ -390,7 +390,7 @@ export function SettingsPage() {
                     ))
                   ) : (
                     <Typography variant="body2" color="text.secondary">
-                      No restore-ready scheduled backups are visible right now, so recovery still depends on local file restore until the next successful scheduled backup appears.
+                      No restore-ready scheduled backups are visible right now.
                     </Typography>
                   )}
                   {ineligibleServerBackups.length > 0 ? (
@@ -486,7 +486,7 @@ export function SettingsPage() {
           <SurfaceCard
             eyebrow="Calendar Operations"
             title="Read pressure and explicit write mirroring"
-            description="Calendar stays honest here: read pressure is continuous, but write mirroring remains explicit and operator-triggered."
+            description="Read pressure is continuous. Write mirroring stays explicit and operator-triggered."
             action={
               <Chip
                 label={`read ${calendarSyncState.externalEventSyncStatus} · mirror ${calendarSyncState.mirrorSyncStatus}`}
@@ -592,7 +592,7 @@ export function SettingsPage() {
               <SettingsSubsection title="Operational truth">
                 <Stack spacing={1}>
                   <Typography variant="body2" color="text.secondary">
-                    Selected calendar: {calendarConnection.selectedCalendarIds[0] ?? 'primary'} · Mirrored title convention: {mirroredBlockPreview.eventTitle}
+                    Selected calendar: {calendarConnection.selectedCalendarIds[0] ?? 'primary'} · Mirrored title: {mirroredBlockPreview.eventTitle}
                   </Typography>
                   <Typography variant="body2" color="text.secondary">
                     Read sync: {calendarSyncState.externalEventSyncStatus}. Mirror sync: {calendarSyncState.mirrorSyncStatus}.
@@ -647,7 +647,7 @@ export function SettingsPage() {
           <SurfaceCard
             eyebrow="System Posture"
             title="What is healthy, degraded, or still limited"
-            description="This column compresses launch posture, runtime truth, and capability boundaries so the operator can orient quickly before touching any controls."
+            description="Launch posture, runtime truth, and capability boundaries at a glance."
             action={
               <Chip
                 label={operationalDiagnostics.headline}
@@ -693,7 +693,7 @@ export function SettingsPage() {
                   <SettingsStatusRow
                     label="Firebase auth"
                     summary={`Current auth state ${status}`}
-                    meta="Auth remains the gate for sync replay and future provider work."
+                    meta="Auth remains the gate for sync replay and provider work."
                     trailing={<Chip label={status} size="small" variant="outlined" color={status === 'authenticated' ? 'success' : 'default'} />}
                   />
                   <SettingsStatusRow
@@ -738,7 +738,7 @@ export function SettingsPage() {
           <SurfaceCard
             eyebrow="Platform Operations"
             title="Browser vs Functions ownership"
-            description="Phase 4 formalized which responsibilities still belong to the active browser session and which now have a proper Functions-backed contract."
+            description="Which responsibilities still belong to the browser and which already belong to Functions."
             action={
               <Chip
                 label={`${platformServices.functionsOwned.length} Functions-owned`}
@@ -798,7 +798,7 @@ export function SettingsPage() {
                 </Alert>
               ) : null}
               <Alert severity="info" variant="outlined">
-                Planned Functions-owned areas like integration token handling and richer remote diagnostics are documented here intentionally, but they are not prematurely implemented.
+                Planned Functions-owned areas are documented here intentionally, but not prematurely implemented.
               </Alert>
             </Stack>
           </SurfaceCard>
@@ -806,7 +806,7 @@ export function SettingsPage() {
           <SurfaceCard
             eyebrow="Notification Engine"
             title="Browser-owned delivery and permission posture"
-            description="Notifications remain sparse and rule-driven. This section keeps the real permission, delivery, and runtime limitations visible beside the actions."
+            description="Permission, delivery truth, and runtime limits stay visible beside the actions."
             action={
               <Chip
                 label={notificationState.permission}
@@ -855,7 +855,7 @@ export function SettingsPage() {
                     {notificationState.permission === 'granted' ? 'Permission granted' : 'Request browser permission'}
                   </Button>
                   <Typography variant="body2" color="text.secondary">
-                    Recent notification records: {recentNotificationLogs.length === 0 ? 'None yet.' : recentNotificationLogs.slice(0, 2).map((log) => `${log.ruleKey} (${log.status})`).join(' · ')}
+                    Recent records: {recentNotificationLogs.length === 0 ? 'None yet.' : recentNotificationLogs.slice(0, 2).map((log) => `${log.ruleKey} (${log.status})`).join(' · ')}
                   </Typography>
                 </Stack>
               </SettingsSubsection>
@@ -863,7 +863,7 @@ export function SettingsPage() {
               <SettingsSubsection title="Runtime note">
                 <Stack spacing={1}>
                   <Alert severity="info" variant="outlined">
-                    Forge only asks for browser notification permission because browser and installed-PWA delivery are the honest currently supported channels.
+                    Forge only asks for browser permission because browser and installed-PWA delivery are the current supported channels.
                   </Alert>
                 </Stack>
               </SettingsSubsection>
@@ -873,7 +873,7 @@ export function SettingsPage() {
           <SurfaceCard
             eyebrow="Health & Future Providers"
             title="Scaffolded integrations without fake connectivity"
-            description="This section keeps future provider work visible while staying honest about what is not implemented yet."
+            description="Future provider work stays visible without pretending anything is already connected."
             action={
               <Chip
                 label={healthIntegration.connectionSummary}
@@ -891,7 +891,7 @@ export function SettingsPage() {
                     {healthIntegration.statusSummaryLabel}
                   </Typography>
                   <Typography variant="body2" color="text.secondary">
-                    Available signals: {healthIntegration.availableSignalCount} of {healthIntegration.totalSignalCount} (0 connected in the current implementation)
+                    Available signals: {healthIntegration.availableSignalCount} of {healthIntegration.totalSignalCount}
                   </Typography>
                   {healthIntegration.providers.map((provider) => (
                     <SettingsStatusRow
@@ -913,7 +913,7 @@ export function SettingsPage() {
                     Read mirror: {featureFlags.readMirror} · Write mirror: {featureFlags.writeMirror}
                   </Typography>
                   <Alert severity="info" variant="outlined">
-                    Health integration seams are typed and ready for future providers. No fake connectivity or dead buttons exist here. Long-lived server-managed Calendar OAuth and native provider bridges remain deferred intentionally.
+                    Health integration seams are typed and ready for future providers. No fake connectivity or dead buttons exist here.
                   </Alert>
                 </Stack>
               </SettingsSubsection>

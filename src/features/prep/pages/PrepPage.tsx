@@ -61,7 +61,7 @@ export function PrepPage() {
       <SectionHeader
         eyebrow="Prep"
         title="Prep health should read like progress, not admin."
-        description={`${data.dayLabel} focus is wired into this page, so the active domain, weakest surface, and next topic adjustments all stay visible in one workspace.`}
+        description={`${data.dayLabel} focus stays visible with the active domain, weakest surface, and next topic adjustment.`}
       />
 
       <Grid container spacing={2}>
@@ -84,7 +84,7 @@ export function PrepPage() {
           <SurfaceCard
             eyebrow="Domain Pressure"
             title="Prep map"
-            description="Use this rail to move between domains, but keep the current readiness balance visible while you switch."
+            description="Move between domains without losing the readiness balance."
           >
             <Stack spacing={1.1}>
               {data.domainSummaries.map((domain) => {
@@ -152,7 +152,7 @@ export function PrepPage() {
           <SurfaceCard
             eyebrow="Active Domain"
             title={prepDomainLabels[activeDomain]}
-            description="This is the main intelligence surface for the selected domain: current readiness, effort distribution, and where the next topic update should go."
+            description="Current readiness, effort, and the next topic adjustment for the selected domain."
           >
             <Stack spacing={2.25}>
               <Grid container spacing={1.5}>
@@ -210,7 +210,7 @@ export function PrepPage() {
             <SurfaceCard
               eyebrow="Topic Action"
               title={activeTopic.title}
-              description={`${activeTopic.group} · current readiness ${activeTopic.readinessLevel}. Use this panel to keep the topic state current without losing the domain-level view.`}
+              description={`${activeTopic.group} · current readiness ${activeTopic.readinessLevel}. Keep the topic state current here.`}
             >
               <Stack spacing={2}>
                 <Stack spacing={1}>
