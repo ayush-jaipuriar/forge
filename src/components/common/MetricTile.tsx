@@ -1,4 +1,6 @@
+import { alpha } from '@mui/material/styles'
 import { Box, Stack, Typography } from '@mui/material'
+import { forgeTokens } from '@/app/theme/tokens'
 
 type MetricTileProps = {
   eyebrow: string
@@ -8,38 +10,42 @@ type MetricTileProps = {
 }
 
 const toneMap = {
-  neutral: 'rgba(77, 96, 122, 0.65)',
-  success: 'rgba(79, 143, 115, 0.75)',
-  warning: 'rgba(194, 135, 56, 0.75)',
+  neutral: forgeTokens.palette.accent.steel,
+  success: forgeTokens.palette.accent.success,
+  warning: forgeTokens.palette.accent.warning,
 }
 
 export function MetricTile({ eyebrow, value, detail, tone = 'neutral' }: MetricTileProps) {
+  const toneColor = toneMap[tone]
+
   return (
     <Stack
       spacing={1}
       sx={{
-        minHeight: 132,
+        minHeight: 144,
         border: '1px solid',
         borderColor: 'divider',
         borderRadius: 4,
         p: 2.5,
-        backgroundColor: 'rgba(255, 255, 255, 0.02)',
+        background: `linear-gradient(180deg, ${alpha(forgeTokens.palette.background.panel, 0.98)} 0%, ${alpha(forgeTokens.palette.background.surface, 0.98)} 100%)`,
         position: 'relative',
         overflow: 'hidden',
         '&::before': {
           content: '""',
           position: 'absolute',
-          insetInlineStart: 0,
-          insetBlock: 0,
-          width: 3,
-          backgroundColor: toneMap[tone],
+          insetInline: 0,
+          insetBlockStart: 0,
+          height: 2,
+          background: `linear-gradient(90deg, ${alpha(toneColor, 0.9)} 0%, ${alpha(toneColor, 0)} 100%)`,
         },
       }}
     >
-      <Typography variant="overline" color="text.secondary">
+      <Typography variant="overline" color="primary.light">
         {eyebrow}
       </Typography>
-      <Typography variant="h3">{value}</Typography>
+      <Typography variant="h3" sx={{ fontSize: '1.35rem' }}>
+        {value}
+      </Typography>
       <Box sx={{ mt: 'auto' }}>
         <Typography variant="body2" color="text.secondary">
           {detail}

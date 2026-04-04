@@ -1,0 +1,348 @@
+<!DOCTYPE html>
+
+<html class="dark" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>FORGE // SYSTEM_READY</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;700;800&amp;family=Space+Grotesk:wght@400;500;600&amp;family=JetBrains+Mono:wght@400;700&amp;family=Inter:wght@400;500&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+      tailwind.config = {
+        darkMode: "class",
+        theme: {
+          extend: {
+            "colors": {
+                    "tertiary": "#c6c6c7",
+                    "on-background": "#e0e1f2",
+                    "on-secondary-container": "#dae4ff",
+                    "on-secondary": "#002e69",
+                    "surface-bright": "#363945",
+                    "primary-fixed-dim": "#ffb68d",
+                    "outline": "#a48c7f",
+                    "inverse-on-surface": "#2d303c",
+                    "surface-container": "#1c1f2b",
+                    "secondary-fixed-dim": "#adc6ff",
+                    "on-primary-container": "#532200",
+                    "background": "#10131e",
+                    "outline-variant": "#564338",
+                    "on-tertiary-fixed": "#1a1c1c",
+                    "tertiary-fixed-dim": "#c6c6c7",
+                    "on-secondary-fixed-variant": "#004494",
+                    "on-secondary-fixed": "#001a41",
+                    "primary-fixed": "#ffdbc9",
+                    "primary": "#ffb68d",
+                    "surface-container-lowest": "#0b0e19",
+                    "on-error": "#690005",
+                    "on-tertiary-container": "#2f3132",
+                    "inverse-primary": "#9a4600",
+                    "on-surface-variant": "#ddc1b3",
+                    "surface": "#10131e",
+                    "tertiary-container": "#989999",
+                    "on-primary-fixed-variant": "#763300",
+                    "surface-dim": "#10131e",
+                    "primary-container": "#e87b32",
+                    "on-primary-fixed": "#321200",
+                    "surface-container-highest": "#313441",
+                    "secondary-fixed": "#d8e2ff",
+                    "on-surface": "#e0e1f2",
+                    "surface-container-high": "#262936",
+                    "on-tertiary-fixed-variant": "#454747",
+                    "on-error-container": "#ffdad6",
+                    "error": "#ffb4ab",
+                    "on-primary": "#532200",
+                    "surface-container-low": "#181b27",
+                    "surface-tint": "#ffb68d",
+                    "inverse-surface": "#e0e1f2",
+                    "tertiary-fixed": "#e2e2e2",
+                    "secondary": "#adc6ff",
+                    "secondary-container": "#0162cf",
+                    "on-tertiary": "#2f3131",
+                    "error-container": "#93000a",
+                    "surface-variant": "#313441"
+            },
+            "borderRadius": {
+                    "DEFAULT": "0.25rem",
+                    "lg": "0.5rem",
+                    "xl": "0.75rem",
+                    "full": "9999px"
+            },
+            "fontFamily": {
+                    "headline": ["Plus Jakarta Sans"],
+                    "body": ["Inter"],
+                    "label": ["Space Grotesk"],
+                    "mono": ["JetBrains Mono"]
+            }
+          },
+        },
+      }
+    </script>
+<style>
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+        body {
+            background-color: #10131e;
+            color: #e0e1f2;
+            font-family: 'Inter', sans-serif;
+        }
+    </style>
+</head>
+<body class="overflow-hidden">
+<!-- SideNavBar Shell -->
+<aside class="fixed left-0 top-0 h-screen w-20 border-r-0 bg-[#10131e] dark:bg-[#0b0e19] flex flex-col items-center py-8 space-y-8 h-full z-50">
+<div class="text-xl font-black tracking-tighter text-[#e87b32] dark:text-[#ffb68d]">FORGE</div>
+<nav class="flex flex-col space-y-6 w-full items-center">
+<button class="relative text-[#ffb68d] before:absolute before:left-0 before:h-8 before:w-[2px] before:bg-[#e87b32] before:content-[''] group transition-all duration-200">
+<span class="material-symbols-outlined text-2xl" data-icon="terminal">terminal</span>
+</button>
+<button class="text-slate-500 hover:text-slate-300 transition-colors group">
+<span class="material-symbols-outlined text-2xl" data-icon="precision_manufacturing">precision_manufacturing</span>
+</button>
+<button class="text-slate-500 hover:text-slate-300 transition-colors group">
+<span class="material-symbols-outlined text-2xl" data-icon="hub">hub</span>
+</button>
+<button class="text-slate-500 hover:text-slate-300 transition-colors group">
+<span class="material-symbols-outlined text-2xl" data-icon="query_stats">query_stats</span>
+</button>
+<button class="text-slate-500 hover:text-slate-300 transition-colors group mt-auto">
+<span class="material-symbols-outlined text-2xl" data-icon="settings">settings</span>
+</button>
+</nav>
+<div class="mt-auto pb-4">
+<img alt="System Operator Avatar" class="w-10 h-10 rounded-full border border-outline-variant/30" data-alt="Close-up portrait of a serious tech professional with dramatic side lighting and a dark industrial background" src="https://lh3.googleusercontent.com/aida-public/AB6AXuDsALFgKAulV5_F4YZbJLe_zZN-BWK-XsGd7mMvCKAqbgYOfq_JEM0ZUSdDeCZPddjteodgjBNz43-I53324KokT_Vb0Ql5xWyjwWjkEZxsIDJPo8malT00XAsCyVWZbmbkP9VidEOrRRbz21GVlel2Fq-UeXq3O4Vr9Xqqk2Ra0M98biVSeEgxXSuF8ex_MIIzReVAtJX8C5sCNfvANMLe3rmpP-J_oUhcV1zl5IgsSZRAwBrhuhDY4IVb7xyQewvTS0L5YM2TpQ"/>
+</div>
+</aside>
+<!-- TopAppBar Shell -->
+<header class="fixed top-0 right-0 left-20 h-16 bg-[#10131e]/70 backdrop-blur-xl flex justify-between items-center px-6 w-full z-40">
+<div class="flex items-center space-x-4">
+<span class="text-sm font-mono tracking-widest text-[#e87b32] uppercase">FORGE // SYSTEM_READY</span>
+<span class="text-slate-400 font-mono text-[10px] bg-surface-container-high px-2 py-1 rounded">BREADCRUMB / ROOT / EXECUTION</span>
+</div>
+<div class="flex items-center space-y-0 space-x-6">
+<div class="hidden md:flex items-center bg-surface-container-lowest px-3 py-1.5 rounded border border-outline-variant/10">
+<span class="material-symbols-outlined text-sm text-slate-500 mr-2" data-icon="search">search</span>
+<input class="bg-transparent border-none focus:ring-0 text-xs font-mono w-48 text-on-surface placeholder:text-slate-600" placeholder="QUERY_SYSTEM..." type="text"/>
+</div>
+<div class="flex items-center space-x-4">
+<span class="material-symbols-outlined text-slate-400 hover:text-[#ffb68d] transition-colors cursor-pointer" data-icon="notifications">notifications</span>
+<span class="material-symbols-outlined text-slate-400 hover:text-[#ffb68d] transition-colors cursor-pointer" data-icon="shield">shield</span>
+<span class="material-symbols-outlined text-slate-400 hover:text-[#ffb68d] transition-colors cursor-pointer" data-icon="power_settings_new">power_settings_new</span>
+</div>
+</div>
+</header>
+<!-- Main Content Canvas -->
+<main class="ml-20 mt-16 p-6 h-[calc(100vh-64px)] overflow-hidden grid grid-cols-12 gap-6 bg-[#0b0e19]">
+<!-- Left Column: Readiness & Pulse -->
+<section class="col-span-3 flex flex-col space-y-6">
+<div class="bg-surface-container-low p-5 rounded-lg border-l-2 border-primary shadow-lg">
+<h3 class="font-label text-[10px] uppercase tracking-[0.2em] text-on-surface-variant mb-4">Readiness Core</h3>
+<div class="flex items-end justify-between">
+<div>
+<span class="font-headline text-5xl font-extrabold text-primary">88</span>
+<span class="font-mono text-xs text-on-surface-variant ml-1">/100</span>
+</div>
+<div class="text-right">
+<p class="font-mono text-[10px] text-primary uppercase">Optimal</p>
+<p class="font-body text-xs text-on-surface-variant">System Prime</p>
+</div>
+</div>
+<div class="mt-4 h-1.5 w-full bg-surface-container-highest rounded-full overflow-hidden">
+<div class="h-full bg-gradient-to-r from-primary-container to-primary w-[88%]"></div>
+</div>
+</div>
+<div class="grid grid-cols-1 gap-4">
+<div class="bg-surface-container p-4 rounded-lg flex items-center space-x-4">
+<div class="p-2 bg-surface-container-high rounded text-secondary">
+<span class="material-symbols-outlined" data-icon="bedtime">bedtime</span>
+</div>
+<div>
+<p class="font-label text-[10px] text-slate-500 uppercase">Sleep Recovery</p>
+<p class="font-mono text-lg font-bold">7h 42m</p>
+</div>
+</div>
+<div class="bg-surface-container p-4 rounded-lg flex items-center space-x-4">
+<div class="p-2 bg-surface-container-high rounded text-primary">
+<span class="material-symbols-outlined" data-icon="bolt">bolt</span>
+</div>
+<div>
+<p class="font-label text-[10px] text-slate-500 uppercase">Energy Reserve</p>
+<p class="font-mono text-lg font-bold">92%</p>
+</div>
+</div>
+<div class="bg-surface-container p-4 rounded-lg flex items-center space-x-4">
+<div class="p-2 bg-surface-container-high rounded text-tertiary">
+<span class="material-symbols-outlined" data-icon="vital_signs">vital_signs</span>
+</div>
+<div>
+<p class="font-label text-[10px] text-slate-500 uppercase">Neural Load</p>
+<p class="font-mono text-lg font-bold">Medium</p>
+</div>
+</div>
+</div>
+<div class="mt-auto bg-surface-container-high/50 p-4 rounded-lg border border-outline-variant/10">
+<h4 class="font-label text-[10px] text-slate-400 uppercase mb-3">Live Pulse</h4>
+<div class="flex items-center justify-between font-mono text-[11px]">
+<span class="text-primary animate-pulse">● HEART_RATE</span>
+<span>72 BPM</span>
+</div>
+<div class="mt-2 h-12 flex items-end space-x-1">
+<div class="w-full bg-primary/20 h-4 rounded-t-sm"></div>
+<div class="w-full bg-primary/40 h-6 rounded-t-sm"></div>
+<div class="w-full bg-primary/30 h-5 rounded-t-sm"></div>
+<div class="w-full bg-primary/60 h-8 rounded-t-sm"></div>
+<div class="w-full bg-primary/40 h-7 rounded-t-sm"></div>
+<div class="w-full bg-primary/80 h-10 rounded-t-sm"></div>
+<div class="w-full bg-primary/50 h-6 rounded-t-sm"></div>
+</div>
+</div>
+</section>
+<!-- Center Column: Execution Stack -->
+<section class="col-span-6 flex flex-col space-y-6 overflow-hidden">
+<!-- Active Mission -->
+<div class="bg-surface-container-high p-6 rounded-lg border-2 border-primary/40 relative overflow-hidden">
+<div class="absolute top-0 right-0 p-4">
+<span class="bg-primary/10 text-primary font-mono text-[10px] px-2 py-1 rounded">PRIORITY_ALPHA</span>
+</div>
+<h3 class="font-label text-[10px] text-primary uppercase tracking-widest mb-2">Current Execution</h3>
+<h1 class="font-headline text-3xl font-black text-on-surface mb-6">REFACTOR_CORE_ENGINE_V3</h1>
+<div class="flex items-center justify-between border-t border-outline-variant/20 pt-6">
+<div class="flex flex-col">
+<span class="font-label text-[10px] text-slate-500 uppercase">Elapsed Time</span>
+<span class="font-mono text-4xl font-bold text-primary">02:44:12</span>
+</div>
+<div class="flex space-x-3">
+<button class="p-3 bg-surface-container-highest rounded-lg hover:bg-primary/20 transition-colors">
+<span class="material-symbols-outlined text-primary" data-icon="pause">pause</span>
+</button>
+<button class="px-6 py-3 bg-gradient-to-br from-primary to-primary-container text-on-primary-fixed font-bold rounded-lg flex items-center">
+<span class="mr-2 material-symbols-outlined text-sm" data-icon="check_circle" data-weight="fill">check_circle</span>
+                            COMPLETE
+                        </button>
+</div>
+</div>
+</div>
+<!-- Execution Stack -->
+<div class="flex-1 overflow-y-auto pr-2 space-y-4 custom-scrollbar">
+<h4 class="font-label text-[10px] text-slate-500 uppercase tracking-widest px-1">Chronological Stack</h4>
+<!-- Stack Item 1 -->
+<div class="bg-surface-container p-4 rounded-lg border border-outline-variant/10 flex items-center justify-between group hover:border-primary/30 transition-all">
+<div class="flex items-center space-x-4">
+<span class="font-mono text-xs text-slate-600">14:00</span>
+<div class="w-[2px] h-8 bg-surface-container-highest"></div>
+<div>
+<p class="font-body font-semibold text-on-surface">Stakeholder Sync: Project Forge</p>
+<p class="font-mono text-[10px] text-slate-500">VC_BRIDGE // SECURE_LINE</p>
+</div>
+</div>
+<span class="material-symbols-outlined text-slate-700 group-hover:text-primary transition-colors" data-icon="arrow_forward_ios">arrow_forward_ios</span>
+</div>
+<!-- Stack Item 2 -->
+<div class="bg-surface-container p-4 rounded-lg border border-outline-variant/10 flex items-center justify-between group hover:border-primary/30 transition-all opacity-80">
+<div class="flex items-center space-x-4">
+<span class="font-mono text-xs text-slate-600">15:30</span>
+<div class="w-[2px] h-8 bg-surface-container-highest"></div>
+<div>
+<p class="font-body font-semibold text-on-surface">Neural Mapping Phase 2</p>
+<p class="font-mono text-[10px] text-slate-500">DEEP_WORK // NO_INTERRUPT</p>
+</div>
+</div>
+<span class="material-symbols-outlined text-slate-700" data-icon="lock">lock</span>
+</div>
+<!-- Stack Item 3 -->
+<div class="bg-surface-container p-4 rounded-lg border border-outline-variant/10 flex items-center justify-between group hover:border-primary/30 transition-all opacity-60">
+<div class="flex items-center space-x-4">
+<span class="font-mono text-xs text-slate-600">17:00</span>
+<div class="w-[2px] h-8 bg-surface-container-highest"></div>
+<div>
+<p class="font-body font-semibold text-on-surface">System Backup &amp; Audit</p>
+<p class="font-mono text-[10px] text-slate-500">MAINTENANCE_WINDOW</p>
+</div>
+</div>
+<span class="material-symbols-outlined text-slate-700" data-icon="cloud_upload">cloud_upload</span>
+</div>
+<!-- Stack Item 4 -->
+<div class="bg-surface-container p-4 rounded-lg border border-outline-variant/10 flex items-center justify-between group hover:border-primary/30 transition-all opacity-40">
+<div class="flex items-center space-x-4">
+<span class="font-mono text-xs text-slate-600">18:30</span>
+<div class="w-[2px] h-8 bg-surface-container-highest"></div>
+<div>
+<p class="font-body font-semibold text-on-surface">Post-Mission Debrief</p>
+<p class="font-mono text-[10px] text-slate-500">ANALYSIS_CLUSTER</p>
+</div>
+</div>
+<span class="material-symbols-outlined text-slate-700" data-icon="analytics">analytics</span>
+</div>
+</div>
+</section>
+<!-- Right Column: Intelligence & Pressure -->
+<section class="col-span-3 flex flex-col space-y-6">
+<!-- Time Pressure Gauge -->
+<div class="bg-surface-container-high p-5 rounded-lg border-t-2 border-secondary">
+<h3 class="font-label text-[10px] uppercase tracking-widest text-secondary mb-6">Pressure Status</h3>
+<div class="relative flex items-center justify-center h-32">
+<svg class="w-full h-full transform -rotate-90">
+<circle cx="50%" cy="50%" fill="transparent" r="45" stroke="#1c1f2b" stroke-width="8"></circle>
+<circle cx="50%" cy="50%" fill="transparent" r="45" stroke="#adc6ff" stroke-dasharray="282.7" stroke-dashoffset="180" stroke-linecap="round" stroke-width="8"></circle>
+</svg>
+<div class="absolute inset-0 flex flex-col items-center justify-center">
+<span class="font-mono text-2xl font-bold">42%</span>
+<span class="font-label text-[9px] text-slate-500">NOMINAL</span>
+</div>
+</div>
+<div class="mt-4 flex justify-between items-center text-[10px] font-mono">
+<span class="text-slate-500">RELAXED</span>
+<span class="text-secondary">CRITICAL</span>
+</div>
+</div>
+<!-- Deadlines -->
+<div class="bg-surface-container p-5 rounded-lg flex-1">
+<h3 class="font-label text-[10px] uppercase tracking-widest text-slate-500 mb-4">Hard Deadlines</h3>
+<div class="space-y-4">
+<div class="relative pl-4 border-l-2 border-error">
+<p class="font-body text-xs font-bold text-on-surface">Sprint Alpha Close</p>
+<p class="font-mono text-[11px] text-error">T-MINUS 02:15:00</p>
+</div>
+<div class="relative pl-4 border-l-2 border-outline-variant">
+<p class="font-body text-xs font-bold text-on-surface">Deployment Window</p>
+<p class="font-mono text-[11px] text-slate-400">T-MINUS 05:40:00</p>
+</div>
+<div class="relative pl-4 border-l-2 border-outline-variant">
+<p class="font-body text-xs font-bold text-on-surface">Resource Renewal</p>
+<p class="font-mono text-[11px] text-slate-400">T-MINUS 12:00:00</p>
+</div>
+</div>
+</div>
+<!-- Intelligence Brief -->
+<div class="bg-surface-container-highest p-5 rounded-lg">
+<div class="flex items-center space-x-2 mb-3">
+<span class="material-symbols-outlined text-primary text-sm" data-icon="lightbulb">lightbulb</span>
+<h3 class="font-label text-[10px] uppercase tracking-widest text-on-surface">Intel Brief</h3>
+</div>
+<p class="font-body text-xs text-on-surface-variant leading-relaxed italic">
+                    "Cognitive focus peaks in 18 minutes. Prioritize the complex logic refactor now for 15% higher efficiency."
+                </p>
+</div>
+</section>
+</main>
+<!-- Contextual FAB (Only on Execution Console Home) -->
+<button class="fixed bottom-8 right-8 w-14 h-14 bg-gradient-to-br from-primary to-primary-container text-on-primary-fixed rounded-full shadow-2xl flex items-center justify-center hover:scale-105 transition-transform z-50">
+<span class="material-symbols-outlined text-2xl" data-icon="add" data-weight="fill">add</span>
+</button>
+<style>
+        .custom-scrollbar::-webkit-scrollbar {
+            width: 4px;
+        }
+        .custom-scrollbar::-webkit-scrollbar-track {
+            background: transparent;
+        }
+        .custom-scrollbar::-webkit-scrollbar-thumb {
+            background: #262936;
+            border-radius: 10px;
+        }
+        .custom-scrollbar::-webkit-scrollbar-thumb:hover {
+            background: #313441;
+        }
+    </style>
+</body></html>

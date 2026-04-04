@@ -1,0 +1,280 @@
+<!DOCTYPE html>
+
+<html class="dark" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" name="viewport"/>
+<title>FORGE // SYSTEM_READY</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;700;800&amp;family=Inter:wght@400;500&amp;family=Space+Grotesk:wght@500;700&amp;family=JetBrains+Mono:wght@400;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    "colors": {
+                        "tertiary": "#c6c6c7",
+                        "on-background": "#e0e1f2",
+                        "on-secondary-container": "#dae4ff",
+                        "on-secondary": "#002e69",
+                        "surface-bright": "#363945",
+                        "primary-fixed-dim": "#ffb68d",
+                        "outline": "#a48c7f",
+                        "inverse-on-surface": "#2d303c",
+                        "surface-container": "#1c1f2b",
+                        "secondary-fixed-dim": "#adc6ff",
+                        "on-primary-container": "#532200",
+                        "background": "#10131e",
+                        "outline-variant": "#564338",
+                        "on-tertiary-fixed": "#1a1c1c",
+                        "tertiary-fixed-dim": "#c6c6c7",
+                        "on-secondary-fixed-variant": "#004494",
+                        "on-secondary-fixed": "#001a41",
+                        "primary-fixed": "#ffdbc9",
+                        "primary": "#ffb68d",
+                        "surface-container-lowest": "#0b0e19",
+                        "on-error": "#690005",
+                        "on-tertiary-container": "#2f3132",
+                        "inverse-primary": "#9a4600",
+                        "on-surface-variant": "#ddc1b3",
+                        "surface": "#10131e",
+                        "tertiary-container": "#989999",
+                        "on-primary-fixed-variant": "#763300",
+                        "surface-dim": "#10131e",
+                        "primary-container": "#e87b32",
+                        "on-primary-fixed": "#321200",
+                        "surface-container-highest": "#313441",
+                        "secondary-fixed": "#d8e2ff",
+                        "on-surface": "#e0e1f2",
+                        "surface-container-high": "#262936",
+                        "on-tertiary-fixed-variant": "#454747",
+                        "on-error-container": "#ffdad6",
+                        "error": "#ffb4ab",
+                        "on-primary": "#532200",
+                        "surface-container-low": "#181b27",
+                        "surface-tint": "#ffb68d",
+                        "inverse-surface": "#e0e1f2",
+                        "tertiary-fixed": "#e2e2e2",
+                        "secondary": "#adc6ff",
+                        "secondary-container": "#0162cf",
+                        "on-tertiary": "#2f3131",
+                        "error-container": "#93000a",
+                        "surface-variant": "#313441"
+                    },
+                    "borderRadius": {
+                        "DEFAULT": "0.25rem",
+                        "lg": "0.5rem",
+                        "xl": "0.75rem",
+                        "full": "9999px"
+                    },
+                    "fontFamily": {
+                        "headline": ["Plus Jakarta Sans"],
+                        "body": ["Inter"],
+                        "label": ["Space Grotesk"],
+                        "mono": ["JetBrains Mono"]
+                    }
+                },
+            },
+        }
+    </script>
+<style>
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+        body {
+            font-family: 'Inter', sans-serif;
+            -webkit-tap-highlight-color: transparent;
+        }
+        .hide-scrollbar::-webkit-scrollbar {
+            display: none;
+        }
+        .hide-scrollbar {
+            -ms-overflow-style: none;
+            scrollbar-width: none;
+        }
+        .glass-panel {
+            background: rgba(24, 27, 39, 0.7);
+            backdrop-filter: blur(20px);
+        }
+        .ember-gradient {
+            background: linear-gradient(135deg, #ffb68d 0%, #e87b32 100%);
+        }
+    </style>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+  </head>
+<body class="bg-surface-container-lowest text-on-surface min-h-screen pb-24">
+<!-- TopAppBar -->
+<header class="fixed top-0 right-0 left-0 h-16 bg-[#10131e]/70 backdrop-blur-xl flex justify-between items-center px-6 w-full z-40">
+<div class="flex flex-col">
+<span class="text-sm font-mono tracking-widest text-[#e87b32] uppercase">FORGE // SYSTEM_READY</span>
+<span class="text-[10px] font-mono text-slate-400">BREADCRUMB / ROOT / EXECUTION</span>
+</div>
+<div class="flex items-center gap-4 text-[#ffb68d]">
+<span class="material-symbols-outlined text-xl" data-icon="shield">shield</span>
+<div class="w-8 h-8 rounded-full border border-outline-variant/30 overflow-hidden">
+<img class="w-full h-full object-cover" data-alt="Technical operator portrait with blue ambient lighting and cyberpunk aesthetic" src="https://lh3.googleusercontent.com/aida-public/AB6AXuCAjYYh9qrZgj5EuxuCNbVvGk5Fqi-ktyAln6-9geinyWabd_7d6TnLUq5xBFXyo8f__v5EoqBD8CNnxAS-U-jRb2bV-nqjrpYOaY4L9qXYbtkE08QNUxq67KHjY4KaZVGKnv3tfJuOV-u5vTZU4kY2KkcRDzmxNc3i5ONqbM-l-5VV0XQfR-UQDSCRluoUlv3I7g1lEDGqsrdI1BIjKfnEK_-DlBjJUSZ_FPTirHRJl6_xJ7cY5m15hUaj48kVgbMsXZoqtZsv2Q"/>
+</div>
+</div>
+</header>
+<main class="pt-20 px-4 space-y-8">
+<!-- Readiness Pulse Section -->
+<section>
+<div class="flex justify-between items-end mb-4 px-1">
+<h2 class="font-label text-[10px] tracking-[0.2em] text-on-surface-variant uppercase">Readiness Pulse</h2>
+<span class="font-mono text-[10px] text-primary">98% NOMINAL</span>
+</div>
+<div class="flex gap-4 overflow-x-auto hide-scrollbar pb-2">
+<!-- Pulse Item 1 -->
+<div class="flex-shrink-0 w-32 aspect-[4/5] bg-surface-container rounded-xl p-4 flex flex-col justify-between border-l-2 border-primary">
+<span class="material-symbols-outlined text-primary" data-icon="bolt">bolt</span>
+<div>
+<p class="font-label text-[10px] text-on-surface-variant uppercase mb-1">Energy</p>
+<p class="font-headline font-bold text-lg">OPTIMAL</p>
+</div>
+</div>
+<!-- Pulse Item 2 -->
+<div class="flex-shrink-0 w-32 aspect-[4/5] bg-surface-container rounded-xl p-4 flex flex-col justify-between">
+<span class="material-symbols-outlined text-secondary" data-icon="psychology">psychology</span>
+<div>
+<p class="font-label text-[10px] text-on-surface-variant uppercase mb-1">Focus</p>
+<p class="font-headline font-bold text-lg">SHARP</p>
+</div>
+</div>
+<!-- Pulse Item 3 -->
+<div class="flex-shrink-0 w-32 aspect-[4/5] bg-surface-container rounded-xl p-4 flex flex-col justify-between">
+<span class="material-symbols-outlined text-tertiary" data-icon="vitals">vitals</span>
+<div>
+<p class="font-label text-[10px] text-on-surface-variant uppercase mb-1">Recovery</p>
+<p class="font-headline font-bold text-lg">7.2 HRS</p>
+</div>
+</div>
+<!-- Pulse Item 4 -->
+<div class="flex-shrink-0 w-32 aspect-[4/5] bg-surface-container rounded-xl p-4 flex flex-col justify-between">
+<span class="material-symbols-outlined text-primary-fixed-dim" data-icon="water_drop">water_drop</span>
+<div>
+<p class="font-label text-[10px] text-on-surface-variant uppercase mb-1">Hydration</p>
+<p class="font-headline font-bold text-lg">1.2 L</p>
+</div>
+</div>
+</div>
+</section>
+<!-- Active Mission Focus Block -->
+<section>
+<div class="ember-gradient rounded-3xl p-8 relative overflow-hidden shadow-2xl shadow-primary-container/20">
+<!-- Background Pattern -->
+<div class="absolute inset-0 opacity-10 pointer-events-none" style="background-image: radial-gradient(circle at 2px 2px, white 1px, transparent 0); background-size: 24px 24px;"></div>
+<div class="relative z-10">
+<div class="flex justify-between items-start mb-6">
+<div class="bg-on-primary/10 backdrop-blur-md px-3 py-1 rounded-full border border-on-primary/20">
+<span class="font-label text-[10px] text-on-primary-fixed font-bold tracking-widest uppercase">Active Mission</span>
+</div>
+<span class="material-symbols-outlined text-on-primary" data-icon="more_vert">more_vert</span>
+</div>
+<h1 class="font-headline text-3xl font-extrabold text-on-primary tracking-tight leading-tight mb-2">Neural Network Architecture Review</h1>
+<p class="text-on-primary/80 font-medium mb-8">Phase 04: Systems Optimization</p>
+<div class="flex items-end justify-between">
+<div class="space-y-1">
+<p class="font-label text-[10px] text-on-primary-fixed uppercase opacity-70">Live Timer</p>
+<p class="font-mono text-4xl font-bold text-on-primary tracking-tighter">00:42:18</p>
+</div>
+<button class="bg-on-primary text-primary-container w-14 h-14 rounded-2xl flex items-center justify-center shadow-lg active:scale-95 transition-transform">
+<span class="material-symbols-outlined font-bold text-3xl" data-icon="pause" style="font-variation-settings: 'FILL' 1;">pause</span>
+</button>
+</div>
+</div>
+</div>
+</section>
+<!-- Today's Chronological Stack -->
+<section class="space-y-6">
+<div class="flex justify-between items-center px-1">
+<h2 class="font-label text-xs tracking-widest text-on-surface-variant uppercase font-bold">Today's Timeline</h2>
+<span class="material-symbols-outlined text-on-surface-variant" data-icon="calendar_today">calendar_today</span>
+</div>
+<div class="space-y-4">
+<!-- Timeline Item 1 (Completed) -->
+<div class="flex gap-4">
+<div class="flex flex-col items-center">
+<div class="w-2 h-2 rounded-full bg-outline-variant"></div>
+<div class="w-[1px] flex-grow bg-outline-variant/30 my-2"></div>
+</div>
+<div class="flex-grow pb-6">
+<div class="flex justify-between items-start mb-1">
+<span class="font-mono text-[10px] text-outline">08:00 — 09:30</span>
+<span class="material-symbols-outlined text-secondary text-sm" data-icon="check_circle" style="font-variation-settings: 'FILL' 1;">check_circle</span>
+</div>
+<div class="bg-surface-container-low rounded-2xl p-4">
+<h3 class="font-headline font-bold text-on-surface">Core Infrastructure Audit</h3>
+<p class="text-sm text-on-surface-variant mt-1">Completed / Logs Exported</p>
+</div>
+</div>
+</div>
+<!-- Timeline Item 2 (Active/Next) -->
+<div class="flex gap-4">
+<div class="flex flex-col items-center">
+<div class="w-2 h-2 rounded-full bg-primary ring-4 ring-primary/20"></div>
+<div class="w-[1px] flex-grow bg-outline-variant/30 my-2"></div>
+</div>
+<div class="flex-grow pb-6">
+<div class="flex justify-between items-start mb-1">
+<span class="font-mono text-[10px] text-primary">13:00 — 14:30</span>
+<span class="bg-primary/10 text-primary text-[10px] px-2 py-0.5 rounded-full font-bold">NEXT</span>
+</div>
+<div class="bg-surface-container rounded-2xl p-4 border-l-2 border-primary">
+<h3 class="font-headline font-bold text-on-surface">Stakeholder Sync: V2.1</h3>
+<p class="text-sm text-on-surface-variant mt-1">Room 404 / Secure Channel</p>
+<div class="flex -space-x-2 mt-4">
+<img class="w-6 h-6 rounded-full border-2 border-surface-container object-cover" data-alt="Professional male portrait for team avatar" src="https://lh3.googleusercontent.com/aida-public/AB6AXuBh09HVyO-lRG9TvhZS3wCR00SD6aI0QdsoOhwW84f9kggNrzJ3I9sOV1az5EsVBdD8IaQ93OcD3vFyiVPK4J1zz8fLEe49V1BqsQvKf4wewY6CQ0aj0qTdnbCzSuBUiDVZB-VtqFuMlZtfYiDQaZ0tbsQ1KLoTywXJLKVIbz3nO4OJpnU0RrTb_UWEXJPGmoBaHe_O1WcvwfORk4M_L5sRX300_LU3PYv26U_hRKzsMfP_Spc8rXxeUjHhWtgyohcZftkz_wxCVg"/>
+<img class="w-6 h-6 rounded-full border-2 border-surface-container object-cover" data-alt="Professional female portrait for team avatar" src="https://lh3.googleusercontent.com/aida-public/AB6AXuA2EFN-JQNZqe1SGdrhR8jU6mNDqMP9hiXWYvRiqe0SF7FapmMiQX5DVaK5UJY9gwJ7AYVcBA2J8OwpI3axLCacnJ5d7F7bHmSttNMkSf7qwsrI709zP4nY-q2d6UJyjfG3h0xiqIFJp7QHtJfE7FBOvOCnJXEl6wSC6orMnC5oosiPVm-wBmGnwwn-BG3J2dBzYR6W86b4sVRXQoeakNO8t298ShZcUp3A2EwV2b48EZ6afGC8-65i_aqAhQmg10KYmtGT0wxfUw"/>
+<div class="w-6 h-6 rounded-full bg-surface-container-highest border-2 border-surface-container flex items-center justify-center text-[8px] font-bold">+3</div>
+</div>
+</div>
+</div>
+</div>
+<!-- Timeline Item 3 (Future) -->
+<div class="flex gap-4">
+<div class="flex flex-col items-center">
+<div class="w-2 h-2 rounded-full bg-outline-variant"></div>
+</div>
+<div class="flex-grow">
+<div class="flex justify-between items-start mb-1">
+<span class="font-mono text-[10px] text-outline">16:00 — 17:00</span>
+</div>
+<div class="bg-surface-container-low/50 rounded-2xl p-4 grayscale opacity-60">
+<h3 class="font-headline font-bold text-on-surface">Weekly Retrospective</h3>
+<p class="text-sm text-on-surface-variant mt-1">Pending Confirmation</p>
+</div>
+</div>
+</div>
+</div>
+</section>
+</main>
+<!-- Bottom Navigation Bar -->
+<nav class="fixed bottom-0 left-0 right-0 h-20 bg-surface-container-low/80 backdrop-blur-xl z-50 px-6 flex justify-between items-center border-t border-white/5">
+<button class="flex flex-col items-center gap-1 relative text-[#ffb68d] before:absolute before:-top-4 before:h-1 before:w-8 before:bg-[#e87b32] before:rounded-full before:content-[''] transition-all duration-200">
+<span class="material-symbols-outlined text-2xl" data-icon="terminal" style="font-variation-settings: 'FILL' 1;">terminal</span>
+<span class="font-label text-[10px] font-bold">Dashboard</span>
+</button>
+<button class="flex flex-col items-center gap-1 text-slate-500 hover:text-slate-300 transition-colors">
+<span class="material-symbols-outlined text-2xl" data-icon="precision_manufacturing">precision_manufacturing</span>
+<span class="font-label text-[10px]">Operations</span>
+</button>
+<div class="flex items-center justify-center -mt-10">
+<button class="w-14 h-14 ember-gradient rounded-full shadow-lg shadow-primary/40 flex items-center justify-center active:scale-95 transition-transform">
+<span class="material-symbols-outlined text-on-primary text-3xl" data-icon="add">add</span>
+</button>
+</div>
+<button class="flex flex-col items-center gap-1 text-slate-500 hover:text-slate-300 transition-colors">
+<span class="material-symbols-outlined text-2xl" data-icon="query_stats">query_stats</span>
+<span class="font-label text-[10px]">Analytics</span>
+</button>
+<button class="flex flex-col items-center gap-1 text-slate-500 hover:text-slate-300 transition-colors">
+<span class="material-symbols-outlined text-2xl" data-icon="settings">settings</span>
+<span class="font-label text-[10px]">Settings</span>
+</button>
+</nav>
+</body></html>

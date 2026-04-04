@@ -1,17 +1,20 @@
 import LogoutRoundedIcon from '@mui/icons-material/LogoutRounded'
 import MenuRoundedIcon from '@mui/icons-material/MenuRounded'
-import { useState } from 'react'
-import { Box, Button, Container, Drawer, IconButton, Stack, Typography } from '@mui/material'
+import { useMemo, useState } from 'react'
+import { alpha } from '@mui/material/styles'
+import { Avatar, Box, Button, Container, Drawer, IconButton, Stack, Typography } from '@mui/material'
 import { NavLink, Outlet, useLocation } from 'react-router-dom'
 import { navigationItems } from '@/app/router/navigation'
 import { useUiStore } from '@/app/store/uiStore'
+import { forgeTokens } from '@/app/theme/tokens'
 import { StatusBadge } from '@/components/status/StatusBadge'
 import { SyncIndicator } from '@/components/status/SyncIndicator'
-import { forgeTokens } from '@/app/theme/tokens'
 import { useAuthSession } from '@/features/auth/providers/useAuthSession'
 import { PwaStatusCard } from '@/features/pwa/components/PwaStatusCard'
-import { getConnectivityStatusModel, shouldShowPwaStatusCard } from '@/features/pwa/pwaStatus'
+import { shouldShowPwaStatusCard } from '@/features/pwa/pwaStatus'
 import { usePwaState } from '@/features/pwa/providers/usePwaState'
+
+const mobileQuickNavPaths = ['/', '/command-center', '/schedule', '/settings']
 
 export function AppShell() {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
@@ -22,7 +25,6 @@ export function AppShell() {
   const syncStatus = useUiStore((state) => state.syncStatus)
   const { applyAppUpdate, canInstall, dismissOfflineReady, isInstalled, isOnline, needRefresh, offlineReady, promptInstall } =
     usePwaState()
-  const connectivityStatus = getConnectivityStatusModel({ isOnline, syncStatus })
   const showPwaSurface = shouldShowPwaStatusCard({
     isOnline,
     syncStatus,
@@ -31,138 +33,273 @@ export function AppShell() {
     offlineReady,
   })
 
-  return (
-    <Box sx={{ minHeight: '100vh', pb: { xs: 10, md: 4 } }}>
-      <Container maxWidth="lg" sx={{ px: { xs: 2, md: 3 }, py: { xs: 2, md: 3 } }}>
-        <Stack spacing={3}>
-          <Box
-            component="header"
-            sx={{
-              border: '1px solid',
-              borderColor: 'divider',
-              borderRadius: 6,
-              px: { xs: 2, md: 3 },
-              py: { xs: 2, md: 2.5 },
-              background:
-                'linear-gradient(180deg, rgba(15, 19, 29, 0.92) 0%, rgba(9, 11, 18, 0.98) 100%)',
-            }}
-          >
-            <Stack direction="row" alignItems="center" justifyContent="space-between" spacing={2}>
-              <Stack spacing={1}>
-                <Typography variant="overline" color="primary.light">
-                  Personal Execution OS
-                </Typography>
-                <Typography variant="h2">Forge</Typography>
-                <Typography variant="body2" color="text.secondary">
-                  Architecture-first foundation for disciplined daily execution.
-                </Typography>
-                <Typography variant="body2" color="text.secondary">
-                  {user?.displayName ?? user?.email ?? 'Authenticated Operator'}
-                </Typography>
-              </Stack>
-              <Stack direction="row" spacing={1} alignItems="center">
-                <StatusBadge label={warState === 'onTrack' ? 'On Track' : titleFromToken(warState)} tone={warState} />
-                <StatusBadge label={titleFromToken(dayMode)} tone={dayMode} />
-                <Box sx={{ display: { xs: 'none', lg: 'block' } }}>
-                  <SyncIndicator status={syncStatus} />
-                </Box>
-                <IconButton
-                  aria-label="Open utility actions"
-                  onClick={() => setMobileMenuOpen(true)}
-                  sx={{
-                    display: { xs: 'inline-flex', md: 'none' },
-                    border: '1px solid',
-                    borderColor: 'divider',
-                  }}
-                >
-                  <MenuRoundedIcon />
-                </IconButton>
-                <Button
-                  variant="outlined"
-                  color="inherit"
-                  startIcon={<LogoutRoundedIcon fontSize="small" />}
-                  onClick={() => void signOutUser()}
-                  sx={{ display: { xs: 'none', md: 'inline-flex' } }}
-                >
-                  Sign out
-                </Button>
-              </Stack>
-            </Stack>
-          </Box>
+  const activeItem = useMemo(
+    () => navigationItems.find((item) => isRouteActive(location.pathname, item.path)) ?? navigationItems[0],
+    [location.pathname],
+  )
+  const mobileQuickNavItems = navigationItems.filter((item) => mobileQuickNavPaths.includes(item.path))
 
-          <Stack direction={{ xs: 'column', md: 'row' }} spacing={1.5}>
-            <SignalStrip
-              eyebrow="Command Tone"
-              value="Strict, not noisy"
-              detail="The shell should feel like a controlled system, not a dashboard template."
-            />
-            <SignalStrip
-              eyebrow="Execution Priority"
-              value="Mobile-first flow"
-              detail="Touch interactions and low-friction logging stay central to every screen."
-            />
-            <SignalStrip
-              eyebrow="System Health"
-              value={connectivityStatus.title}
-              detail={connectivityStatus.detail}
-            />
+  return (
+    <Box sx={{ minHeight: '100vh', background: forgeTokens.gradients.page }}>
+      <Box
+        sx={{
+          minHeight: '100vh',
+          display: { xs: 'block', md: 'grid' },
+          gridTemplateColumns: { md: '104px minmax(0, 1fr)' },
+        }}
+      >
+        <Box
+          component="aside"
+          sx={{
+            position: 'sticky',
+            top: 0,
+            height: '100vh',
+            display: { xs: 'none', md: 'flex' },
+            flexDirection: 'column',
+            gap: 3,
+            borderRight: '1px solid',
+            borderColor: 'divider',
+            backgroundColor: alpha(forgeTokens.palette.background.nav, 0.92),
+            backdropFilter: 'blur(18px)',
+            px: 1.25,
+            py: 2,
+          }}
+        >
+          <Stack spacing={0.25} alignItems="center" sx={{ px: 0.5 }}>
+            <Typography
+              variant="overline"
+              color="primary.light"
+              sx={{ fontSize: '0.6rem', letterSpacing: '0.18em', whiteSpace: 'nowrap' }}
+            >
+              FG
+            </Typography>
+            <Typography
+              variant="body2"
+              color="text.secondary"
+              sx={{ fontSize: '0.68rem', textAlign: 'center', maxWidth: 72 }}
+            >
+              Execution OS
+            </Typography>
           </Stack>
 
-          {showPwaSurface ? (
-            <PwaStatusCard
-              isOnline={isOnline}
-              syncStatus={syncStatus}
-              canInstall={canInstall}
-              isInstalled={isInstalled}
-              needRefresh={needRefresh}
-              offlineReady={offlineReady}
-              onInstall={async () => {
-                await promptInstall()
-              }}
-              onApplyUpdate={() => applyAppUpdate()}
-              onDismissOfflineReady={dismissOfflineReady}
-            />
-          ) : null}
-
-          <Stack direction="row" spacing={1} sx={{ display: { xs: 'none', md: 'flex' }, flexWrap: 'wrap' }}>
+          <Stack spacing={0.75} sx={{ flex: 1 }}>
             {navigationItems.map(({ icon: Icon, label, path }) => {
-              const isActive = location.pathname === path
+              const isActive = isRouteActive(location.pathname, path)
 
               return (
-                <Button
+                <Box
                   key={path}
                   component={NavLink}
                   to={path}
                   end={path === '/'}
-                  startIcon={<Icon fontSize="small" />}
-                  color={isActive ? 'primary' : 'inherit'}
-                  variant={isActive ? 'contained' : 'outlined'}
+                  aria-label={label}
+                  sx={{
+                    position: 'relative',
+                    display: 'flex',
+                    flexDirection: 'column',
+                    alignItems: 'center',
+                    gap: 0.5,
+                    px: 1,
+                    py: 1.25,
+                    borderRadius: 3,
+                    color: isActive ? 'text.primary' : 'text.secondary',
+                    textDecoration: 'none',
+                    backgroundColor: isActive
+                      ? alpha(forgeTokens.palette.accent.ember, 0.12)
+                      : 'transparent',
+                    border: '1px solid',
+                    borderColor: isActive ? forgeTokens.palette.border.accent : 'transparent',
+                    transition: 'background-color 160ms ease, border-color 160ms ease, color 160ms ease',
+                    '&::before': isActive
+                      ? {
+                          content: '""',
+                          position: 'absolute',
+                          insetBlock: 8,
+                          insetInlineStart: -5,
+                          width: 2,
+                          borderRadius: 999,
+                          backgroundColor: 'primary.main',
+                        }
+                      : undefined,
+                    '&:hover': {
+                      backgroundColor: alpha(forgeTokens.palette.background.elevated, 0.72),
+                      borderColor: alpha(forgeTokens.palette.text.secondary, 0.18),
+                    },
+                  }}
                 >
-                  {label}
-                </Button>
+                  <Icon fontSize="small" />
+                  <Typography
+                    sx={{
+                      fontFamily: '"Plus Jakarta Sans", "Inter", "Segoe UI", sans-serif',
+                      fontSize: '0.66rem',
+                      fontWeight: isActive ? 700 : 600,
+                      lineHeight: 1.1,
+                      textAlign: 'center',
+                    }}
+                  >
+                    {getCompactNavigationLabel(label)}
+                  </Typography>
+                </Box>
               )
             })}
           </Stack>
 
-          <Outlet />
-        </Stack>
-      </Container>
-
-      <Drawer anchor="right" open={mobileMenuOpen} onClose={() => setMobileMenuOpen(false)}>
-        <Stack spacing={2} sx={{ width: 320, p: 3 }}>
-          <Stack spacing={1}>
-            <Typography variant="overline" color="primary.light">
-              Navigation
-            </Typography>
-            <Typography variant="h3">Forge Control Surface</Typography>
-            <Typography color="text.secondary">
-              Mobile keeps the execution loop close. The drawer carries the surrounding context without bloating the
-              bottom bar.
+          <Stack spacing={1} alignItems="center">
+            <Avatar
+              sx={{
+                width: 40,
+                height: 40,
+                bgcolor: alpha(forgeTokens.palette.accent.ember, 0.2),
+                color: 'primary.light',
+                border: '1px solid',
+                borderColor: alpha(forgeTokens.palette.accent.ember, 0.35),
+                fontSize: '0.82rem',
+                fontWeight: 700,
+              }}
+            >
+              {getUserInitials(user?.displayName ?? user?.email ?? 'Forge')}
+            </Avatar>
+            <Typography
+              color="text.secondary"
+              sx={{
+                fontSize: '0.64rem',
+                lineHeight: 1.25,
+                textAlign: 'center',
+                px: 0.5,
+                maxWidth: 72,
+              }}
+            >
+              {user?.displayName ?? 'Authenticated'}
             </Typography>
           </Stack>
+        </Box>
+
+        <Box sx={{ minWidth: 0 }}>
+          <Box
+            component="header"
+            sx={{
+              position: 'sticky',
+              top: 0,
+              zIndex: 20,
+              borderBottom: '1px solid',
+              borderColor: 'divider',
+              backgroundColor: alpha(forgeTokens.palette.background.shell, 0.84),
+              backdropFilter: 'blur(18px)',
+            }}
+          >
+            <Container maxWidth={false} sx={{ px: { xs: 2, md: 3 }, py: { xs: 1.5, md: 1.75 }, maxWidth: 1480 }}>
+              <Stack direction="row" spacing={2} alignItems="center" justifyContent="space-between">
+                <Stack direction="row" spacing={1.5} alignItems="center" sx={{ minWidth: 0 }}>
+                  <IconButton
+                    aria-label="Open navigation drawer"
+                    onClick={() => setMobileMenuOpen(true)}
+                    sx={{
+                      display: { xs: 'inline-flex', md: 'none' },
+                      border: '1px solid',
+                      borderColor: 'divider',
+                      backgroundColor: alpha(forgeTokens.palette.background.elevated, 0.56),
+                    }}
+                  >
+                    <MenuRoundedIcon />
+                  </IconButton>
+
+                  <Stack spacing={0.35} sx={{ minWidth: 0 }}>
+                    <Typography variant="overline" color="primary.light">
+                      Personal Execution OS
+                    </Typography>
+                    <Stack
+                      direction={{ xs: 'column', sm: 'row' }}
+                      spacing={{ xs: 0.25, sm: 1 }}
+                      alignItems={{ xs: 'flex-start', sm: 'center' }}
+                      sx={{ minWidth: 0 }}
+                    >
+                      <Typography variant="h3" sx={{ whiteSpace: 'nowrap' }}>
+                        Forge
+                      </Typography>
+                      <Typography
+                        color="text.secondary"
+                        sx={{
+                          fontFamily: '"JetBrains Mono", "SFMono-Regular", monospace',
+                          fontSize: '0.72rem',
+                          letterSpacing: '0.04em',
+                          textTransform: 'uppercase',
+                          whiteSpace: { xs: 'normal', sm: 'nowrap' },
+                        }}
+                      >
+                        {activeItem.label}
+                      </Typography>
+                    </Stack>
+                  </Stack>
+                </Stack>
+
+                <Stack direction="row" spacing={1} alignItems="center" sx={{ minWidth: 0 }}>
+                  <Box sx={{ display: { xs: 'none', lg: 'block' } }}>
+                    <StatusBadge
+                      label={warState === 'onTrack' ? 'On Track' : titleFromToken(warState)}
+                      tone={warState}
+                    />
+                  </Box>
+                  <Box sx={{ display: { xs: 'none', md: 'block' } }}>
+                    <StatusBadge label={titleFromToken(dayMode)} tone={dayMode} />
+                  </Box>
+                  <Box sx={{ display: { xs: 'none', sm: 'block' } }}>
+                    <SyncIndicator status={syncStatus} />
+                  </Box>
+                  <Button
+                    variant="outlined"
+                    color="inherit"
+                    startIcon={<LogoutRoundedIcon fontSize="small" />}
+                    onClick={() => void signOutUser()}
+                    sx={{ display: { xs: 'none', md: 'inline-flex' }, whiteSpace: 'nowrap' }}
+                  >
+                    Sign out
+                  </Button>
+                </Stack>
+              </Stack>
+            </Container>
+          </Box>
+
+          <Box component="main" sx={{ px: { xs: 2, md: 3 }, py: { xs: 2, md: 3 }, pb: { xs: 12, md: 4 } }}>
+            <Container maxWidth={false} sx={{ px: 0, maxWidth: 1480 }}>
+              <Stack spacing={3}>
+                {showPwaSurface ? (
+                  <PwaStatusCard
+                    isOnline={isOnline}
+                    syncStatus={syncStatus}
+                    canInstall={canInstall}
+                    isInstalled={isInstalled}
+                    needRefresh={needRefresh}
+                    offlineReady={offlineReady}
+                    onInstall={async () => {
+                      await promptInstall()
+                    }}
+                    onApplyUpdate={() => applyAppUpdate()}
+                    onDismissOfflineReady={dismissOfflineReady}
+                  />
+                ) : null}
+
+                <Outlet />
+              </Stack>
+            </Container>
+          </Box>
+        </Box>
+      </Box>
+
+      <Drawer anchor="left" open={mobileMenuOpen} onClose={() => setMobileMenuOpen(false)}>
+        <Stack spacing={3} sx={{ width: 320, p: 3 }}>
+          <Stack spacing={0.75}>
+            <Typography variant="overline" color="primary.light">
+              Forge Navigation
+            </Typography>
+            <Typography variant="h3">Execution surfaces</Typography>
+            <Typography color="text.secondary">
+              The mobile shell keeps quick access tight and moves the full workspace map into a single focused drawer.
+            </Typography>
+          </Stack>
+
           <Stack spacing={1}>
             {navigationItems.map(({ icon: Icon, label, path }) => {
-              const isActive = location.pathname === path
+              const isActive = isRouteActive(location.pathname, path)
 
               return (
                 <Button
@@ -181,11 +318,13 @@ export function AppShell() {
               )
             })}
           </Stack>
+
           <Stack direction="row" spacing={1} flexWrap="wrap" useFlexGap>
             <StatusBadge label={warState === 'onTrack' ? 'On Track' : titleFromToken(warState)} tone={warState} />
             <StatusBadge label={titleFromToken(dayMode)} tone={dayMode} />
             <SyncIndicator status={syncStatus} />
           </Stack>
+
           <Button
             variant="outlined"
             color="inherit"
@@ -203,73 +342,105 @@ export function AppShell() {
           position: 'fixed',
           insetInline: 12,
           bottom: 12,
-          zIndex: 20,
+          zIndex: 30,
           display: { xs: 'block', md: 'none' },
         }}
       >
         <Stack
           direction="row"
-          spacing={1}
+          spacing={0.75}
           sx={{
             border: '1px solid',
             borderColor: 'divider',
-            borderRadius: 5,
-            p: 1,
+            borderRadius: 4,
+            p: 0.75,
             justifyContent: 'space-between',
-            backgroundColor: 'rgba(9, 11, 18, 0.95)',
-            backdropFilter: 'blur(20px)',
+            backgroundColor: alpha(forgeTokens.palette.background.shell, 0.94),
+            backdropFilter: 'blur(18px)',
           }}
         >
-          {navigationItems.map(({ icon: Icon, label, path }) => {
-            const isActive = location.pathname === path
+          {mobileQuickNavItems.map(({ icon: Icon, label, path }) => {
+            const isActive = isRouteActive(location.pathname, path)
 
             return (
-              <Button
+              <Box
                 key={path}
                 component={NavLink}
                 to={path}
                 end={path === '/'}
                 aria-label={label}
-                color={isActive ? 'primary' : 'inherit'}
-                variant={isActive ? 'contained' : 'text'}
-                sx={{ minWidth: 0, px: 1.25 }}
+                sx={{
+                  flex: 1,
+                  minWidth: 0,
+                  textDecoration: 'none',
+                  borderRadius: 3,
+                  px: 0.75,
+                  py: 0.75,
+                  backgroundColor: isActive ? alpha(forgeTokens.palette.accent.ember, 0.14) : 'transparent',
+                  border: '1px solid',
+                  borderColor: isActive ? forgeTokens.palette.border.accent : 'transparent',
+                  color: isActive ? 'text.primary' : 'text.secondary',
+                }}
               >
-                <Icon fontSize="small" />
-              </Button>
+                <Stack spacing={0.45} alignItems="center">
+                  <Icon fontSize="small" />
+                  <Typography
+                    sx={{
+                      fontFamily: '"Plus Jakarta Sans", "Inter", "Segoe UI", sans-serif',
+                      fontSize: '0.62rem',
+                      fontWeight: 700,
+                      lineHeight: 1,
+                    }}
+                  >
+                    {getCompactNavigationLabel(label)}
+                  </Typography>
+                </Stack>
+              </Box>
             )
           })}
+
+          <IconButton
+            aria-label="Open navigation drawer"
+            onClick={() => setMobileMenuOpen(true)}
+            sx={{
+              alignSelf: 'stretch',
+              border: '1px solid',
+              borderColor: 'divider',
+              color: 'text.secondary',
+            }}
+          >
+            <MenuRoundedIcon fontSize="small" />
+          </IconButton>
         </Stack>
       </Box>
     </Box>
   )
 }
 
-function SignalStrip({ eyebrow, value, detail }: { eyebrow: string; value: string; detail: string }) {
-  return (
-    <Box
-      sx={{
-        flex: 1,
-        border: '1px solid',
-        borderColor: 'divider',
-        borderRadius: 4,
-        px: 2,
-        py: 1.75,
-        background:
-          'linear-gradient(180deg, rgba(15, 19, 29, 0.88) 0%, rgba(10, 13, 21, 0.92) 100%)',
-        boxShadow: forgeTokens.shadow.card,
-      }}
-    >
-      <Stack spacing={0.5}>
-        <Typography variant="overline" color="primary.light">
-          {eyebrow}
-        </Typography>
-        <Typography variant="h3">{value}</Typography>
-        <Typography variant="body2" color="text.secondary">
-          {detail}
-        </Typography>
-      </Stack>
-    </Box>
-  )
+function getCompactNavigationLabel(label: string) {
+  switch (label) {
+    case 'Command Center':
+      return 'Command'
+    default:
+      return label
+  }
+}
+
+function getUserInitials(value: string) {
+  return value
+    .split(/[\s@._-]+/)
+    .filter(Boolean)
+    .slice(0, 2)
+    .map((segment) => segment[0]?.toUpperCase() ?? '')
+    .join('')
+}
+
+function isRouteActive(pathname: string, path: string) {
+  if (path === '/') {
+    return pathname === '/'
+  }
+
+  return pathname.startsWith(path)
 }
 
 function titleFromToken(value: string) {

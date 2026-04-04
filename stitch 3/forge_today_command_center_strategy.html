@@ -1,0 +1,109 @@
+# Forge: Today & Command Center Design Strategy
+
+## 1. Shared Visual Direction
+Forge is a unified OS. While the *purpose* of Today and Command Center differs, the *physics* of the interface remains constant.
+
+*   **Shell Language:** A fixed left sidebar (Rail) anchors the application. A persistent header provides breadcrumbs and global system status (e.g., `FORGE // SYSTEM_READY`).
+*   **Color Rules:** 
+    *   **Base:** Near-black (`#0A0C10`).
+    *   **Surfaces:** Charcoal/Slate (`#1C2026`). 
+    *   **Accents:** Forge Amber (`#FF8C00`) used strictly for "Action Required" or "Active State."
+*   **Typography:** Inter Tight for headings (strong, editorial); JetBrains Mono for data points (precise, operational).
+*   **State Semantics:** 
+    *   **Amber:** Active/Primary Action.
+    *   **Muted Green:** Success/Optimal/Synced.
+    *   **Burnt Gold:** Warning/Stale.
+    *   **Oxblood:** Critical/Failed.
+
+---
+
+## 2. Today Page Design Strategy: The Execution Console
+The Today page is a **mission-critical workspace**. It must answer "What is my immediate priority?" within 2 seconds of viewing.
+
+*   **Hierarchy:** 
+    1.  **Current Focus:** The single most important task or block right now.
+    2.  **Operational Pressure:** Visualizing how the day's schedule is holding up.
+    3.  **Readiness Pulse:** Quick status of body/mind (Sleep, Energy).
+*   **Focal Zone:** The top-center of the screen is reserved for the "Active Mission." Everything else is supporting intelligence.
+*   **Dominant vs. Quiet:** Active tasks are high-contrast with Amber accents; completed or future tasks are muted and lower in the surface hierarchy.
+
+---
+
+## 3. Today Page Layout Proposal (Desktop)
+*   **Structure:** 3-Column "Operational Grid" (Fixed Max Width: 1440px).
+    *   **Left (25%):** **Readiness & Inputs.** Persistent quick-entry modules for physiological state (Sleep, Readiness score, Energy).
+    *   **Center (50%):** **The Execution Stack.** The "Active Block" at the top, followed by the chronological "Today's Mission" list.
+    *   **Right (25%):** **Intelligence & Pressure.** Real-time diagnostics: Time pressure, upcoming deadlines, and "War State" score.
+*   **Spacing:** Tight 8px gutters between operational modules to create a "connected cockpit" feel.
+
+---
+
+## 4. Today Page Component Direction
+*   **Active Focus Module:** A large, high-contrast surface. Title in bold 24px typography. Includes a "Live Timer" in Monospace. The only surface with a 2px Amber border.
+*   **Recommendation Card:** A "Ghost Surface" (thin 1px border) that suggests the next best move based on current energy levels.
+*   **War State Score:** A circular or semi-circular gauge that moves from Green to Gold as "Time Pressure" increases.
+*   **Execution Action Buttons:** Rectangular, 4px radius. Primary is Solid Amber; Secondary is Slate Border.
+
+---
+
+## 5. Command Center Design Strategy: The Strategy Room
+The Command Center is about **patterns and trajectory**. It shouldn't feel like a "task list"; it should feel like a "diagnostic report."
+
+*   **Identity:** High-density analytics that favor "Trend Lines" over "Status Checks."
+*   **Clutter Prevention:** Grouping metrics by "Domain" (e.g., Performance, Physiology, Consistency). Use of "Progressive Disclosure"—click a chart to see the raw data.
+*   **Tone:** Analytical, calm, and objective. Charts use Muted Green areas to define "The Performance Zone."
+
+---
+
+## 6. Command Center Layout Proposal (Desktop)
+*   **Structure:** Triptych Layering.
+    *   **Top (Hero):** **Coach Insight Area.** A wide, editorial-style banner that summarizes the last 7 days in natural language (e.g., "Momentum is high, but recovery is lagging.").
+    *   **Middle (Primary):** **The Trajectory Grid.** 2x2 or 3x2 grid of high-density charts showing core KPIs (Execution Rate, Readiness vs. Effort).
+    *   **Bottom (Support):** **Momentum Heatmaps.** Calendar views and long-term consistency trackers.
+*   **Chart Logic:** No "Spider Charts" or "Pie Charts." Use Line Charts for trends and Bar Charts for volume.
+
+---
+
+## 7. Command Center Component Direction
+*   **Warning Cards:** Small, high-density modules that highlight a "bottleneck" (e.g., "Bedtime variance is +45m this week"). 
+*   **Projection Surfaces:** Dotted lines on charts showing "Predicted Path" based on current momentum.
+*   **Momentum Modules:** High-density "GitHub-style" heatmaps for task completion streaks.
+*   **Filter Controls:** A slim toolbar below the header for `7D`, `30D`, `90D` views.
+
+---
+
+## 8. Today vs. Command Center Contrast
+*   **Today (Fast):** Large buttons, live timers, bold active states. Emotional goal: **Focus.**
+*   **Command Center (Slow):** Smaller typography, dense charts, multi-metric comparisons. Emotional goal: **Clarity.**
+*   **Overlap:** Both use the same sidebar, header style, and "System Status" indicators.
+
+---
+
+## 9. Desktop Monitor Optimization
+*   **Anchoring:** Sidebars are fixed. Center content has a `max-width` of 1200px to prevent "The Long Row" effect.
+*   **Composition:** Use of "Multi-Pane" layouts instead of a single long scroll. This mimics a professional dashboard (like Bloomberg or VS Code).
+*   **Whitespace:** Not "empty space" but "structural breathing room" between major grid sections.
+
+---
+
+## 10. Mobile / Tablet Adaptation
+*   **Today:** Stacks into a single column. "Readiness" moves to a top-horizontal scroll. "Execution Stack" becomes the primary vertical scroll.
+*   **Command Center:** Charts become single-column cards. The "Coach Insight" remains pinned to the top. Filtering moves to a bottom sheet.
+
+---
+
+## 11. Design Tokens & Styles
+*   **Typography Scale:** 
+    *   Display: 32px (Command Center Headers)
+    *   Headline: 20px (Section Headers)
+    *   Body: 14px (Standard)
+    *   Data: 13px (Monospace)
+*   **Radii:** 4px for buttons/chips; 8px for major panels.
+*   **Borders:** 1px solid `rgba(255, 255, 255, 0.08)`.
+
+---
+
+## 12. Implementation Priorities
+1.  **Phase 1 (Layout Shell):** Implement the 3-column Today grid and the Hero/Grid structure for Command Center.
+2.  **Phase 2 (Component Refactor):** Replace all pill-shaped elements with the new 4px/8px rectangular system.
+3.  **Phase 3 (Intelligence Layer):** Build out the "Coach Insight" banner and the "Momentum Heatmaps."

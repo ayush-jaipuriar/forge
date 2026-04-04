@@ -12,18 +12,29 @@ export function SectionHeader({ eyebrow, title, description, action }: SectionHe
   return (
     <Stack
       direction={{ xs: 'column', md: 'row' }}
-      spacing={2}
+      spacing={2.5}
       justifyContent="space-between"
-      alignItems={{ xs: 'flex-start', md: 'flex-end' }}
+      alignItems={{ xs: 'flex-start', md: 'center' }}
     >
-      <Stack spacing={1} maxWidth={760}>
-        <Typography variant="overline" color="primary.light">
+      <Stack spacing={0.9} maxWidth={760}>
+        <Typography
+          variant="overline"
+          color="primary.light"
+          sx={{
+            fontSize: '0.66rem',
+            letterSpacing: '0.2em',
+          }}
+        >
           {eyebrow}
         </Typography>
-        <Typography variant="h2">{title}</Typography>
-        <Typography color="text.secondary">{description}</Typography>
+        <Typography variant="h2" sx={{ maxWidth: 720 }}>
+          {title}
+        </Typography>
+        <Typography color="text.secondary" sx={{ maxWidth: 720 }}>
+          {description}
+        </Typography>
       </Stack>
-      {action ? <Box>{action}</Box> : null}
+      {action ? <Box sx={{ flexShrink: 0 }}>{action}</Box> : null}
     </Stack>
   )
 }

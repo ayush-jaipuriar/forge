@@ -1,0 +1,341 @@
+<!DOCTYPE html>
+
+<html class="dark" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>FORGE // SYSTEM_CONTROL_SURFACE</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;700;800&amp;family=Inter:wght@400;500&amp;family=Space+Grotesk:wght@400;500;700&amp;family=JetBrains+Mono:wght@400;500&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+      tailwind.config = {
+        darkMode: "class",
+        theme: {
+          extend: {
+            "colors": {
+                "tertiary": "#c6c6c7",
+                "on-background": "#e0e1f2",
+                "on-secondary-container": "#dae4ff",
+                "on-secondary": "#002e69",
+                "surface-bright": "#363945",
+                "primary-fixed-dim": "#ffb68d",
+                "outline": "#a48c7f",
+                "inverse-on-surface": "#2d303c",
+                "surface-container": "#1c1f2b",
+                "secondary-fixed-dim": "#adc6ff",
+                "on-primary-container": "#532200",
+                "background": "#10131e",
+                "outline-variant": "#564338",
+                "on-tertiary-fixed": "#1a1c1c",
+                "tertiary-fixed-dim": "#c6c6c7",
+                "on-secondary-fixed-variant": "#004494",
+                "on-secondary-fixed": "#001a41",
+                "primary-fixed": "#ffdbc9",
+                "primary": "#ffb68d",
+                "surface-container-lowest": "#0b0e19",
+                "on-error": "#690005",
+                "on-tertiary-container": "#2f3132",
+                "inverse-primary": "#9a4600",
+                "on-surface-variant": "#ddc1b3",
+                "surface": "#10131e",
+                "tertiary-container": "#989999",
+                "on-primary-fixed-variant": "#763300",
+                "surface-dim": "#10131e",
+                "primary-container": "#e87b32",
+                "on-primary-fixed": "#321200",
+                "surface-container-highest": "#313441",
+                "secondary-fixed": "#d8e2ff",
+                "on-surface": "#e0e1f2",
+                "surface-container-high": "#262936",
+                "on-tertiary-fixed-variant": "#454747",
+                "on-error-container": "#ffdad6",
+                "error": "#ffb4ab",
+                "on-primary": "#532200",
+                "surface-container-low": "#181b27",
+                "surface-tint": "#ffb68d",
+                "inverse-surface": "#e0e1f2",
+                "tertiary-fixed": "#e2e2e2",
+                "secondary": "#adc6ff",
+                "secondary-container": "#0162cf",
+                "on-tertiary": "#2f3131",
+                "error-container": "#93000a",
+                "surface-variant": "#313441"
+            },
+            "borderRadius": {
+                "DEFAULT": "0.25rem",
+                "lg": "0.5rem",
+                "xl": "0.75rem",
+                "full": "9999px"
+            },
+            "fontFamily": {
+                "headline": ["Plus Jakarta Sans"],
+                "body": ["Inter"],
+                "label": ["Space Grotesk"],
+                "mono": ["JetBrains Mono"]
+            }
+          }
+        }
+      }
+    </script>
+<style>
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+        .status-chip {
+            border-radius: 2px;
+            font-family: 'JetBrains Mono', monospace;
+            letter-spacing: 0.05em;
+        }
+    </style>
+</head>
+<body class="bg-background text-on-surface font-body selection:bg-primary/30">
+<!-- SideNavBar -->
+<aside class="fixed left-0 top-0 h-screen w-20 bg-[#10131e] dark:bg-[#0b0e19] flex flex-col items-center py-8 space-y-8 z-50">
+<div class="mb-4">
+<span class="text-xl font-black tracking-tighter text-[#e87b32] dark:text-[#ffb68d] font-headline">F</span>
+</div>
+<nav class="flex flex-col space-y-6 flex-1">
+<a class="group relative text-slate-500 hover:text-slate-300 transition-colors flex items-center justify-center p-2 rounded-lg hover:bg-[#262936]" href="#">
+<span class="material-symbols-outlined" data-icon="terminal">terminal</span>
+</a>
+<a class="group relative text-slate-500 hover:text-slate-300 transition-colors flex items-center justify-center p-2 rounded-lg hover:bg-[#262936]" href="#">
+<span class="material-symbols-outlined" data-icon="precision_manufacturing">precision_manufacturing</span>
+</a>
+<a class="group relative text-slate-500 hover:text-slate-300 transition-colors flex items-center justify-center p-2 rounded-lg hover:bg-[#262936]" href="#">
+<span class="material-symbols-outlined" data-icon="hub">hub</span>
+</a>
+<a class="group relative text-slate-500 hover:text-slate-300 transition-colors flex items-center justify-center p-2 rounded-lg hover:bg-[#262936]" href="#">
+<span class="material-symbols-outlined" data-icon="query_stats">query_stats</span>
+</a>
+<a class="relative text-[#ffb68d] before:absolute before:left-[-1.5rem] before:h-8 before:w-[2px] before:bg-[#e87b32] before:content-[''] flex items-center justify-center p-2 rounded-lg bg-[#262936]" href="#">
+<span class="material-symbols-outlined" data-icon="settings">settings</span>
+</a>
+</nav>
+<div class="mt-auto">
+<img alt="System Operator Avatar" class="w-10 h-10 rounded-full border border-outline-variant/30 grayscale hover:grayscale-0 transition-all cursor-pointer" data-alt="Close-up portrait of a serious tech operator in a dimly lit workstation with cyan and orange peripheral lighting reflecting on face" src="https://lh3.googleusercontent.com/aida-public/AB6AXuCDofX_jXbbQ7m99VmCOwN5Y5tY1Q5ojalKINKZ8AsePAfeC7pp8KRZHXLlRIRIjlz6SP8JN92A5oJrfboIoqKctoCIS_7ZX2MQmr3P8UAgGOS3ITF5sUgvoszoiRCvMwUDma2y-hdku5gFYc-WfKw-nEyPD3ZFtdyBaX34kxitj6QTtjelaaCvsrndfW2RsILN4dTzdQ85pfAADFbsyov2XouE83TnU9s452Htie0s_f0aNsFBCQw3bu8zIhZd-TugyxSAJzHZOg"/>
+</div>
+</aside>
+<!-- TopAppBar -->
+<header class="fixed top-0 right-0 left-20 h-16 bg-[#10131e]/70 backdrop-blur-xl flex justify-between items-center px-6 z-40">
+<div class="flex items-center space-x-6">
+<span class="text-sm font-mono tracking-widest text-[#e87b32] uppercase">FORGE // SYSTEM_READY</span>
+<div class="h-4 w-[1px] bg-outline-variant/30"></div>
+<nav class="flex space-x-4">
+<span class="text-slate-400 font-mono text-xs tracking-tighter">BREADCRUMB / ROOT / EXECUTION</span>
+</nav>
+</div>
+<div class="flex items-center space-x-4">
+<div class="hidden md:flex bg-surface-container-low px-3 py-1.5 rounded-lg items-center space-x-2">
+<span class="material-symbols-outlined text-sm text-slate-500" data-icon="search">search</span>
+<input class="bg-transparent border-none focus:ring-0 text-xs font-mono text-on-surface placeholder:text-slate-600 w-48" placeholder="COMMAND_SCANNER" type="text"/>
+</div>
+<div class="flex items-center space-x-3">
+<button class="text-slate-400 hover:text-[#ffb68d] transition-colors"><span class="material-symbols-outlined" data-icon="notifications">notifications</span></button>
+<button class="text-slate-400 hover:text-[#ffb68d] transition-colors"><span class="material-symbols-outlined" data-icon="shield">shield</span></button>
+<button class="text-[#ffb4ab] hover:opacity-80 transition-opacity"><span class="material-symbols-outlined" data-icon="power_settings_new">power_settings_new</span></button>
+</div>
+</div>
+</header>
+<!-- Main Canvas -->
+<main class="ml-20 pt-24 pb-12 px-8 min-h-screen bg-surface-container-lowest">
+<!-- Header Section -->
+<div class="max-w-7xl mx-auto mb-10">
+<div class="flex items-end justify-between">
+<div>
+<h1 class="text-4xl font-extrabold font-headline tracking-tighter text-on-surface mb-2">System Control Surface</h1>
+<p class="font-mono text-xs text-on-surface-variant flex items-center">
+<span class="w-2 h-2 bg-primary rounded-full mr-2"></span>
+                        SESSION_TOKEN: 0x8F22A...7C // OPERATOR_AUTH: VERIFIED
+                    </p>
+</div>
+<div class="flex space-x-3">
+<button class="px-4 py-2 text-xs font-label uppercase tracking-widest border border-outline-variant/30 rounded-lg hover:bg-surface-container-high transition-all">
+                        Factory Reset
+                    </button>
+<button class="px-6 py-2 text-xs font-label uppercase tracking-widest bg-gradient-to-br from-primary to-primary-container text-on-primary-fixed rounded-lg font-bold shadow-lg shadow-primary/10">
+                        Commit Changes
+                    </button>
+</div>
+</div>
+</div>
+<!-- Settings Bento Grid -->
+<div class="max-w-7xl mx-auto grid grid-cols-12 gap-6">
+<!-- Infrastructure Section -->
+<section class="col-span-12 lg:col-span-8 space-y-6">
+<div class="bg-surface-container-high rounded-xl p-8 border border-outline-variant/10">
+<div class="flex items-center justify-between mb-8">
+<div>
+<h2 class="text-xl font-bold font-headline">Infrastructure</h2>
+<p class="text-sm text-on-surface-variant mt-1">Global synchronization and data integrity protocols.</p>
+</div>
+<span class="material-symbols-outlined text-primary-fixed-dim" data-icon="database">database</span>
+</div>
+<div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+<!-- Data Sync -->
+<div class="space-y-4">
+<div class="flex items-center justify-between">
+<label class="font-label text-xs uppercase tracking-widest text-on-surface-variant">Real-time Data Sync</label>
+<span class="status-chip bg-primary/20 text-primary-fixed-dim px-2 py-0.5 text-[10px] font-bold">ONLINE</span>
+</div>
+<div class="p-4 bg-surface-container-lowest rounded-lg">
+<div class="flex items-center justify-between mb-2">
+<span class="font-mono text-[11px] text-slate-500">EDGE_CLUSTER_LHR</span>
+<span class="font-mono text-[11px] text-primary">0.04ms LATENCY</span>
+</div>
+<div class="w-full bg-surface-container-highest h-1 rounded-full overflow-hidden">
+<div class="bg-primary h-full w-3/4"></div>
+</div>
+</div>
+<div class="flex items-center space-x-2">
+<input checked="" class="w-4 h-4 rounded-sm bg-surface-container-lowest border-outline-variant text-primary focus:ring-primary/20 ring-offset-background" type="checkbox"/>
+<span class="text-sm text-on-surface">Enable multi-region failover automation</span>
+</div>
+</div>
+<!-- Backup Status -->
+<div class="space-y-4">
+<div class="flex items-center justify-between">
+<label class="font-label text-xs uppercase tracking-widest text-on-surface-variant">System Snapshots</label>
+<span class="status-chip bg-secondary/20 text-secondary px-2 py-0.5 text-[10px] font-bold">SYNCED</span>
+</div>
+<div class="space-y-2">
+<div class="flex justify-between p-3 border-b border-outline-variant/10">
+<span class="font-mono text-xs">INCREMENTAL_092</span>
+<span class="font-mono text-xs text-on-surface-variant">14:02 UTC</span>
+</div>
+<div class="flex justify-between p-3 border-b border-outline-variant/10">
+<span class="font-mono text-xs">SNAPSHOT_FULL_V2</span>
+<span class="font-mono text-xs text-on-surface-variant">YESTERDAY</span>
+</div>
+</div>
+<button class="w-full py-2 bg-surface-container-highest hover:bg-surface-bright transition-colors rounded text-[10px] font-label uppercase tracking-widest">
+                                Run manual backup
+                            </button>
+</div>
+</div>
+</div>
+<!-- Platform Posture -->
+<div class="bg-surface-container-high rounded-xl p-8 border border-outline-variant/10">
+<div class="flex items-center justify-between mb-8">
+<div>
+<h2 class="text-xl font-bold font-headline">Platform Posture</h2>
+<p class="text-sm text-on-surface-variant mt-1">Interface density and visual engine configuration.</p>
+</div>
+<span class="material-symbols-outlined text-secondary" data-icon="palette">palette</span>
+</div>
+<div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+<div class="space-y-3">
+<label class="font-label text-xs uppercase tracking-widest text-on-surface-variant">Visual Theme</label>
+<div class="grid grid-cols-2 gap-2">
+<button class="p-4 rounded-lg bg-surface-container-lowest border-2 border-primary flex flex-col items-center justify-center space-y-2">
+<div class="w-8 h-4 bg-background rounded-sm"></div>
+<span class="text-[10px] font-mono">NOCTURNAL</span>
+</button>
+<button class="p-4 rounded-lg bg-surface-container-lowest border border-outline-variant/20 flex flex-col items-center justify-center space-y-2 hover:border-outline transition-colors">
+<div class="w-8 h-4 bg-tertiary rounded-sm"></div>
+<span class="text-[10px] font-mono">OBSIDIAN</span>
+</button>
+</div>
+</div>
+<div class="space-y-3 md:col-span-2">
+<label class="font-label text-xs uppercase tracking-widest text-on-surface-variant">Layout Density</label>
+<div class="bg-surface-container-lowest p-4 rounded-lg">
+<input class="w-full accent-primary h-1.5 bg-surface-container-highest rounded-lg appearance-none cursor-pointer" type="range"/>
+<div class="flex justify-between mt-4 text-[10px] font-mono uppercase text-on-surface-variant">
+<span>Relaxed</span>
+<span class="text-primary font-bold">Standard_Mode</span>
+<span>Ultra_Dense</span>
+</div>
+</div>
+</div>
+</div>
+</div>
+</section>
+<!-- Operator Profile (Sidebar Column) -->
+<section class="col-span-12 lg:col-span-4 space-y-6">
+<div class="bg-surface-container-high rounded-xl p-8 border border-outline-variant/10">
+<div class="flex items-center space-x-4 mb-8">
+<div class="relative">
+<img alt="Operator Profile" class="w-16 h-16 rounded-full border-2 border-primary p-1" data-alt="Technical professional operator portrait in dark lighting environment with subtle warm amber rim light" src="https://lh3.googleusercontent.com/aida-public/AB6AXuDEg1RZXFmomOcVcFfOR4TFciiLxsU3oP750kuq1bPFRnaLarlr4fasZmmol0WF_T1-kEzxnMZGwixqEX5XR3kJjBALdZA2JVE0I3uq6alySUn18CeEQ_yC2duc3QiTbzswJsF2kzJQ7PYq_alPHjvd-IA316Q38YdQd-GIKFbGj6CytpOT_CSuPjLLj8qhCBkGuGSuTyNyMYFxk_la7VKL8yGEuIAaqJ5TKd57lrHpGhzOyf8rhWOByFACQYYEiO-ZusGf1Pr0Zw"/>
+<div class="absolute bottom-0 right-0 w-4 h-4 bg-green-500 border-2 border-surface-container-high rounded-full"></div>
+</div>
+<div>
+<h2 class="text-lg font-bold font-headline">Operator_42</h2>
+<p class="text-[11px] font-mono text-primary uppercase">Chief Architect</p>
+</div>
+</div>
+<div class="space-y-4">
+<div class="space-y-1">
+<label class="font-label text-[10px] uppercase tracking-widest text-on-surface-variant">System Email</label>
+<div class="font-mono text-sm p-3 bg-surface-container-lowest rounded border border-outline-variant/10">
+                                admin@forge.io
+                            </div>
+</div>
+<div class="space-y-1">
+<label class="font-label text-[10px] uppercase tracking-widest text-on-surface-variant">Terminal Key</label>
+<div class="font-mono text-sm p-3 bg-surface-container-lowest rounded border border-outline-variant/10 flex justify-between items-center">
+<span>•••• •••• •••• 8812</span>
+<span class="material-symbols-outlined text-xs cursor-pointer hover:text-primary" data-icon="content_copy">content_copy</span>
+</div>
+</div>
+</div>
+<div class="mt-10 pt-8 border-t border-outline-variant/10">
+<h3 class="font-label text-xs uppercase tracking-widest text-on-surface-variant mb-4">Notification Engine</h3>
+<div class="space-y-4">
+<div class="flex items-center justify-between">
+<span class="text-sm">Critical System Errors</span>
+<div class="w-10 h-5 bg-primary/20 rounded-full relative cursor-pointer">
+<div class="absolute right-1 top-1 w-3 h-3 bg-primary rounded-full"></div>
+</div>
+</div>
+<div class="flex items-center justify-between opacity-50">
+<span class="text-sm">Performance Benchmarks</span>
+<div class="w-10 h-5 bg-surface-container-lowest rounded-full relative cursor-pointer">
+<div class="absolute left-1 top-1 w-3 h-3 bg-on-surface-variant rounded-full"></div>
+</div>
+</div>
+</div>
+</div>
+</div>
+<!-- Technical Specs Mini Card -->
+<div class="bg-gradient-to-br from-[#1c1f2b] to-[#10131e] rounded-xl p-6 border border-primary/20 relative overflow-hidden group">
+<div class="absolute top-0 right-0 p-4 opacity-10 group-hover:opacity-30 transition-opacity">
+<span class="material-symbols-outlined text-6xl" data-icon="memory">memory</span>
+</div>
+<h4 class="font-label text-[10px] uppercase tracking-[0.2em] text-primary-fixed-dim mb-4">Core_Engine_Status</h4>
+<div class="space-y-3 relative z-10">
+<div class="flex justify-between items-center">
+<span class="font-mono text-[10px] text-slate-500">UPTIME</span>
+<span class="font-mono text-[10px] text-on-surface">341D 12H 04M</span>
+</div>
+<div class="flex justify-between items-center">
+<span class="font-mono text-[10px] text-slate-500">THREADS</span>
+<span class="font-mono text-[10px] text-on-surface">128 ACTIVE</span>
+</div>
+<div class="flex justify-between items-center">
+<span class="font-mono text-[10px] text-slate-500">LOAD_AVG</span>
+<span class="font-mono text-[10px] text-on-surface">0.12 / 0.15 / 0.18</span>
+</div>
+</div>
+<div class="mt-4 pt-4 border-t border-outline-variant/10">
+<div class="flex items-center text-[9px] font-mono text-primary animate-pulse">
+<span class="material-symbols-outlined text-[12px] mr-1" data-icon="refresh">refresh</span>
+                            POLLING SYSTEM TELEMETRY...
+                        </div>
+</div>
+</div>
+</section>
+</div>
+</main>
+<!-- Footer Meta -->
+<footer class="ml-20 py-6 px-8 border-t border-outline-variant/5">
+<div class="max-w-7xl mx-auto flex flex-col md:flex-row justify-between items-center opacity-40 hover:opacity-100 transition-opacity">
+<span class="font-mono text-[10px] tracking-widest text-on-surface-variant">FORGE CORE VERSION 2.0.4 // BUILD_ID: 99x_DELTA_STABLE</span>
+<div class="flex space-x-6 mt-4 md:mt-0 font-label text-[10px] uppercase tracking-widest">
+<a class="hover:text-primary transition-colors" href="#">Documentation</a>
+<a class="hover:text-primary transition-colors" href="#">API Reference</a>
+<a class="hover:text-primary transition-colors" href="#">Security Policy</a>
+</div>
+</div>
+</footer>
+</body></html>

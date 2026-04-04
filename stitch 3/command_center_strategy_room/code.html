@@ -1,0 +1,465 @@
+<!DOCTYPE html>
+
+<html class="dark" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>FORGE // COMMAND CENTER</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;700;800&amp;family=Inter:wght@400;500&amp;family=Space+Grotesk:wght@400;500;700&amp;family=JetBrains+Mono:wght@400;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+      tailwind.config = {
+        darkMode: "class",
+        theme: {
+          extend: {
+            "colors": {
+                    "tertiary": "#c6c6c7",
+                    "on-background": "#e0e1f2",
+                    "on-secondary-container": "#dae4ff",
+                    "on-secondary": "#002e69",
+                    "surface-bright": "#363945",
+                    "primary-fixed-dim": "#ffb68d",
+                    "outline": "#a48c7f",
+                    "inverse-on-surface": "#2d303c",
+                    "surface-container": "#1c1f2b",
+                    "secondary-fixed-dim": "#adc6ff",
+                    "on-primary-container": "#532200",
+                    "background": "#10131e",
+                    "outline-variant": "#564338",
+                    "on-tertiary-fixed": "#1a1c1c",
+                    "tertiary-fixed-dim": "#c6c6c7",
+                    "on-secondary-fixed-variant": "#004494",
+                    "on-secondary-fixed": "#001a41",
+                    "primary-fixed": "#ffdbc9",
+                    "primary": "#ffb68d",
+                    "surface-container-lowest": "#0b0e19",
+                    "on-error": "#690005",
+                    "on-tertiary-container": "#2f3132",
+                    "inverse-primary": "#9a4600",
+                    "on-surface-variant": "#ddc1b3",
+                    "surface": "#10131e",
+                    "tertiary-container": "#989999",
+                    "on-primary-fixed-variant": "#763300",
+                    "surface-dim": "#10131e",
+                    "primary-container": "#e87b32",
+                    "on-primary-fixed": "#321200",
+                    "surface-container-highest": "#313441",
+                    "secondary-fixed": "#d8e2ff",
+                    "on-surface": "#e0e1f2",
+                    "surface-container-high": "#262936",
+                    "on-tertiary-fixed-variant": "#454747",
+                    "on-error-container": "#ffdad6",
+                    "error": "#ffb4ab",
+                    "on-primary": "#532200",
+                    "surface-container-low": "#181b27",
+                    "surface-tint": "#ffb68d",
+                    "inverse-surface": "#e0e1f2",
+                    "tertiary-fixed": "#e2e2e2",
+                    "secondary": "#adc6ff",
+                    "secondary-container": "#0162cf",
+                    "on-tertiary": "#2f3131",
+                    "error-container": "#93000a",
+                    "surface-variant": "#313441"
+            },
+            "borderRadius": {
+                    "DEFAULT": "0.25rem",
+                    "lg": "0.5rem",
+                    "xl": "0.75rem",
+                    "full": "9999px"
+            },
+            "fontFamily": {
+                    "headline": ["Plus Jakarta Sans"],
+                    "body": ["Inter"],
+                    "label": ["Space Grotesk"],
+                    "mono": ["JetBrains Mono"]
+            }
+          },
+        },
+      }
+    </script>
+<style>
+      body {
+        background-color: #10131e;
+        color: #e0e1f2;
+        font-family: 'Inter', sans-serif;
+      }
+      .material-symbols-outlined {
+        font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+      }
+      .glass-panel {
+        background: rgba(38, 41, 54, 0.6);
+        backdrop-filter: blur(20px);
+      }
+      .technical-grid {
+        background-image: radial-gradient(circle, #313441 1px, transparent 1px);
+        background-size: 24px 24px;
+      }
+    </style>
+</head>
+<body class="selection:bg-primary-container selection:text-on-primary-container">
+<!-- SideNavBar Shell -->
+<nav class="fixed left-0 top-0 h-screen w-20 border-r-0 bg-[#10131e] dark:bg-[#0b0e19] flex flex-col items-center py-8 space-y-8 h-full z-50">
+<div class="mb-8">
+<span class="text-xl font-black tracking-tighter text-[#e87b32] dark:text-[#ffb68d] font-headline">F</span>
+</div>
+<div class="flex flex-col space-y-6 flex-1">
+<button class="relative text-[#ffb68d] before:absolute before:left-[-24px] before:h-8 before:w-[2px] before:bg-[#e87b32] before:content-[''] group">
+<span class="material-symbols-outlined text-2xl group-hover:scale-95 transition-transform">terminal</span>
+<span class="absolute left-16 bg-surface-container-high px-2 py-1 rounded text-[10px] font-label opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap">Dashboard</span>
+</button>
+<button class="text-slate-500 hover:text-slate-300 transition-colors group relative">
+<span class="material-symbols-outlined text-2xl group-hover:scale-95 transition-transform">precision_manufacturing</span>
+<span class="absolute left-16 bg-surface-container-high px-2 py-1 rounded text-[10px] font-label opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap">Operations</span>
+</button>
+<button class="text-slate-500 hover:text-slate-300 transition-colors group relative">
+<span class="material-symbols-outlined text-2xl group-hover:scale-95 transition-transform">hub</span>
+<span class="absolute left-16 bg-surface-container-high px-2 py-1 rounded text-[10px] font-label opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap">Network</span>
+</button>
+<button class="text-slate-500 hover:text-slate-300 transition-colors group relative">
+<span class="material-symbols-outlined text-2xl group-hover:scale-95 transition-transform">query_stats</span>
+<span class="absolute left-16 bg-surface-container-high px-2 py-1 rounded text-[10px] font-label opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap">Analytics</span>
+</button>
+</div>
+<button class="text-slate-500 hover:text-slate-300 transition-colors mt-auto">
+<span class="material-symbols-outlined text-2xl">settings</span>
+</button>
+</nav>
+<!-- TopAppBar Shell -->
+<header class="fixed top-0 right-0 left-20 h-16 bg-[#10131e]/70 backdrop-blur-xl flex justify-between items-center px-6 w-full z-40">
+<div class="flex items-center space-x-4">
+<span class="text-sm font-mono tracking-widest text-[#e87b32] uppercase">FORGE // SYSTEM_READY</span>
+<div class="h-4 w-px bg-outline-variant/30"></div>
+<span class="text-slate-400 font-mono text-[10px] tracking-tight">BREADCRUMB / ROOT / EXECUTION</span>
+</div>
+<div class="flex items-center space-x-6">
+<div class="flex items-center space-x-4 text-slate-400">
+<span class="material-symbols-outlined text-xl hover:text-[#ffb68d] cursor-pointer transition-colors">notifications</span>
+<span class="material-symbols-outlined text-xl hover:text-[#ffb68d] cursor-pointer transition-colors">shield</span>
+<span class="material-symbols-outlined text-xl text-error cursor-pointer hover:opacity-80 transition-opacity">power_settings_new</span>
+</div>
+<div class="h-8 w-8 rounded-full bg-surface-container-highest overflow-hidden border border-outline-variant/20">
+<img class="w-full h-full object-cover" data-alt="Portrait of a sophisticated system operator with technical lighting and deep shadows" src="https://lh3.googleusercontent.com/aida-public/AB6AXuBtEGOnprLg9seIyrRFKhFg4kMc1TVxd72qq3sX-R0E3upMM9Rt8Q0BMtMzfL5SCK93s0lDFw0I5eE8LcfrKb4pjWoEI0lOyQ8gqIdZ0vPbGcj2BA3yAQK48XQfT0TOLG66furTlrdrY3ziX7j3l4CQgtmY1leHqR8doF_hXZMnbLKjfZCLF7lJAEsn1SL3AnzaFWrYzIocJek5NDRK5oXhzJetururg-70nFJxcG3D6oMjzOSic-gf5O9DM-XALgp-hyB7KCxDqg"/>
+</div>
+</div>
+</header>
+<!-- Main Canvas -->
+<main class="ml-20 mt-16 p-8 min-h-screen technical-grid">
+<div class="max-w-7xl mx-auto space-y-8">
+<!-- TOP: Coach Insight Banner -->
+<section class="relative overflow-hidden rounded-xl bg-surface-container-low border border-outline-variant/10 p-10 flex items-center justify-between shadow-2xl">
+<div class="relative z-10 space-y-4 max-w-2xl">
+<div class="flex items-center space-x-2">
+<span class="w-2 h-2 rounded-full bg-primary animate-pulse"></span>
+<span class="font-label text-[10px] tracking-widest uppercase text-primary">Live Diagnostic</span>
+</div>
+<h1 class="text-4xl font-headline font-extrabold text-on-surface leading-tight">
+                        Momentum is high, but <span class="text-primary-container italic">recovery is lagging</span>.
+                    </h1>
+<p class="text-on-surface-variant font-body leading-relaxed max-w-lg">
+                        Execution velocity remains above target threshold (92%). However, systemic CNS fatigue markers suggest a required 15% reduction in volume for the next cycle to prevent performance plateau.
+                    </p>
+</div>
+<div class="hidden lg:block relative z-10 w-64 h-32 bg-surface-container-high rounded-lg p-4 border border-outline-variant/20 shadow-inner">
+<div class="flex justify-between items-end h-full space-x-1">
+<div class="bg-primary/20 w-full rounded-t" style="height: 40%"></div>
+<div class="bg-primary/30 w-full rounded-t" style="height: 60%"></div>
+<div class="bg-primary/40 w-full rounded-t" style="height: 85%"></div>
+<div class="bg-primary/60 w-full rounded-t" style="height: 70%"></div>
+<div class="bg-primary-container w-full rounded-t" style="height: 95%"></div>
+<div class="bg-primary-container w-full rounded-t" style="height: 90%"></div>
+</div>
+</div>
+<!-- Abstract visual element -->
+<div class="absolute right-[-10%] top-[-50%] w-[500px] h-[500px] bg-primary/5 rounded-full blur-[120px]"></div>
+</section>
+<!-- MIDDLE: 3x2 High-Density Charts -->
+<section class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+<!-- Chart 1: Execution Rate -->
+<div class="bg-surface-container-high rounded-xl p-6 border border-outline-variant/5 shadow-sm">
+<div class="flex justify-between items-start mb-6">
+<div>
+<p class="font-label text-[10px] text-slate-500 uppercase tracking-widest">Execution Rate</p>
+<h3 class="text-2xl font-mono text-on-surface">94.2<span class="text-xs text-slate-500">%</span></h3>
+</div>
+<span class="material-symbols-outlined text-secondary">trending_up</span>
+</div>
+<div class="h-24 flex items-end space-x-1">
+<div class="flex-1 bg-secondary/10 h-1/2 rounded-sm border-t border-secondary/30"></div>
+<div class="flex-1 bg-secondary/10 h-2/3 rounded-sm border-t border-secondary/30"></div>
+<div class="flex-1 bg-secondary/20 h-3/4 rounded-sm border-t border-secondary/40"></div>
+<div class="flex-1 bg-secondary/30 h-4/5 rounded-sm border-t border-secondary/50"></div>
+<div class="flex-1 bg-secondary/40 h-full rounded-sm border-t border-secondary/60"></div>
+</div>
+</div>
+<!-- Chart 2: Readiness vs Effort -->
+<div class="bg-surface-container-high rounded-xl p-6 border border-outline-variant/5 shadow-sm relative overflow-hidden">
+<div class="flex justify-between items-start mb-6">
+<div>
+<p class="font-label text-[10px] text-slate-500 uppercase tracking-widest">Readiness Index</p>
+<h3 class="text-2xl font-mono text-on-surface">6.8<span class="text-xs text-slate-500">/10</span></h3>
+</div>
+<span class="material-symbols-outlined text-primary-container">warning</span>
+</div>
+<div class="relative h-24">
+<svg class="w-full h-full" preserveaspectratio="none" viewbox="0 0 100 40">
+<path d="M0 35 Q 25 10, 50 25 T 100 5 L 100 40 L 0 40 Z" fill="rgba(232, 123, 50, 0.1)"></path>
+<path d="M0 35 Q 25 10, 50 25 T 100 5" fill="none" stroke="#e87b32" stroke-width="1.5"></path>
+</svg>
+</div>
+<div class="mt-2 flex justify-between font-mono text-[9px] text-slate-500">
+<span>04:00</span>
+<span>12:00</span>
+<span>20:00</span>
+</div>
+</div>
+<!-- Chart 3: System Stability -->
+<div class="bg-surface-container-high rounded-xl p-6 border border-outline-variant/5 shadow-sm">
+<div class="flex justify-between items-start mb-6">
+<div>
+<p class="font-label text-[10px] text-slate-500 uppercase tracking-widest">System Load</p>
+<h3 class="text-2xl font-mono text-on-surface">0.12<span class="text-xs text-slate-500">ms</span></h3>
+</div>
+<span class="material-symbols-outlined text-slate-500">analytics</span>
+</div>
+<div class="grid grid-cols-8 gap-1 h-24">
+<div class="bg-slate-800 self-end h-[40%] rounded-sm"></div>
+<div class="bg-slate-800 self-end h-[60%] rounded-sm"></div>
+<div class="bg-slate-800 self-end h-[55%] rounded-sm"></div>
+<div class="bg-slate-700 self-end h-[75%] rounded-sm"></div>
+<div class="bg-slate-700 self-end h-[85%] rounded-sm"></div>
+<div class="bg-slate-600 self-end h-[70%] rounded-sm"></div>
+<div class="bg-slate-600 self-end h-[90%] rounded-sm"></div>
+<div class="bg-primary/20 self-end h-[95%] rounded-sm border-t-2 border-primary"></div>
+</div>
+</div>
+<!-- Chart 4: Neural Efficiency -->
+<div class="bg-surface-container-high rounded-xl p-6 border border-outline-variant/5 shadow-sm">
+<div class="flex justify-between items-start mb-6">
+<div>
+<p class="font-label text-[10px] text-slate-500 uppercase tracking-widest">Neural Efficency</p>
+<h3 class="text-2xl font-mono text-on-surface">OPTIMAL</h3>
+</div>
+<span class="material-symbols-outlined text-secondary">verified_user</span>
+</div>
+<div class="flex items-center justify-center h-24">
+<div class="relative w-20 h-20">
+<svg class="w-full h-full transform -rotate-90">
+<circle class="text-slate-800" cx="40" cy="40" fill="transparent" r="35" stroke="currentColor" stroke-width="4"></circle>
+<circle class="text-secondary" cx="40" cy="40" fill="transparent" r="35" stroke="currentColor" stroke-dasharray="219.9" stroke-dashoffset="44" stroke-width="4"></circle>
+</svg>
+<div class="absolute inset-0 flex items-center justify-center font-mono text-xs">80%</div>
+</div>
+</div>
+</div>
+<!-- Chart 5: Sleep Consistency -->
+<div class="bg-surface-container-high rounded-xl p-6 border border-outline-variant/5 shadow-sm">
+<div class="flex justify-between items-start mb-6">
+<div>
+<p class="font-label text-[10px] text-slate-500 uppercase tracking-widest">Circadian Sync</p>
+<h3 class="text-2xl font-mono text-on-surface">92<span class="text-xs text-slate-500">/100</span></h3>
+</div>
+<span class="material-symbols-outlined text-slate-500">bedtime</span>
+</div>
+<div class="space-y-3 mt-4">
+<div class="w-full bg-slate-800 h-1.5 rounded-full overflow-hidden">
+<div class="bg-secondary-container h-full w-[92%]"></div>
+</div>
+<div class="w-full bg-slate-800 h-1.5 rounded-full overflow-hidden opacity-50">
+<div class="bg-secondary h-full w-[78%]"></div>
+</div>
+<div class="w-full bg-slate-800 h-1.5 rounded-full overflow-hidden opacity-30">
+<div class="bg-secondary h-full w-[85%]"></div>
+</div>
+</div>
+</div>
+<!-- Chart 6: Volume Accretion -->
+<div class="bg-surface-container-high rounded-xl p-6 border border-outline-variant/5 shadow-sm">
+<div class="flex justify-between items-start mb-6">
+<div>
+<p class="font-label text-[10px] text-slate-500 uppercase tracking-widest">Volume Delta</p>
+<h3 class="text-2xl font-mono text-on-surface">+12.4<span class="text-xs text-slate-500">%</span></h3>
+</div>
+<span class="material-symbols-outlined text-primary">add_chart</span>
+</div>
+<div class="h-24 flex items-center space-x-1 justify-center">
+<div class="w-2 h-4 bg-slate-800 rounded-full"></div>
+<div class="w-2 h-8 bg-slate-800 rounded-full"></div>
+<div class="w-2 h-12 bg-slate-800 rounded-full"></div>
+<div class="w-2 h-16 bg-primary/40 rounded-full"></div>
+<div class="w-2 h-20 bg-primary/60 rounded-full"></div>
+<div class="w-2 h-14 bg-primary rounded-full"></div>
+</div>
+</div>
+</section>
+<!-- BOTTOM: Momentum Heatmap -->
+<section class="bg-surface-container-low rounded-xl border border-outline-variant/10 p-8">
+<div class="flex justify-between items-end mb-8">
+<div>
+<h2 class="font-headline font-bold text-xl text-on-surface">Consistency Persistence</h2>
+<p class="font-label text-[10px] text-slate-500 tracking-wider">254 CONSECUTIVE SYSTEM OPERATIONS</p>
+</div>
+<div class="flex items-center space-x-4 text-[10px] font-mono text-slate-500 uppercase">
+<div class="flex items-center space-x-1">
+<span>Less</span>
+<div class="w-3 h-3 bg-slate-800 rounded-sm"></div>
+<div class="w-3 h-3 bg-secondary/30 rounded-sm"></div>
+<div class="w-3 h-3 bg-secondary/60 rounded-sm"></div>
+<div class="w-3 h-3 bg-secondary rounded-sm"></div>
+<span>More</span>
+</div>
+</div>
+</div>
+<div class="overflow-x-auto pb-4">
+<div class="inline-grid grid-cols-[repeat(52,1fr)] gap-1.5 min-w-[900px]">
+<!-- Column headers for months -->
+<div class="col-span-4 text-[9px] font-mono text-slate-600">JAN</div>
+<div class="col-span-4 text-[9px] font-mono text-slate-600">FEB</div>
+<div class="col-span-4 text-[9px] font-mono text-slate-600">MAR</div>
+<div class="col-span-5 text-[9px] font-mono text-slate-600">APR</div>
+<div class="col-span-4 text-[9px] font-mono text-slate-600">MAY</div>
+<div class="col-span-4 text-[9px] font-mono text-slate-600">JUN</div>
+<div class="col-span-4 text-[9px] font-mono text-slate-600">JUL</div>
+<div class="col-span-5 text-[9px] font-mono text-slate-600">AUG</div>
+<div class="col-span-4 text-[9px] font-mono text-slate-600">SEP</div>
+<div class="col-span-4 text-[9px] font-mono text-slate-600">OCT</div>
+<div class="col-span-4 text-[9px] font-mono text-slate-600">NOV</div>
+<div class="col-span-2 text-[9px] font-mono text-slate-600">DEC</div>
+<!-- Row 1 -->
+<div class="col-span-52 grid grid-cols-[repeat(52,1fr)] gap-1.5">
+<!-- Loop simulation of boxes -->
+<div class="aspect-square bg-secondary rounded-[1px]"></div>
+<div class="aspect-square bg-secondary/80 rounded-[1px]"></div>
+<div class="aspect-square bg-slate-800 rounded-[1px]"></div>
+<div class="aspect-square bg-secondary/40 rounded-[1px]"></div>
+<div class="aspect-square bg-secondary rounded-[1px]"></div>
+<div class="aspect-square bg-secondary rounded-[1px]"></div>
+<div class="aspect-square bg-secondary/60 rounded-[1px]"></div>
+<div class="aspect-square bg-secondary rounded-[1px]"></div>
+<div class="aspect-square bg-secondary rounded-[1px]"></div>
+<div class="aspect-square bg-secondary rounded-[1px]"></div>
+<div class="aspect-square bg-secondary rounded-[1px]"></div>
+<div class="aspect-square bg-secondary/20 rounded-[1px]"></div>
+<div class="aspect-square bg-secondary rounded-[1px]"></div>
+<div class="aspect-square bg-secondary rounded-[1px]"></div>
+<div class="aspect-square bg-secondary rounded-[1px]"></div>
+<div class="aspect-square bg-secondary rounded-[1px]"></div>
+<div class="aspect-square bg-secondary rounded-[1px]"></div>
+<div class="aspect-square bg-secondary rounded-[1px]"></div>
+<div class="aspect-square bg-secondary rounded-[1px]"></div>
+<div class="aspect-square bg-secondary rounded-[1px]"></div>
+<div class="aspect-square bg-secondary rounded-[1px]"></div>
+<div class="aspect-square bg-secondary rounded-[1px]"></div>
+<div class="aspect-square bg-secondary rounded-[1px]"></div>
+<div class="aspect-square bg-secondary rounded-[1px]"></div>
+<div class="aspect-square bg-secondary rounded-[1px]"></div>
+<div class="aspect-square bg-secondary rounded-[1px]"></div>
+<div class="aspect-square bg-secondary rounded-[1px]"></div>
+<div class="aspect-square bg-secondary rounded-[1px]"></div>
+<div class="aspect-square bg-secondary rounded-[1px]"></div>
+<div class="aspect-square bg-secondary rounded-[1px]"></div>
+<div class="aspect-square bg-secondary rounded-[1px]"></div>
+<div class="aspect-square bg-secondary rounded-[1px]"></div>
+<div class="aspect-square bg-secondary rounded-[1px]"></div>
+<div class="aspect-square bg-secondary rounded-[1px]"></div>
+<div class="aspect-square bg-secondary rounded-[1px]"></div>
+<div class="aspect-square bg-secondary rounded-[1px]"></div>
+<div class="aspect-square bg-secondary rounded-[1px]"></div>
+<div class="aspect-square bg-secondary rounded-[1px]"></div>
+<div class="aspect-square bg-secondary rounded-[1px]"></div>
+<div class="aspect-square bg-secondary rounded-[1px]"></div>
+<div class="aspect-square bg-secondary rounded-[1px]"></div>
+<div class="aspect-square bg-secondary rounded-[1px]"></div>
+<div class="aspect-square bg-secondary rounded-[1px]"></div>
+<div class="aspect-square bg-secondary rounded-[1px]"></div>
+<div class="aspect-square bg-secondary rounded-[1px]"></div>
+<div class="aspect-square bg-secondary rounded-[1px]"></div>
+<div class="aspect-square bg-secondary rounded-[1px]"></div>
+<div class="aspect-square bg-secondary rounded-[1px]"></div>
+<div class="aspect-square bg-secondary rounded-[1px]"></div>
+<div class="aspect-square bg-secondary rounded-[1px]"></div>
+<div class="aspect-square bg-secondary rounded-[1px]"></div>
+<div class="aspect-square bg-secondary rounded-[1px]"></div>
+</div>
+<!-- Additional rows omitted for brevity, but pattern is established -->
+<div class="col-span-52 grid grid-cols-[repeat(52,1fr)] gap-1.5 opacity-80">
+<div class="aspect-square bg-secondary rounded-[1px]"></div>
+<div class="aspect-square bg-secondary rounded-[1px]"></div>
+<div class="aspect-square bg-secondary rounded-[1px]"></div>
+<div class="aspect-square bg-secondary rounded-[1px]"></div>
+<div class="aspect-square bg-slate-800 rounded-[1px]"></div>
+<div class="aspect-square bg-slate-800 rounded-[1px]"></div>
+<div class="aspect-square bg-secondary rounded-[1px]"></div>
+<div class="aspect-square bg-secondary/40 rounded-[1px]"></div>
+<div class="aspect-square bg-secondary rounded-[1px]"></div>
+<div class="aspect-square bg-secondary rounded-[1px]"></div>
+<div class="aspect-square bg-secondary rounded-[1px]"></div>
+<div class="aspect-square bg-secondary rounded-[1px]"></div>
+<div class="aspect-square bg-secondary rounded-[1px]"></div>
+<div class="aspect-square bg-secondary rounded-[1px]"></div>
+<div class="aspect-square bg-secondary rounded-[1px]"></div>
+<div class="aspect-square bg-secondary rounded-[1px]"></div>
+<div class="aspect-square bg-secondary rounded-[1px]"></div>
+<div class="aspect-square bg-secondary rounded-[1px]"></div>
+<div class="aspect-square bg-secondary rounded-[1px]"></div>
+<div class="aspect-square bg-secondary rounded-[1px]"></div>
+<div class="aspect-square bg-secondary rounded-[1px]"></div>
+<div class="aspect-square bg-secondary rounded-[1px]"></div>
+<div class="aspect-square bg-secondary rounded-[1px]"></div>
+<div class="aspect-square bg-secondary rounded-[1px]"></div>
+<div class="aspect-square bg-secondary rounded-[1px]"></div>
+<div class="aspect-square bg-secondary rounded-[1px]"></div>
+<div class="aspect-square bg-secondary rounded-[1px]"></div>
+<div class="aspect-square bg-secondary rounded-[1px]"></div>
+<div class="aspect-square bg-secondary rounded-[1px]"></div>
+<div class="aspect-square bg-secondary rounded-[1px]"></div>
+<div class="aspect-square bg-secondary rounded-[1px]"></div>
+<div class="aspect-square bg-secondary rounded-[1px]"></div>
+<div class="aspect-square bg-secondary rounded-[1px]"></div>
+<div class="aspect-square bg-secondary rounded-[1px]"></div>
+<div class="aspect-square bg-secondary rounded-[1px]"></div>
+<div class="aspect-square bg-secondary rounded-[1px]"></div>
+<div class="aspect-square bg-secondary rounded-[1px]"></div>
+<div class="aspect-square bg-secondary rounded-[1px]"></div>
+<div class="aspect-square bg-secondary rounded-[1px]"></div>
+<div class="aspect-square bg-secondary rounded-[1px]"></div>
+<div class="aspect-square bg-secondary rounded-[1px]"></div>
+<div class="aspect-square bg-secondary rounded-[1px]"></div>
+<div class="aspect-square bg-secondary rounded-[1px]"></div>
+<div class="aspect-square bg-secondary rounded-[1px]"></div>
+<div class="aspect-square bg-secondary rounded-[1px]"></div>
+<div class="aspect-square bg-secondary rounded-[1px]"></div>
+<div class="aspect-square bg-secondary rounded-[1px]"></div>
+<div class="aspect-square bg-secondary rounded-[1px]"></div>
+<div class="aspect-square bg-secondary rounded-[1px]"></div>
+<div class="aspect-square bg-secondary rounded-[1px]"></div>
+<div class="aspect-square bg-secondary rounded-[1px]"></div>
+<div class="aspect-square bg-secondary rounded-[1px]"></div>
+</div>
+</div>
+</div>
+<div class="mt-8 pt-8 border-t border-outline-variant/10 flex justify-between">
+<div class="flex space-x-12">
+<div>
+<p class="text-[9px] font-label text-slate-500 uppercase">Longest Streak</p>
+<p class="font-mono text-xl text-on-surface">128 Days</p>
+</div>
+<div>
+<p class="text-[9px] font-label text-slate-500 uppercase">Current Streak</p>
+<p class="font-mono text-xl text-secondary">42 Days</p>
+</div>
+</div>
+<button class="bg-primary-container text-on-primary-container px-6 py-2 rounded-lg font-label text-xs font-bold hover:opacity-90 transition-opacity">
+                        DOWNLOAD FULL AUDIT
+                    </button>
+</div>
+</section>
+</div>
+</main>
+<!-- FAB for focused action -->
+<div class="fixed bottom-8 right-8 z-50">
+<button class="w-14 h-14 bg-gradient-to-br from-primary to-primary-container rounded-full shadow-2xl flex items-center justify-center text-on-primary-fixed hover:scale-105 active:scale-95 transition-transform">
+<span class="material-symbols-outlined text-3xl" style="font-variation-settings: 'FILL' 1;">add</span>
+</button>
+</div>
+</body></html>

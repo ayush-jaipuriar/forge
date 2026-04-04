@@ -1,0 +1,128 @@
+# Forge UI/UX Redesign Strategy: The Personal Command Center
+
+## 1. Design Vision
+**Forge** is evolved from a functional utility into a **Personal Execution OS**. 
+
+*   **Visual Direction:** High-density, high-contrast, and architecturally structured. We are moving away from the "floating card" aesthetic toward a "nested surface" approach.
+*   **Product Personality:** The "Silent High-Performer." It is disciplined, quiet, and absolutely reliable.
+*   **Emotional Tone:** Stoic, focused, and authoritative. Using the interface should feel like stepping into a private, high-tech cockpit.
+*   **The Shift:** We are moving from a **Generic SaaS Widget Layout** (repetitive pills, soft edges, loose spacing) to an **Operational Command Surface** (defined grids, varying corner radii, intentional focal points, and rhythmic density).
+
+---
+
+## 2. Core Problems in Current UI
+*   **Pill Fatigue:** Over-reliance on 100% rounded capsules for buttons, tags, and cards creates a "bubbly" feel that contradicts a "serious execution" brand.
+*   **Horizontal Drift:** On 27"+ monitors, content likely stretches or floats in a void, lacking a strong central "anchor."
+*   **Low Contrast Hierarchy:** If everything is a "slate card on a dark background," nothing stands out as the primary mission for the hour.
+*   **Visual Monotony:** Repeated card shapes make it hard to distinguish between a "Summary" and a "Diagnostic" at a glance.
+
+---
+
+## 3. New Design Principles
+1.  **Structure Over Decoration:** Every line and border must serve a structural purpose.
+2.  **Intentional Focal Points:** Use the Amber accent like a laser—only for what requires immediate execution or attention.
+3.  **Rhythmic Density:** Balance "at-a-glance" summaries with "deep-dive" data modules using a consistent 4px/8px grid.
+4.  **Architectural Layering:** Use subtle variations in surface color (Charcoal to Deep Navy) to create a sense of physical depth without using shadows.
+5.  **Information Authority:** Typography shouldn't just be "readable"—it should feel decisive.
+6.  **Contextual Awareness:** The UI should change its "energy" based on the state (e.g., "Ready" feels calm; "Degraded" feels urgent but controlled).
+7.  **Desktop Sovereignty:** Optimize for the 1440p+ experience first, using sidebars and multi-pane layouts to kill whitespace.
+
+---
+
+## 4. Layout System
+*   **The 12-Column "Command" Grid:** 
+    *   **Fixed Left Rail (64px - 240px):** For global navigation.
+    *   **Flexible Center Stage (Max 1200px):** To prevent "stretched" content.
+    *   **Optional Right Utility Pane (320px):** For diagnostics or persistent "Readiness" stats.
+*   **Shell Structure:** A "Frame-within-a-Frame" approach. The outer shell is Deep Navy; inner operational surfaces are Soft Slate.
+*   **Desktop Optimization:** On ultra-wide monitors, we move from a single-column scroll to a **Dashboard + Detail** view.
+
+---
+
+## 5. Visual System
+*   **Color Palette:**
+    *   **Base:** `rgba(10, 12, 16, 1)` (Near Black)
+    *   **Surface:** `rgba(28, 32, 38, 1)` (Charcoal)
+    *   **Accent:** `#FF8C00` (Forge Amber) to `#CD7F32` (Copper)
+    *   **Status:** Success (Muted Forest Green), Warning (Burnt Gold), Error (Oxblood Red).
+*   **Typography:** 
+    *   **Headlines:** Strong Sans-Serif (e.g., Inter Tight or Geist) with tighter tracking and semi-bold weights.
+    *   **Data:** Monospace fonts (e.g., JetBrains Mono) for numbers and timestamps to reinforce the "instrument" feel.
+*   **Shapes:** 
+    *   **Buttons:** 4px radius (Sharp/Professional).
+    *   **Status Chips:** 2px radius (Technical/Military).
+    *   **Major Cards:** 8px radius (Modern/Stable).
+    *   *No more 50% pill shapes.*
+
+---
+
+## 6. Navigation Redesign
+*   **Vertical Rail:** Move primary navigation to a slim left rail. This anchors the UI and maximizes vertical space for execution lists.
+*   **Selected State:** Use a 2px solid Amber vertical bar on the left of the active icon, with a subtle glow, rather than a full-button background color.
+*   **Top-Level Breadcrumbs:** Integrated into the header as "System Status" indicators (e.g., `FORGE // TODAY // EXECUTION_ACTIVE`).
+
+---
+
+## 7. Shared Component System
+*   **Diagnostics Cards:** Darker backgrounds with thin 1px borders. Value-focused with "Monospace" data points.
+*   **Actionable Status Rows:** High-density lists with integrated checkboxes that "strike through" with a dimmed opacity when complete.
+*   **Primary Buttons:** Solid Copper/Amber with white text. No gradients.
+*   **Secondary Buttons:** Ghost buttons with thin slate borders.
+
+---
+
+## 8. Screen-by-Screen Direction
+
+### **Today**
+*   **Focus:** Current Mission.
+*   **Layout:** Two-column. Left (65%) is the Task Stack; Right (35%) is a "Readiness & Pulse" summary.
+*   **Density:** High. Everything needed for the next 2 hours is visible without scrolling.
+
+### **Command Center**
+*   **Focus:** Global Overview.
+*   **Layout:** 3-column "Triptych." System Health (Left), Active Execution (Center), Upcoming Prep (Right).
+*   **Feel:** High-end control room.
+
+### **Readiness**
+*   **Focus:** Physiological & Mental state.
+*   **Layout:** Data-heavy visualization. Large, clean line charts with "Muted Green" areas representing the "Performance Zone."
+
+---
+
+## 9. Desktop-First Improvements
+*   **The "Anchor" Strategy:** On wide screens, use a fixed "Summary Sidebar" so the center content never feels like it's drifting.
+*   **Modular Density:** Allow sections to "stack" horizontally if the screen width permits, turning a vertical scroll into a multi-pane dashboard.
+
+---
+
+## 10. Responsive Strategy
+*   **Tablet:** The Left Rail collapses to icons only. The Right Utility Pane becomes a "Drawer."
+*   **Mobile:** 100% stack. The navigation moves to a Bottom Bar to keep primary actions near the thumb.
+
+---
+
+## 11. Implementation Guidance (React + MUI)
+*   **Custom Theme:** Override MUI's default `borderRadius` and `palette` globally. 
+*   **Layout Primitives:** Create a `<ForgePage>` wrapper that handles the 3-pane logic (Nav | Content | Sidebar) automatically.
+*   **Phased Rollout:**
+    1.  **Phase 1:** Typography and Global Color/Token update.
+    2.  **Phase 2:** Navigation Rail and Header.
+    3.  **Phase 3:** Component-by-component radius and border refactor.
+
+---
+
+## 12. Design Tokens Proposal
+*   `color-brand-primary`: `#FF8C00`
+*   `spacing-unit`: `4px`
+*   `radius-sm`: `2px`
+*   `radius-md`: `4px`
+*   `radius-lg`: `8px`
+*   `font-family-data`: `'JetBrains Mono', monospace`
+*   `border-strength`: `1px solid rgba(255, 255, 255, 0.08)`
+
+---
+
+## 13. High-Level Redesign Priority
+1.  **The Shell & Navigation:** Changing how the app is "held" on the screen will immediately fix the "stretched" feeling on desktop.
+2.  **Typography & Shape Radius:** Moving from pills to 4px/8px corners and switching to a more "editorial" font will instantly shift the mood from "SaaS" to "OS."
+3.  **The "Today" Page Layout:** Refactoring the core execution surface proves the value of the new system immediately.

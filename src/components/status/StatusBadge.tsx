@@ -1,5 +1,7 @@
 import { Chip } from '@mui/material'
+import { alpha } from '@mui/material/styles'
 import type { DayMode, WarState } from '@/domain/common/types'
+import { forgeTokens } from '@/app/theme/tokens'
 
 type StatusBadgeProps = {
   label: string
@@ -18,5 +20,23 @@ const toneMap: Record<WarState | DayMode, 'default' | 'success' | 'warning' | 'e
 }
 
 export function StatusBadge({ label, tone }: StatusBadgeProps) {
-  return <Chip label={label} color={toneMap[tone]} size="small" variant="outlined" />
+  const palette = {
+    default: forgeTokens.palette.text.secondary,
+    success: forgeTokens.palette.accent.success,
+    warning: forgeTokens.palette.accent.warning,
+    error: forgeTokens.palette.accent.critical,
+  }[toneMap[tone]]
+
+  return (
+    <Chip
+      label={label}
+      size="small"
+      variant="outlined"
+      sx={{
+        color: palette,
+        borderColor: alpha(palette, 0.34),
+        backgroundColor: alpha(palette, 0.08),
+      }}
+    />
+  )
 }

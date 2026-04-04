@@ -30,6 +30,18 @@ npm run launch:verify
 firebase deploy --only hosting,firestore:rules,firestore:indexes,storage,functions
 ```
 
+Before running the deploy command:
+
+- make sure Firebase Storage has been initialized in the project from Firebase Console -> `Storage` -> `Get started`
+- Forge scheduled backups now depend on Storage, so deploys that include the `storage` target will fail if the project has never had Storage set up
+
+If `firebase` is not available locally yet:
+
+```bash
+npm install -g firebase-tools
+firebase --version
+```
+
 Current Hosting expectations:
 
 - build output lives in `dist/`
@@ -38,6 +50,7 @@ Current Hosting expectations:
 - hashed JS, CSS, font, and image assets are served with long-lived immutable cache headers
 - Firestore rules and indexes are expected to deploy from the repo-managed `firestore.rules` and `firestore.indexes.json` files
 - Firebase Functions now deploy from the repo-managed `functions/` workspace
+- Firebase deploy now builds the Functions workspace automatically before deploy and uses the compiled `functions/lib/index.js` entrypoint declared in [functions/package.json](/Users/ayushjaipuriar/Documents/GitHub/forge/functions/package.json)
 
 ## Installability Validation Checklist
 

@@ -4,7 +4,9 @@ import CloudUploadRoundedIcon from '@mui/icons-material/CloudUploadRounded'
 import ErrorOutlineRoundedIcon from '@mui/icons-material/ErrorOutlineRounded'
 import WarningAmberRoundedIcon from '@mui/icons-material/WarningAmberRounded'
 import { Chip } from '@mui/material'
+import { alpha } from '@mui/material/styles'
 import type { SyncStatus } from '@/domain/common/types'
+import { forgeTokens } from '@/app/theme/tokens'
 
 type SyncIndicatorProps = {
   status: SyncStatus
@@ -45,6 +47,27 @@ const statusMap = {
 
 export function SyncIndicator({ status }: SyncIndicatorProps) {
   const config = statusMap[status]
+  const palette = {
+    default: forgeTokens.palette.text.secondary,
+    success: forgeTokens.palette.accent.success,
+    warning: forgeTokens.palette.accent.warning,
+    error: forgeTokens.palette.accent.critical,
+  }[config.color]
 
-  return <Chip icon={config.icon} label={config.label} color={config.color} size="small" variant="outlined" />
+  return (
+    <Chip
+      icon={config.icon}
+      label={config.label}
+      size="small"
+      variant="outlined"
+      sx={{
+        color: palette,
+        borderColor: alpha(palette, 0.34),
+        backgroundColor: alpha(palette, 0.08),
+        '& .MuiChip-icon': {
+          color: palette,
+        },
+      }}
+    />
+  )
 }
