@@ -24,6 +24,9 @@ firestore-debug.log*
 ui-debug.log*
 .runtimeconfig.json
 
+# Local UI automation artifacts
+output/playwright/
+
 # Future Functions / local backend env files
 functions/.env
 functions/.env.*

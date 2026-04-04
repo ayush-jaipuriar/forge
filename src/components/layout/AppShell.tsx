@@ -2,7 +2,7 @@ import LogoutRoundedIcon from '@mui/icons-material/LogoutRounded'
 import MenuRoundedIcon from '@mui/icons-material/MenuRounded'
 import { useMemo, useState } from 'react'
 import { alpha } from '@mui/material/styles'
-import { Avatar, Box, Button, Container, Drawer, IconButton, Stack, Typography } from '@mui/material'
+import { Avatar, Box, Button, Container, Drawer, IconButton, Stack, Tooltip, Typography } from '@mui/material'
 import { NavLink, Outlet, useLocation } from 'react-router-dom'
 import { navigationItems } from '@/app/router/navigation'
 import { useUiStore } from '@/app/store/uiStore'
@@ -11,7 +11,7 @@ import { StatusBadge } from '@/components/status/StatusBadge'
 import { SyncIndicator } from '@/components/status/SyncIndicator'
 import { useAuthSession } from '@/features/auth/providers/useAuthSession'
 import { PwaStatusCard } from '@/features/pwa/components/PwaStatusCard'
-import { shouldShowPwaStatusCard } from '@/features/pwa/pwaStatus'
+import { getPwaSurfaceMode } from '@/features/pwa/pwaStatus'
 import { usePwaState } from '@/features/pwa/providers/usePwaState'
 
 const mobileQuickNavPaths = ['/', '/command-center', '/schedule', '/settings']
@@ -25,7 +25,8 @@ export function AppShell() {
   const syncStatus = useUiStore((state) => state.syncStatus)
   const { applyAppUpdate, canInstall, dismissOfflineReady, isInstalled, isOnline, needRefresh, offlineReady, promptInstall } =
     usePwaState()
-  const showPwaSurface = shouldShowPwaStatusCard({
+  const pwaSurfaceMode = getPwaSurfaceMode({
+    pathname: location.pathname,
     isOnline,
     syncStatus,
     canInstall,
@@ -45,7 +46,7 @@ export function AppShell() {
         sx={{
           minHeight: '100vh',
           display: { xs: 'block', md: 'grid' },
-          gridTemplateColumns: { md: '88px minmax(0, 1fr)' },
+          gridTemplateColumns: { md: '112px minmax(0, 1fr)' },
         }}
       >
         <Box
@@ -61,7 +62,7 @@ export function AppShell() {
             borderColor: 'divider',
             backgroundColor: alpha(forgeTokens.palette.background.nav, 0.92),
             backdropFilter: 'blur(18px)',
-            px: 1,
+            px: 1.25,
             py: 2,
           }}
         >
@@ -80,47 +81,63 @@ export function AppShell() {
               const isActive = isRouteActive(location.pathname, path)
 
               return (
-                <Box
-                  key={path}
-                  component={NavLink}
-                  to={path}
-                  end={path === '/'}
-                  aria-label={label}
-                  sx={{
-                    position: 'relative',
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                    px: 1,
-                    py: 1.2,
-                    borderRadius: 3,
-                    color: isActive ? 'text.primary' : 'text.secondary',
-                    textDecoration: 'none',
-                    backgroundColor: isActive
-                      ? alpha(forgeTokens.palette.accent.ember, 0.12)
-                      : 'transparent',
-                    border: '1px solid',
-                    borderColor: isActive ? forgeTokens.palette.border.accent : 'transparent',
-                    transition: 'background-color 160ms ease, border-color 160ms ease, color 160ms ease',
-                    '&::before': isActive
-                      ? {
-                          content: '""',
-                          position: 'absolute',
-                          insetBlock: 8,
-                          insetInlineStart: -5,
-                          width: 2,
-                          borderRadius: 999,
-                          backgroundColor: 'primary.main',
-                        }
-                      : undefined,
-                    '&:hover': {
-                      backgroundColor: alpha(forgeTokens.palette.background.elevated, 0.72),
-                      borderColor: alpha(forgeTokens.palette.text.secondary, 0.18),
-                    },
-                  }}
-                >
-                  <Icon fontSize="small" />
-                </Box>
+                <Tooltip key={path} title={label} placement="right">
+                  <Box
+                    component={NavLink}
+                    to={path}
+                    end={path === '/'}
+                    aria-label={label}
+                    sx={{
+                      position: 'relative',
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      px: 1,
+                      py: 1.2,
+                      borderRadius: 3,
+                      color: isActive ? 'text.primary' : 'text.secondary',
+                      textDecoration: 'none',
+                      backgroundColor: isActive
+                        ? alpha(forgeTokens.palette.accent.ember, 0.12)
+                        : 'transparent',
+                      border: '1px solid',
+                      borderColor: isActive ? forgeTokens.palette.border.accent : 'transparent',
+                      transition: 'background-color 160ms ease, border-color 160ms ease, color 160ms ease',
+                      '&::before': isActive
+                        ? {
+                            content: '""',
+                            position: 'absolute',
+                            insetBlock: 8,
+                            insetInlineStart: -5,
+                            width: 2,
+                            borderRadius: 999,
+                            backgroundColor: 'primary.main',
+                          }
+                        : undefined,
+                      '&:hover': {
+                        backgroundColor: alpha(forgeTokens.palette.background.elevated, 0.72),
+                        borderColor: alpha(forgeTokens.palette.text.secondary, 0.18),
+                      },
+                    }}
+                  >
+                      <Stack spacing={0.35} alignItems="center">
+                        <Icon fontSize="small" />
+                        <Typography
+                          sx={{
+                            fontSize: '0.58rem',
+                            lineHeight: 1,
+                            color: isActive ? 'text.primary' : 'text.secondary',
+                            fontWeight: isActive ? 700 : 600,
+                            letterSpacing: '0.02em',
+                            textAlign: 'center',
+                            maxWidth: 66,
+                          }}
+                        >
+                          {getCompactRailLabel(label)}
+                        </Typography>
+                      </Stack>
+                  </Box>
+                </Tooltip>
               )
             })}
           </Stack>
@@ -244,8 +261,9 @@ export function AppShell() {
                   </Typography>
                 </Stack>
 
-                {showPwaSurface ? (
+                {pwaSurfaceMode !== 'hidden' ? (
                   <PwaStatusCard
+                    variant={pwaSurfaceMode === 'compact' ? 'compact' : 'card'}
                     isOnline={isOnline}
                     syncStatus={syncStatus}
                     canInstall={canInstall}
@@ -405,6 +423,17 @@ function getCompactNavigationLabel(label: string) {
   switch (label) {
     case 'Command Center':
       return 'Command'
+    default:
+      return label
+  }
+}
+
+function getCompactRailLabel(label: string) {
+  switch (label) {
+    case 'Command Center':
+      return 'Command'
+    case 'Readiness':
+      return 'Ready'
     default:
       return label
   }

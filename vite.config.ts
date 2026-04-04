@@ -3,6 +3,10 @@ import react from '@vitejs/plugin-react'
 import { VitePWA } from 'vite-plugin-pwa'
 import { defineConfig } from 'vitest/config'
 
+const coopHeaders = {
+  'Cross-Origin-Opener-Policy': 'same-origin-allow-popups',
+}
+
 export default defineConfig({
   plugins: [
     react(),
@@ -101,6 +105,12 @@ export default defineConfig({
         },
       },
     },
+  },
+  server: {
+    headers: coopHeaders,
+  },
+  preview: {
+    headers: coopHeaders,
   },
   resolve: {
     alias: {

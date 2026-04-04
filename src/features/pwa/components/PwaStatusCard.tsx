@@ -1,12 +1,15 @@
 import DownloadRoundedIcon from '@mui/icons-material/DownloadRounded'
 import SystemUpdateAltRoundedIcon from '@mui/icons-material/SystemUpdateAltRounded'
 import WifiOffRoundedIcon from '@mui/icons-material/WifiOffRounded'
+import { alpha } from '@mui/material/styles'
 import type { SyncStatus } from '@/domain/common/types'
-import { Button, Chip, Stack, Typography } from '@mui/material'
+import { Box, Button, Chip, Stack, Typography } from '@mui/material'
+import { forgeTokens } from '@/app/theme/tokens'
 import { SurfaceCard } from '@/components/common/SurfaceCard'
 import { getConnectivityStatusModel } from '@/features/pwa/pwaStatus'
 
 type PwaStatusCardProps = {
+  variant?: 'card' | 'compact'
   isOnline: boolean
   syncStatus: SyncStatus
   canInstall: boolean
@@ -19,6 +22,7 @@ type PwaStatusCardProps = {
 }
 
 export function PwaStatusCard({
+  variant = 'card',
   isOnline,
   syncStatus,
   canInstall,
@@ -30,6 +34,59 @@ export function PwaStatusCard({
   onDismissOfflineReady,
 }: PwaStatusCardProps) {
   const connectivity = getConnectivityStatusModel({ isOnline, syncStatus })
+
+  if (variant === 'compact') {
+    return (
+      <Box
+        sx={{
+          border: '1px solid',
+          borderColor: 'divider',
+          borderRadius: 4,
+          px: { xs: 1.25, md: 1.5 },
+          py: 1.25,
+          backgroundColor: alpha(forgeTokens.palette.background.elevated, 0.5),
+        }}
+      >
+        <Stack
+          direction={{ xs: 'column', lg: 'row' }}
+          spacing={1.25}
+          alignItems={{ xs: 'flex-start', lg: 'center' }}
+          justifyContent="space-between"
+        >
+          <Stack spacing={0.35} sx={{ minWidth: 0 }}>
+            <Stack direction="row" spacing={1} alignItems="center" useFlexGap flexWrap="wrap">
+              <Typography variant="overline" color="primary.light">
+                Shell Readiness
+              </Typography>
+              <Chip
+                label={connectivity.eyebrow}
+                color={connectivity.tone === 'warning' ? 'warning' : connectivity.tone === 'success' ? 'success' : 'default'}
+                size="small"
+              />
+            </Stack>
+            <Typography variant="body2" color="text.secondary">
+              {canInstall
+                ? 'Install Forge for one-tap entry without letting this platform prompt dominate the page.'
+                : 'The shell is cached for offline use and the runtime truth has already been acknowledged.'}
+            </Typography>
+          </Stack>
+
+          <Stack direction={{ xs: 'column', sm: 'row' }} spacing={1} alignItems={{ xs: 'stretch', sm: 'center' }}>
+            {canInstall ? (
+              <Button variant="contained" startIcon={<DownloadRoundedIcon />} onClick={() => void onInstall()}>
+                Install Forge
+              </Button>
+            ) : null}
+            {offlineReady ? (
+              <Button variant="outlined" color="inherit" onClick={onDismissOfflineReady}>
+                Dismiss
+              </Button>
+            ) : null}
+          </Stack>
+        </Stack>
+      </Box>
+    )
+  }
 
   return (
     <SurfaceCard

@@ -137,7 +137,7 @@ export function CommandCenterPage() {
             </Stack>
 
             <Stack
-              spacing={1.25}
+              spacing={1.5}
               sx={{
                 border: '1px solid',
                 borderColor: 'divider',
@@ -146,6 +146,24 @@ export function CommandCenterPage() {
                 backgroundColor: alpha(forgeTokens.palette.background.elevated, 0.36),
               }}
             >
+              <Stack spacing={0.85}>
+                <Typography variant="overline" color="primary.light">
+                  Observation Window
+                </Typography>
+                <Stack direction="row" spacing={0.75} useFlexGap flexWrap="wrap">
+                  {analyticsRollingWindowKeys.map((key) => (
+                    <Button
+                      key={key}
+                      variant={windowKey === key ? 'contained' : 'outlined'}
+                      color={windowKey === key ? 'primary' : 'inherit'}
+                      size="small"
+                      onClick={() => setWindowKey(key)}
+                    >
+                      {key.toUpperCase()}
+                    </Button>
+                  ))}
+                </Stack>
+              </Stack>
               <CompactInsight label="Window" value={windowKey.toUpperCase()} detail={data.sourceLabel} />
               <CompactInsight
                 label="Momentum"
@@ -159,55 +177,35 @@ export function CommandCenterPage() {
               />
             </Stack>
           </Box>
+          <Box
+            sx={{
+              display: 'grid',
+              gap: 1.5,
+              gridTemplateColumns: { xs: '1fr', sm: 'repeat(2, minmax(0, 1fr))', lg: 'repeat(4, minmax(0, 1fr))' },
+            }}
+          >
+            {data.metrics.map((metric) => (
+              <AnalyticsMetricTile
+                key={metric.id}
+                eyebrow={metric.eyebrow}
+                value={metric.value}
+                detail={metric.detail}
+                tone={metric.tone === 'success' ? 'success' : metric.tone === 'warning' ? 'gold' : 'steel'}
+              />
+            ))}
+          </Box>
         </Stack>
       </SurfaceCard>
-
-      <SurfaceCard
-        eyebrow="Observation Window"
-        title="Choose the analysis frame."
-        description="Rolling windows matter because pattern detection is only as honest as the observation frame it is using."
-      >
-        <Stack direction={{ xs: 'column', md: 'row' }} spacing={1} useFlexGap flexWrap="wrap" alignItems={{ xs: 'stretch', md: 'center' }}>
-          {analyticsRollingWindowKeys.map((key) => (
-            <Button
-              key={key}
-              variant={windowKey === key ? 'contained' : 'outlined'}
-              color={windowKey === key ? 'primary' : 'inherit'}
-              onClick={() => setWindowKey(key)}
-            >
-              {key.toUpperCase()}
-            </Button>
-          ))}
-        </Stack>
-      </SurfaceCard>
-
-      <Box
-        sx={{
-          display: 'grid',
-          gap: 2,
-          gridTemplateColumns: { xs: '1fr', sm: 'repeat(2, minmax(0, 1fr))', xl: 'repeat(4, minmax(0, 1fr))' },
-        }}
-      >
-        {data.metrics.map((metric) => (
-          <AnalyticsMetricTile
-            key={metric.id}
-            eyebrow={metric.eyebrow}
-            value={metric.value}
-            detail={metric.detail}
-            tone={metric.tone === 'success' ? 'success' : metric.tone === 'warning' ? 'gold' : 'steel'}
-          />
-        ))}
-      </Box>
 
       <Box
         sx={{
           display: 'grid',
           gap: 2.5,
-          gridTemplateColumns: { xs: '1fr', xl: 'minmax(0, 1fr) 360px' },
+          gridTemplateColumns: { xs: '1fr', lg: 'minmax(0, 1fr) 360px' },
           alignItems: 'start',
         }}
       >
-        <Stack spacing={2.5} sx={{ order: { xs: 2, xl: 1 } }}>
+        <Stack spacing={2.5} sx={{ order: { xs: 2, lg: 1 } }}>
           <SurfaceCard
             eyebrow="Primary Diagnostics"
             title="The main pace and output questions"
@@ -438,7 +436,7 @@ export function CommandCenterPage() {
           </SurfaceCard>
         </Stack>
 
-        <Stack spacing={2.5} sx={{ order: { xs: 1, xl: 2 } }}>
+        <Stack spacing={2.5} sx={{ order: { xs: 1, lg: 2 } }}>
           <MomentumPanel momentum={data.momentum} posture={data.operatingTier} />
 
           <ProjectionPanel projection={data.projection} />

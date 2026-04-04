@@ -7,6 +7,8 @@ type ConnectivityModel = {
   tone: 'success' | 'warning' | 'neutral'
 }
 
+export type PwaSurfaceMode = 'hidden' | 'compact' | 'card'
+
 export function getConnectivityStatusModel({
   isOnline,
   syncStatus,
@@ -98,5 +100,42 @@ export function shouldShowPwaStatusCard({
   needRefresh: boolean
   offlineReady: boolean
 }) {
-  return !isOnline || syncStatus !== 'stable' || canInstall || needRefresh || offlineReady
+  return getPwaSurfaceMode({
+    pathname: '/',
+    isOnline,
+    syncStatus,
+    canInstall,
+    needRefresh,
+    offlineReady,
+  }) !== 'hidden'
+}
+
+export function getPwaSurfaceMode({
+  pathname,
+  isOnline,
+  syncStatus,
+  canInstall,
+  needRefresh,
+  offlineReady,
+}: {
+  pathname: string
+  isOnline: boolean
+  syncStatus: SyncStatus
+  canInstall: boolean
+  needRefresh: boolean
+  offlineReady: boolean
+}): PwaSurfaceMode {
+  if (!isOnline || syncStatus !== 'stable' || needRefresh) {
+    return 'card'
+  }
+
+  if (!canInstall && !offlineReady) {
+    return 'hidden'
+  }
+
+  if (pathname === '/' || pathname === '/settings') {
+    return 'compact'
+  }
+
+  return 'hidden'
 }

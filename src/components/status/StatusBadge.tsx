@@ -34,8 +34,8 @@ export function StatusBadge({ label, tone }: StatusBadgeProps) {
       variant="outlined"
       sx={{
         color: palette,
-        borderColor: alpha(palette, 0.34),
-        backgroundColor: alpha(palette, 0.08),
+        borderColor: alpha(palette, 0.24),
+        backgroundColor: alpha(palette, 0.05),
       }}
     />
   )

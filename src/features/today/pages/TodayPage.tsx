@@ -168,12 +168,19 @@ export function TodayPage() {
           gap: 2.5,
           gridTemplateColumns: {
             xs: '1fr',
+            lg: 'minmax(0, 1fr) 340px',
             xl: '280px minmax(0, 1.15fr) 360px',
           },
           alignItems: 'start',
         }}
       >
-        <Stack spacing={2.5} sx={{ order: { xs: 3, xl: 1 } }}>
+        <Stack
+          spacing={2.5}
+          sx={{
+            order: { xs: 3, lg: 2, xl: 1 },
+            gridColumn: { lg: 2, xl: 1 },
+          }}
+        >
           <SurfaceCard
             eyebrow="Execution Context"
             title={dayInstance.label}
@@ -287,7 +294,13 @@ export function TodayPage() {
           ) : null}
         </Stack>
 
-        <Stack spacing={2.5} sx={{ order: { xs: 1, xl: 2 } }}>
+        <Stack
+          spacing={2.5}
+          sx={{
+            order: { xs: 1, lg: 1, xl: 2 },
+            gridColumn: { lg: 1, xl: 2 },
+          }}
+        >
           <SurfaceCard
             eyebrow="Current Execution"
             title={currentBlock?.title ?? 'No active block'}
@@ -611,7 +624,13 @@ export function TodayPage() {
           </SurfaceCard>
         </Stack>
 
-        <Stack spacing={2.5} sx={{ order: { xs: 2, xl: 3 } }}>
+        <Stack
+          spacing={2.5}
+          sx={{
+            order: { xs: 2, lg: 3, xl: 3 },
+            gridColumn: { lg: 2, xl: 3 },
+          }}
+        >
           <SurfaceCard
             eyebrow="Pressure Stack"
             title="Projected score and readiness pressure"

@@ -137,20 +137,20 @@ export const forgeTheme = createTheme({
     MuiChip: {
       styleOverrides: {
         root: {
-          borderRadius: 7,
-          border: `1px solid ${forgeTokens.palette.border.strong}`,
-          backgroundColor: alpha(forgeTokens.palette.background.elevated, 0.62),
+          borderRadius: 6,
+          border: `1px solid ${alpha(forgeTokens.palette.border.strong, 0.82)}`,
+          backgroundColor: alpha(forgeTokens.palette.background.elevated, 0.52),
           fontFamily: '"Plus Jakarta Sans", "Inter", "Segoe UI", sans-serif',
-          fontSize: '0.72rem',
+          fontSize: '0.69rem',
           fontWeight: 600,
-          letterSpacing: '0.02em',
-          height: 30,
+          letterSpacing: '0.015em',
+          height: 28,
         },
         icon: {
-          marginLeft: 8,
+          marginLeft: 7,
         },
         label: {
-          paddingInline: 11,
+          paddingInline: 10,
         },
       },
     },

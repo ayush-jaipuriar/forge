@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { getConnectivityStatusModel, shouldShowPwaStatusCard } from '@/features/pwa/pwaStatus'
+import { getConnectivityStatusModel, getPwaSurfaceMode, shouldShowPwaStatusCard } from '@/features/pwa/pwaStatus'
 
 describe('pwaStatus helpers', () => {
   it('surfaces the strongest offline queue warning when connectivity is down and writes are outstanding', () => {
@@ -63,5 +63,53 @@ describe('pwaStatus helpers', () => {
         offlineReady: false,
       }),
     ).toBe(true)
+  })
+
+  it('shows only a compact shell prompt for healthy installability on Today and Settings', () => {
+    expect(
+      getPwaSurfaceMode({
+        pathname: '/',
+        isOnline: true,
+        syncStatus: 'stable',
+        canInstall: true,
+        needRefresh: false,
+        offlineReady: false,
+      }),
+    ).toBe('compact')
+
+    expect(
+      getPwaSurfaceMode({
+        pathname: '/settings',
+        isOnline: true,
+        syncStatus: 'stable',
+        canInstall: false,
+        needRefresh: false,
+        offlineReady: true,
+      }),
+    ).toBe('compact')
+  })
+
+  it('hides healthy installability prompts on non-core routes but keeps error states prominent everywhere', () => {
+    expect(
+      getPwaSurfaceMode({
+        pathname: '/command-center',
+        isOnline: true,
+        syncStatus: 'stable',
+        canInstall: true,
+        needRefresh: false,
+        offlineReady: false,
+      }),
+    ).toBe('hidden')
+
+    expect(
+      getPwaSurfaceMode({
+        pathname: '/command-center',
+        isOnline: false,
+        syncStatus: 'stable',
+        canInstall: false,
+        needRefresh: false,
+        offlineReady: false,
+      }),
+    ).toBe('card')
   })
 })
