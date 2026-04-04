@@ -72,6 +72,8 @@ npm run preview -- --host 127.0.0.1 --port 4173
 - [UI Modernization Sprint 3.1 Plan](/Users/ayushjaipuriar/Documents/GitHub/forge/docs/ui-modernization-sprint-3-1-plan.md)
 - [UI Modernization Sprint 4 Plan](/Users/ayushjaipuriar/Documents/GitHub/forge/docs/ui-modernization-sprint-4-plan.md)
 - [UI Modernization Sprint 5 Plan](/Users/ayushjaipuriar/Documents/GitHub/forge/docs/ui-modernization-sprint-5-plan.md)
+- [UI Modernization Sprint 6 Plan](/Users/ayushjaipuriar/Documents/GitHub/forge/docs/ui-modernization-sprint-6-plan.md)
+- [UI Modernization Sprint 7 Plan](/Users/ayushjaipuriar/Documents/GitHub/forge/docs/ui-modernization-sprint-7-plan.md)
 - [Auth Hardening Sprint Plan](/Users/ayushjaipuriar/Documents/GitHub/forge/docs/auth-hardening-sprint-plan.md)
 - [Phase 4 Operational Diagnostics](/Users/ayushjaipuriar/Documents/GitHub/forge/docs/phase-4-operational-diagnostics.md)
 - [Phase 4 Native Shell Workflow](/Users/ayushjaipuriar/Documents/GitHub/forge/docs/phase-4-native-shell-workflow.md)

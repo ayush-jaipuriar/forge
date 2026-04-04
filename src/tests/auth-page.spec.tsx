@@ -66,4 +66,17 @@ describe('AuthPage', () => {
 
     expect(screen.getByRole('button', { name: /connecting/i })).toBeDisabled()
   })
+
+  it('surfaces a concise missing-config warning without enabling sign-in', () => {
+    authMock.value = {
+      ...authMock.value,
+      status: 'missing_config',
+      errorMessage: 'Firebase configuration is incomplete.',
+    } as AuthSessionValue
+
+    render(<AuthPage />)
+
+    expect(screen.getByText(/missing firebase config in local/i)).toBeInTheDocument()
+    expect(screen.getByRole('button', { name: /continue with google/i })).toBeDisabled()
+  })
 })

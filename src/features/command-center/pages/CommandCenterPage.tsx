@@ -5,8 +5,9 @@ import TrackChangesRoundedIcon from '@mui/icons-material/TrackChangesRounded'
 import ErrorOutlineRoundedIcon from '@mui/icons-material/ErrorOutlineRounded'
 import { useMemo, useState } from 'react'
 import { alpha } from '@mui/material/styles'
-import { Box, Button, Chip, CircularProgress, Stack, Typography } from '@mui/material'
+import { Box, Button, Chip, Stack, Typography } from '@mui/material'
 import { forgeTokens } from '@/app/theme/tokens'
+import { EmptyState } from '@/components/common/EmptyState'
 import { SectionHeader } from '@/components/common/SectionHeader'
 import { SurfaceCard } from '@/components/common/SurfaceCard'
 import { analyticsRollingWindowKeys, type AnalyticsRollingWindowKey } from '@/domain/analytics/types'
@@ -52,19 +53,20 @@ export function CommandCenterPage() {
   if (isError) {
     return (
       <SurfaceCard
-        title="Command Center could not load"
-        description="Forge hit a real analytics-workspace failure. This state should be explicit so data and storage issues do not masquerade as loading."
+        eyebrow="Command Center"
+        title="Analytics workspace failed"
+        description="Forge could not assemble the current analytics view."
         action={<ErrorOutlineRoundedIcon color="error" />}
       >
-        <AnalyticsStateNotice
-          title="Analytics workspace failed"
+        <EmptyState
+          title="Command Center could not load"
           description={
             error instanceof Error
               ? error.message
               : 'The rolling analytics workspace could not be assembled from local history and settings.'
           }
-          tone="critical"
-          kind="stale"
+          icon={<ErrorOutlineRoundedIcon />}
+          tone="error"
         />
       </SurfaceCard>
     )
@@ -73,18 +75,17 @@ export function CommandCenterPage() {
   if (isLoading || !data) {
     return (
       <SurfaceCard
-        title="Loading Command Center"
-        description="Forge is assembling the rolling analytics workspace and preparing the first desktop-grade command layout."
+        eyebrow="Command Center"
+        title="Loading analytics surface"
+        description="Forge is assembling the current command window."
       >
-        <Stack spacing={2} alignItems="center" py={3}>
-          <CircularProgress color="primary" />
-          <AnalyticsStateNotice
-            title="Building the analytics surface"
-            description="This stage is reading historical day instances and translating them into chart-ready signals."
-            tone="gold"
-            kind="loading"
-          />
-        </Stack>
+        <EmptyState
+          title="Building Command Center"
+          description="Reading recent history and shaping chart-ready signals."
+          tone="warning"
+          loading
+          align="center"
+        />
       </SurfaceCard>
     )
   }

@@ -23,7 +23,14 @@ export function SignalToggleGroup<TValue extends string>({
       <Typography variant="overline" color="primary.light">
         {label}
       </Typography>
-      <Stack direction="row" spacing={1} useFlexGap flexWrap="wrap">
+      <Stack
+        direction="row"
+        spacing={1}
+        useFlexGap
+        flexWrap="wrap"
+        role="group"
+        aria-label={label}
+      >
         {options.map((option) => {
           const selected = option.value === value
 
@@ -33,12 +40,15 @@ export function SignalToggleGroup<TValue extends string>({
               size="small"
               variant={selected ? 'contained' : 'outlined'}
               color={selected ? 'primary' : 'inherit'}
-              disabled={disabled || selected}
+              disabled={disabled}
               aria-pressed={selected}
               onClick={() => {
                 if (!selected) {
                   onSelect(option.value)
                 }
+              }}
+              sx={{
+                minWidth: 92,
               }}
             >
               {option.label}

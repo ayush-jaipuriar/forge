@@ -104,6 +104,7 @@ export function AppShell() {
                       border: '1px solid',
                       borderColor: isActive ? forgeTokens.palette.border.accent : 'transparent',
                       transition: 'background-color 160ms ease, border-color 160ms ease, color 160ms ease',
+                      transform: isActive ? 'translateX(0)' : 'translateX(0)',
                       '&::before': isActive
                         ? {
                             content: '""',
@@ -118,9 +119,11 @@ export function AppShell() {
                       '&:hover': {
                         backgroundColor: alpha(forgeTokens.palette.background.elevated, 0.72),
                         borderColor: alpha(forgeTokens.palette.text.secondary, 0.18),
+                        transform: 'translateX(2px)',
                       },
                       '&:focus-visible': {
                         backgroundColor: alpha(forgeTokens.palette.background.elevated, 0.72),
+                        transform: 'translateX(2px)',
                       },
                     }}
                   >
@@ -182,6 +185,8 @@ export function AppShell() {
                 <Stack direction="row" spacing={1.5} alignItems="center" sx={{ minWidth: 0 }}>
                   <IconButton
                     aria-label="Open navigation drawer"
+                    aria-controls="forge-mobile-navigation-drawer"
+                    aria-expanded={mobileMenuOpen}
                     onClick={() => setMobileMenuOpen(true)}
                     sx={{
                       display: { xs: 'inline-flex', md: 'none' },
@@ -282,14 +287,21 @@ export function AppShell() {
                   />
                 ) : null}
 
-                <Outlet />
+                <Box data-forge-page-transition="true">
+                  <Outlet />
+                </Box>
               </Stack>
             </Container>
           </Box>
         </Box>
       </Box>
 
-      <Drawer anchor="left" open={mobileMenuOpen} onClose={() => setMobileMenuOpen(false)}>
+      <Drawer
+        anchor="left"
+        open={mobileMenuOpen}
+        onClose={() => setMobileMenuOpen(false)}
+        PaperProps={{ id: 'forge-mobile-navigation-drawer' }}
+      >
         <Stack spacing={3} sx={{ width: 320, p: 3 }}>
           <Stack spacing={0.75}>
             <Typography variant="overline" color="primary.light">
@@ -315,8 +327,8 @@ export function AppShell() {
                   startIcon={<Icon fontSize="small" />}
                   color={isActive ? 'primary' : 'inherit'}
                   variant={isActive ? 'contained' : 'outlined'}
-                  sx={{ justifyContent: 'flex-start' }}
-                >
+                sx={{ justifyContent: 'flex-start' }}
+              >
                   {label}
                 </Button>
               )
@@ -410,6 +422,8 @@ export function AppShell() {
             component="button"
             type="button"
             aria-label="Open navigation drawer"
+            aria-controls="forge-mobile-navigation-drawer"
+            aria-expanded={mobileMenuOpen}
             onClick={() => setMobileMenuOpen(true)}
             sx={{
               flex: 1,
@@ -427,6 +441,17 @@ export function AppShell() {
               backgroundColor: 'transparent',
               appearance: 'none',
               cursor: 'pointer',
+              transition: 'background-color 160ms ease, border-color 160ms ease, color 160ms ease, transform 160ms ease',
+              '&:hover': {
+                backgroundColor: alpha(forgeTokens.palette.background.elevated, 0.42),
+                transform: 'translateY(-1px)',
+              },
+              '&:active': {
+                transform: 'translateY(0)',
+              },
+              '&:focus-visible': {
+                backgroundColor: alpha(forgeTokens.palette.background.elevated, 0.56),
+              },
             }}
           >
             <Stack spacing={0.35} alignItems="center">

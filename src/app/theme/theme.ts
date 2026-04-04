@@ -103,12 +103,26 @@ export const forgeTheme = createTheme({
         ':root': {
           colorScheme: 'dark',
         },
+        '@keyframes forgePageIn': {
+          '0%': {
+            opacity: 0,
+            transform: 'translateY(8px)',
+          },
+          '100%': {
+            opacity: 1,
+            transform: 'translateY(0)',
+          },
+        },
         body: {
           background: forgeTokens.gradients.page,
           color: forgeTokens.palette.text.primary,
         },
         '#root': {
           minHeight: '100vh',
+        },
+        '[data-forge-page-transition="true"]': {
+          animation: 'forgePageIn 220ms ease',
+          transformOrigin: 'top center',
         },
         '::selection': {
           backgroundColor: alpha(forgeTokens.palette.accent.ember, 0.38),
@@ -118,6 +132,17 @@ export const forgeTheme = createTheme({
           outline: `2px solid ${alpha(forgeTokens.palette.accent.gold, 0.9)}`,
           outlineOffset: 2,
         },
+        '@media (prefers-reduced-motion: reduce)': {
+          '*, *::before, *::after': {
+            animationDuration: '0.01ms !important',
+            animationIterationCount: '1 !important',
+            transitionDuration: '0.01ms !important',
+            scrollBehavior: 'auto !important',
+          },
+          '[data-forge-page-transition="true"]': {
+            animation: 'none',
+          },
+        },
       },
     },
     MuiPaper: {
@@ -126,6 +151,7 @@ export const forgeTheme = createTheme({
           backgroundImage: 'none',
           border: `1px solid ${forgeTokens.palette.border.subtle}`,
           boxShadow: forgeTokens.shadow.card,
+          transition: 'border-color 180ms ease, box-shadow 220ms ease, background-color 220ms ease',
         },
       },
     },
@@ -135,6 +161,7 @@ export const forgeTheme = createTheme({
           background: forgeTokens.gradients.card,
           boxShadow: forgeTokens.shadow.glow,
           borderColor: forgeTokens.palette.border.subtle,
+          transition: 'border-color 180ms ease, box-shadow 220ms ease, transform 220ms ease',
         },
       },
     },
@@ -149,6 +176,7 @@ export const forgeTheme = createTheme({
           fontWeight: 600,
           letterSpacing: '0.01em',
           height: 26,
+          transition: 'background-color 160ms ease, border-color 160ms ease, color 160ms ease, transform 160ms ease',
         },
         icon: {
           marginLeft: 6,
@@ -164,6 +192,7 @@ export const forgeTheme = createTheme({
           borderRadius: 10,
           paddingInline: 16,
           minHeight: 40,
+          transition: 'background-color 160ms ease, border-color 160ms ease, color 160ms ease, transform 160ms ease, box-shadow 180ms ease',
           '&.Mui-focusVisible': {
             boxShadow: `0 0 0 2px ${alpha(forgeTokens.palette.background.shell, 0.9)}, 0 0 0 4px ${alpha(forgeTokens.palette.accent.gold, 0.48)}`,
           },
@@ -173,14 +202,29 @@ export const forgeTheme = createTheme({
           color: forgeTokens.palette.background.default,
           '&:hover': {
             background: forgeTokens.palette.accent.gold,
+            transform: 'translateY(-1px)',
+          },
+          '&:active': {
+            transform: 'translateY(0)',
           },
         },
         outlined: {
           borderColor: forgeTokens.palette.border.strong,
           backgroundColor: alpha(forgeTokens.palette.background.elevated, 0.42),
+          '&:hover': {
+            borderColor: alpha(forgeTokens.palette.accent.copper, 0.4),
+            backgroundColor: alpha(forgeTokens.palette.background.elevated, 0.68),
+            transform: 'translateY(-1px)',
+          },
+          '&:active': {
+            transform: 'translateY(0)',
+          },
         },
         text: {
           color: forgeTokens.palette.text.secondary,
+          '&:hover': {
+            backgroundColor: alpha(forgeTokens.palette.background.elevated, 0.42),
+          },
         },
       },
     },
@@ -188,9 +232,67 @@ export const forgeTheme = createTheme({
       styleOverrides: {
         root: {
           borderRadius: 10,
+          transition: 'background-color 160ms ease, border-color 160ms ease, color 160ms ease, transform 160ms ease, box-shadow 180ms ease',
           '&.Mui-focusVisible': {
             boxShadow: `0 0 0 2px ${alpha(forgeTokens.palette.background.shell, 0.9)}, 0 0 0 4px ${alpha(forgeTokens.palette.accent.gold, 0.48)}`,
           },
+          '&:hover': {
+            transform: 'translateY(-1px)',
+          },
+          '&:active': {
+            transform: 'translateY(0)',
+          },
+        },
+      },
+    },
+    MuiOutlinedInput: {
+      styleOverrides: {
+        root: {
+          transition: 'border-color 160ms ease, box-shadow 180ms ease, background-color 180ms ease',
+          backgroundColor: alpha(forgeTokens.palette.background.elevated, 0.18),
+          '& .MuiOutlinedInput-notchedOutline': {
+            transition: 'border-color 160ms ease, box-shadow 180ms ease',
+          },
+          '&:hover .MuiOutlinedInput-notchedOutline': {
+            borderColor: alpha(forgeTokens.palette.text.secondary, 0.32),
+          },
+          '&.Mui-focused .MuiOutlinedInput-notchedOutline': {
+            borderColor: forgeTokens.palette.accent.gold,
+            boxShadow: `0 0 0 1px ${alpha(forgeTokens.palette.accent.gold, 0.12)}`,
+          },
+        },
+      },
+    },
+    MuiAlert: {
+      styleOverrides: {
+        root: {
+          borderRadius: 8,
+          transition: 'background-color 180ms ease, border-color 180ms ease, color 180ms ease',
+        },
+      },
+    },
+    MuiSwitch: {
+      styleOverrides: {
+        root: {
+          padding: 10,
+        },
+        switchBase: {
+          transitionDuration: '180ms',
+          '&.Mui-checked + .MuiSwitch-track': {
+            opacity: 1,
+          },
+          '&.Mui-focusVisible .MuiSwitch-thumb': {
+            boxShadow: `0 0 0 4px ${alpha(forgeTokens.palette.accent.gold, 0.22)}`,
+          },
+        },
+        thumb: {
+          boxShadow: 'none',
+        },
+        track: {
+          borderRadius: 999,
+          opacity: 1,
+          backgroundColor: alpha(forgeTokens.palette.background.elevated, 0.88),
+          border: `1px solid ${alpha(forgeTokens.palette.border.strong, 0.64)}`,
         },
       },
     },

@@ -62,6 +62,21 @@ function getShellTone(workspace: PlatformWorkspace) {
   return 'success' as const
 }
 
+function getProviderSupportSummary(reason?: string) {
+  switch (reason) {
+    case 'requiresNativeShell':
+      return 'Native shell required'
+    case 'platformIncompatible':
+      return 'Platform incompatible'
+    case 'requiresWearableDevice':
+      return 'Wearable required'
+    case 'phaseNotStarted':
+      return 'Future phase'
+    default:
+      return 'Unavailable'
+  }
+}
+
 export function SettingsPage() {
   const { status, user } = useAuthSession()
   const platformWorkspace = usePlatformWorkspace()
@@ -167,7 +182,7 @@ export function SettingsPage() {
           <SectionHeader
             eyebrow="Settings"
             title="Control the runtime, recovery, and integrations."
-            description="Launch posture, recovery, calendar boundaries, notifications, and future-provider seams live here."
+            description="Runtime, recovery, calendar, notifications, and provider seams."
             action={
               <Stack direction={{ xs: 'column', sm: 'row' }} spacing={1}>
                 <Chip
@@ -225,701 +240,714 @@ export function SettingsPage() {
         sx={{
           display: 'grid',
           gap: 2.5,
-          gridTemplateColumns: { xs: '1fr', lg: 'minmax(0, 1.15fr) 380px' },
+          gridTemplateColumns: { xs: '1fr', lg: 'minmax(0, 1.12fr) minmax(320px, 0.88fr)' },
           alignItems: 'start',
         }}
       >
-        <Stack spacing={2.5} sx={{ order: { xs: 2, lg: 1 }, minWidth: 0 }}>
-          <SurfaceCard
-            eyebrow="Recovery & Protection"
-            title="Backup posture and controlled restore"
-            description="Backup creation, staged restore, and restore-source truth stay together here."
-            action={
-              <Chip
-                label={recentBackups[0]?.status ?? 'No backups yet'}
-                size="small"
-                variant="outlined"
-                color={
-                  backupOperations.healthState === 'healthy'
-                    ? 'success'
-                    : backupOperations.healthState === 'stale' || backupOperations.healthState === 'degraded'
-                      ? 'warning'
-                      : 'default'
-                }
-              />
-            }
-          >
-            <Stack spacing={1.5}>
-              <SettingsSubsection title="Backup posture">
-                <Stack spacing={0.85}>
-                  <SettingsStatusRow
-                    label="Scheduled backup health"
-                    summary={`Status source ${backupSource.operations} · list source ${backupSource.recentBackups}`}
-                    meta={`Last successful backup ${backupOperations.latestSuccessfulBackupAt ?? 'None yet'}`}
-                    trailing={
-                      <Chip
-                        label={backupOperations.healthState}
-                        size="small"
-                        variant="outlined"
-                        color={
-                          backupOperations.healthState === 'healthy'
-                            ? 'success'
-                            : backupOperations.healthState === 'stale' || backupOperations.healthState === 'degraded'
-                              ? 'warning'
-                              : 'default'
-                        }
-                      />
-                    }
-                  />
-                  <SettingsStatusRow
-                    label="Retention"
-                    summary={`Daily ${backupOperations.retentionPolicy.keepDaily} · Weekly ${backupOperations.retentionPolicy.keepWeekly} · Manual ${backupOperations.retentionPolicy.keepManual}`}
-                    meta={
-                      recentBackups[0]
-                        ? `Latest backup ${formatCalendarTimestamp(recentBackups[0].createdAt, recentBackups[0].createdAt)} · ${recentBackups[0].sourceRecordCount} records`
-                        : 'No recent backup record'
-                    }
-                  />
-                  <SettingsStatusRow
-                    label="Server restore posture"
-                    summary={`${serverRestoreReadyCount} restore-ready scheduled backup${serverRestoreReadyCount === 1 ? '' : 's'} visible`}
-                    meta={
-                      latestServerRestoreReadyBackup
-                        ? `Latest restore-ready backup ${formatCalendarTimestamp(latestServerRestoreReadyBackup.createdAt, latestServerRestoreReadyBackup.createdAt)}`
-                        : 'Recovery currently depends on local file restore'
-                    }
-                  />
-                  {backupOperations.latestFailureMessage ? (
-                    <Alert severity="warning" variant="outlined">
-                      Latest scheduled-backup issue: {backupOperations.latestFailureMessage}
-                    </Alert>
-                  ) : null}
-                </Stack>
-              </SettingsSubsection>
-
-              <SettingsSubsection title="Export controls">
-                <Stack spacing={1}>
-                  <Stack direction={{ xs: 'column', sm: 'row' }} spacing={1} useFlexGap flexWrap="wrap">
-                    <Button
-                      variant="contained"
-                      startIcon={<DownloadRoundedIcon />}
-                      onClick={() =>
-                        createManualBackup.mutate(
-                          { kind: 'json' },
-                          {
-                            onSuccess: (result) => {
-                              setBackupNotice(`Backup exported: ${result.suggestedJsonFilename}`)
-                              setRestoreError(null)
-                            },
-                          },
-                        )
-                      }
-                      disabled={createManualBackup.isPending}
-                    >
-                      Export backup JSON
-                    </Button>
-                    <Button
+        <SurfaceCard
+          eyebrow="Recovery & Protection"
+          title="Backup posture and controlled restore"
+          description="Exports, staged restore, and restore truth."
+          action={
+            <Chip
+              label={recentBackups[0]?.status ?? 'No backups yet'}
+              size="small"
+              variant="outlined"
+              color={
+                backupOperations.healthState === 'healthy'
+                  ? 'success'
+                  : backupOperations.healthState === 'stale' || backupOperations.healthState === 'degraded'
+                    ? 'warning'
+                    : 'default'
+              }
+            />
+          }
+        >
+          <Stack spacing={1.5}>
+            <SettingsSubsection title="Backup posture">
+              <Stack spacing={0.85}>
+                <SettingsStatusRow
+                  label="Scheduled backup health"
+                  summary={`Ops ${backupSource.operations} · list ${backupSource.recentBackups}`}
+                  meta={`Last success ${backupOperations.latestSuccessfulBackupAt ?? 'None yet'}`}
+                  trailing={
+                    <Chip
+                      label={backupOperations.healthState}
+                      size="small"
                       variant="outlined"
-                      startIcon={<ArchiveRoundedIcon />}
-                      onClick={() =>
-                        createManualBackup.mutate(
-                          { kind: 'notes' },
-                          {
-                            onSuccess: (result) => {
-                              setBackupNotice(`Notes exported: ${result.suggestedNotesFilename}`)
-                              setRestoreError(null)
-                            },
-                          },
-                        )
+                      color={
+                        backupOperations.healthState === 'healthy'
+                          ? 'success'
+                          : backupOperations.healthState === 'stale' || backupOperations.healthState === 'degraded'
+                            ? 'warning'
+                            : 'default'
                       }
-                      disabled={createManualBackup.isPending}
-                    >
-                      Export notes markdown
-                    </Button>
-                    <Button
-                      variant="outlined"
-                      startIcon={<UploadFileRoundedIcon />}
-                      onClick={() => restoreInputRef.current?.click()}
-                      disabled={applyRestoreStage.isPending}
-                    >
-                      Load restore file
-                    </Button>
-                  </Stack>
-                  <input
-                    ref={restoreInputRef}
-                    type="file"
-                    accept="application/json,.json"
-                    hidden
-                    onChange={handleRestoreFileSelected}
-                  />
-                  <Typography variant="body2" color="text.secondary">
-                    Restore applies core local state first and reports partial compatibility honestly.
-                  </Typography>
-                </Stack>
-              </SettingsSubsection>
+                    />
+                  }
+                />
+                <SettingsStatusRow
+                  label="Retention"
+                  summary={`Daily ${backupOperations.retentionPolicy.keepDaily} · Weekly ${backupOperations.retentionPolicy.keepWeekly} · Manual ${backupOperations.retentionPolicy.keepManual}`}
+                  meta={
+                    recentBackups[0]
+                      ? `Latest ${formatCalendarTimestamp(recentBackups[0].createdAt, recentBackups[0].createdAt)} · ${recentBackups[0].sourceRecordCount} records`
+                      : 'No recent backup record'
+                  }
+                />
+                <SettingsStatusRow
+                  label="Server restore posture"
+                  summary={`${serverRestoreReadyCount} restore-ready backup${serverRestoreReadyCount === 1 ? '' : 's'}`}
+                  meta={
+                    latestServerRestoreReadyBackup
+                      ? `Latest ${formatCalendarTimestamp(latestServerRestoreReadyBackup.createdAt, latestServerRestoreReadyBackup.createdAt)}`
+                      : 'Local-file restore only'
+                  }
+                />
+                {backupOperations.latestFailureMessage ? (
+                  <Alert severity="warning" variant="outlined">
+                    Latest scheduled-backup issue: {backupOperations.latestFailureMessage}
+                  </Alert>
+                ) : null}
+              </Stack>
+            </SettingsSubsection>
 
-              <SettingsSubsection title="Scheduled recovery candidates">
-                <Stack spacing={1}>
-                  {eligibleServerBackups.length > 0 ? (
-                    eligibleServerBackups.map((backup) => (
-                      <SettingsStatusRow
-                        key={backup.id}
-                        label={`Scheduled backup · ${formatCalendarTimestamp(backup.createdAt, backup.createdAt)}`}
-                        summary={`Status ${backup.status} · ${backup.sourceRecordCount} records · source ${backupSource.recentBackups}`}
-                        meta={`Payload ${backup.payloadPointer?.provider ?? 'legacy metadata'} · eligibility checked ${backup.restoreEligibility?.checkedAt ?? 'during backup load'}`}
-                        trailing={
-                          <Button
-                            variant="outlined"
-                            size="small"
-                            startIcon={loadServerRestoreStage.isPending ? <CircularProgress size={16} color="inherit" /> : <RestoreRoundedIcon />}
-                            disabled={loadServerRestoreStage.isPending || applyRestoreStage.isPending}
-                            onClick={() =>
-                              loadServerRestoreStage.mutate(backup, {
-                                onSuccess: (stage) => {
-                                  setRestoreStage(stage)
-                                  setRestoreError(null)
-                                  setBackupNotice(`Staged remote restore from ${formatCalendarTimestamp(backup.createdAt, backup.createdAt)}.`)
-                                },
-                              })
-                            }
-                          >
-                            {loadServerRestoreStage.isPending ? 'Loading...' : 'Stage restore'}
-                          </Button>
-                        }
-                      />
-                    ))
-                  ) : (
-                    <Typography variant="body2" color="text.secondary">
-                      No restore-ready scheduled backups are visible right now.
-                    </Typography>
-                  )}
-                  {ineligibleServerBackups.length > 0 ? (
-                    <Alert severity="info" variant="outlined">
-                      Some recent scheduled backups are not restore-ready yet: {ineligibleServerBackups
-                        .map((backup) => `${backup.id} (${backup.restoreEligibility?.status ?? 'unknown'})`)
-                        .join(' · ')}
-                    </Alert>
-                  ) : null}
-                </Stack>
-              </SettingsSubsection>
-
-              <SettingsSubsection title="Restore stage">
-                <Stack spacing={1}>
-                  <Typography variant="body2" color="text.secondary">
-                    Current restore source: {restoreStage ? restoreStage.source.label : 'No restore staged yet.'}
-                  </Typography>
-                  <Typography variant="body2" color="text.secondary">
-                    Recent restore jobs: {recentRestoreJobs.length === 0 ? 'None yet.' : recentRestoreJobs.map((job) => `${job.status} (${job.createdAt.slice(0, 10)})`).join(' · ')}
-                  </Typography>
-                  {backupSource.operations !== backupSource.recentBackups ? (
-                    <Alert severity="info" variant="outlined">
-                      Forge loaded backup health from {backupSource.operations} state, but the recent backup list is currently using {backupSource.recentBackups} fallback data.
-                    </Alert>
-                  ) : null}
-                  {restoreError ? (
-                    <Alert severity="error" variant="outlined" aria-live="polite">
-                      {restoreError}
-                    </Alert>
-                  ) : null}
-                  {loadServerRestoreStage.isError ? (
-                    <Alert severity="error" variant="outlined" aria-live="polite">
-                      {loadServerRestoreStage.error instanceof Error
-                        ? loadServerRestoreStage.error.message
-                        : 'Forge could not load the selected scheduled backup.'}
-                    </Alert>
-                  ) : null}
-                  {createManualBackup.isError ? (
-                    <Alert severity="error" variant="outlined" aria-live="polite">
-                      {createManualBackup.error instanceof Error
-                        ? createManualBackup.error.message
-                        : 'Forge could not generate the requested backup export.'}
-                    </Alert>
-                  ) : null}
-                  {backupNotice ? (
-                    <Alert severity="success" variant="outlined" aria-live="polite">
-                      {backupNotice}
-                    </Alert>
-                  ) : null}
-                  {restoreStage ? (
-                    <Alert severity="info" variant="outlined" aria-live="polite">
-                      {restoreStage.summary} Source: {restoreStage.source.label}.
-                      {restoreStage.warnings.length > 0 ? ` Warnings: ${restoreStage.warnings.join(' ')}` : ''}
-                    </Alert>
-                  ) : null}
-                  {applyRestoreStage.isError ? (
-                    <Alert severity="error" variant="outlined" aria-live="polite">
-                      {applyRestoreStage.error instanceof Error
-                        ? applyRestoreStage.error.message
-                        : 'Forge could not apply the staged restore.'}
-                    </Alert>
-                  ) : null}
-                  {applyRestoreStage.data ? (
-                    <Alert severity={applyRestoreStage.data.status === 'applied' ? 'success' : 'warning'} variant="outlined" aria-live="polite">
-                      {applyRestoreStage.data.summary}
-                      {applyRestoreStage.data.warnings.length > 0 ? ` ${applyRestoreStage.data.warnings.join(' ')}` : ''}
-                    </Alert>
-                  ) : null}
+            <SettingsSubsection title="Export controls">
+              <Stack spacing={1}>
+                <Stack direction={{ xs: 'column', sm: 'row' }} spacing={1} useFlexGap flexWrap="wrap">
                   <Button
                     variant="contained"
-                    color="secondary"
-                    startIcon={<RestoreRoundedIcon />}
+                    startIcon={<DownloadRoundedIcon />}
                     onClick={() =>
-                      restoreStage &&
-                      applyRestoreStage.mutate(restoreStage, {
-                        onSuccess: () => {
-                          setRestoreStage(null)
-                          setRestoreError(null)
-                          setBackupNotice('Restore applied. Forge refreshed local workspaces from the restored state.')
+                      createManualBackup.mutate(
+                        { kind: 'json' },
+                        {
+                          onSuccess: (result) => {
+                            setBackupNotice(`Backup exported: ${result.suggestedJsonFilename}`)
+                            setRestoreError(null)
+                          },
                         },
-                      })
+                      )
                     }
-                    disabled={!restoreStage || applyRestoreStage.isPending}
-                    sx={{ alignSelf: 'flex-start' }}
+                    disabled={createManualBackup.isPending}
                   >
-                    Apply staged restore
+                    Export backup JSON
+                  </Button>
+                  <Button
+                    variant="outlined"
+                    startIcon={<ArchiveRoundedIcon />}
+                    onClick={() =>
+                      createManualBackup.mutate(
+                        { kind: 'notes' },
+                        {
+                          onSuccess: (result) => {
+                            setBackupNotice(`Notes exported: ${result.suggestedNotesFilename}`)
+                            setRestoreError(null)
+                          },
+                        },
+                      )
+                    }
+                    disabled={createManualBackup.isPending}
+                  >
+                    Export notes markdown
+                  </Button>
+                  <Button
+                    variant="outlined"
+                    startIcon={<UploadFileRoundedIcon />}
+                    onClick={() => restoreInputRef.current?.click()}
+                    disabled={applyRestoreStage.isPending}
+                  >
+                    Load restore file
                   </Button>
                 </Stack>
-              </SettingsSubsection>
-            </Stack>
-          </SurfaceCard>
+                <input
+                  ref={restoreInputRef}
+                  type="file"
+                  accept="application/json,.json"
+                  hidden
+                  onChange={handleRestoreFileSelected}
+                />
+                <Typography variant="body2" color="text.secondary">
+                  Restore stays staged until you apply it.
+                </Typography>
+              </Stack>
+            </SettingsSubsection>
 
-          <SurfaceCard
-            eyebrow="Calendar Operations"
-            title="Read pressure and explicit write mirroring"
-            description="Read pressure is continuous. Write mirroring stays explicit and operator-triggered."
-            action={
-              <Chip
-                label={`read ${calendarSyncState.externalEventSyncStatus} · mirror ${calendarSyncState.mirrorSyncStatus}`}
-                size="small"
-                variant="outlined"
-                color={calendarTone}
-              />
-            }
-          >
-            <Stack spacing={1.5}>
-              <SettingsSubsection title="Connection posture">
-                <Stack spacing={0.85}>
-                  <SettingsStatusRow
-                    label="Provider"
-                    summary={`${calendarConnection.provider} · feature gate ${calendarConnection.featureGate}`}
-                    meta={`Managed mode ${calendarConnection.managedEventMode}`}
-                    trailing={
-                      <Chip
-                        label={calendarConnection.connectionStatus}
-                        size="small"
-                        variant="outlined"
-                        color={calendarConnection.connectionStatus === 'connected' ? 'success' : 'default'}
-                      />
-                    }
-                  />
-                  <SettingsStatusRow
-                    label="Read sync"
-                    summary={`Last external sync ${formatCalendarTimestamp(calendarSyncState.lastExternalSyncAt)}`}
-                    meta={`Cached external events ${calendarSyncState.cachedEventCount}`}
-                  />
-                  <SettingsStatusRow
-                    label="Mirror sync"
-                    summary={`Last mirror sync ${formatCalendarTimestamp(calendarSyncState.lastMirrorSyncAt)}`}
-                    meta={`Mirrored major blocks ${calendarMirroredBlockCount} · mirror errors ${calendarMirrorErrorCount}`}
-                  />
-                </Stack>
-              </SettingsSubsection>
-
-              <SettingsSubsection title="Calendar actions">
-                <Stack spacing={1}>
-                  <Stack direction={{ xs: 'column', sm: 'row' }} spacing={1} useFlexGap flexWrap="wrap">
-                    <Button
-                      variant="contained"
-                      startIcon={connectCalendarRead.isPending ? <CircularProgress size={16} color="inherit" /> : <CalendarMonthRoundedIcon />}
-                      onClick={() => connectCalendarRead.mutate()}
-                      disabled={Boolean(calendarActionPendingLabel) || status !== 'authenticated'}
-                    >
-                      {connectCalendarRead.isPending
-                        ? 'Connecting read access...'
-                        : calendarConnection.connectionStatus === 'connected'
-                          ? 'Reconnect read access'
-                          : 'Connect read access'}
-                    </Button>
-                    <Button
-                      variant="outlined"
-                      startIcon={connectCalendarWrite.isPending ? <CircularProgress size={16} color="inherit" /> : <CalendarMonthRoundedIcon />}
-                      onClick={() => connectCalendarWrite.mutate()}
-                      disabled={Boolean(calendarActionPendingLabel) || status !== 'authenticated'}
-                    >
-                      {connectCalendarWrite.isPending
-                        ? 'Enabling write mirroring...'
-                        : calendarConnection.featureGate === 'writeEnabled'
-                          ? 'Refresh write access'
-                          : 'Enable write mirroring'}
-                    </Button>
-                    <Button
-                      variant="outlined"
-                      startIcon={refreshCalendarCache.isPending ? <CircularProgress size={16} color="inherit" /> : undefined}
-                      onClick={() => refreshCalendarCache.mutate()}
-                      disabled={Boolean(calendarActionPendingLabel) || calendarConnection.connectionStatus !== 'connected'}
-                    >
-                      {refreshCalendarCache.isPending ? 'Refreshing external events...' : 'Refresh read cache'}
-                    </Button>
-                    <Button
-                      variant="outlined"
-                      startIcon={syncCalendarMirrors.isPending ? <CircularProgress size={16} color="inherit" /> : undefined}
-                      onClick={() => syncCalendarMirrors.mutate()}
-                      disabled={
-                        Boolean(calendarActionPendingLabel) ||
-                        calendarConnection.connectionStatus !== 'connected' ||
-                        calendarConnection.featureGate !== 'writeEnabled'
-                      }
-                    >
-                      {syncCalendarMirrors.isPending ? 'Reconciling mirrored blocks...' : 'Sync major blocks'}
-                    </Button>
-                    <Button
-                      variant="text"
-                      color="inherit"
-                      onClick={() => disconnectCalendar.mutate()}
-                      disabled={Boolean(calendarActionPendingLabel) || calendarConnection.connectionStatus === 'notConnected'}
-                    >
-                      {disconnectCalendar.isPending ? 'Disconnecting...' : 'Disconnect'}
-                    </Button>
-                  </Stack>
-                  {calendarActionPendingLabel ? (
-                    <Typography variant="body2" color="text.secondary">
-                      {calendarActionPendingLabel}
-                    </Typography>
-                  ) : null}
-                </Stack>
-              </SettingsSubsection>
-
-              <SettingsSubsection title="Operational truth">
-                <Stack spacing={1}>
-                  <Typography variant="body2" color="text.secondary">
-                    Selected calendar: {calendarConnection.selectedCalendarIds[0] ?? 'primary'} · Mirrored title: {mirroredBlockPreview.eventTitle}
-                  </Typography>
-                  <Typography variant="body2" color="text.secondary">
-                    Read sync: {calendarSyncState.externalEventSyncStatus}. Mirror sync: {calendarSyncState.mirrorSyncStatus}.
-                  </Typography>
-                  {calendarSyncState.lastSyncError ? (
-                    <Alert severity="warning" variant="outlined" aria-live="polite">
-                      Calendar issue: {calendarSyncState.lastSyncError}
-                    </Alert>
-                  ) : null}
-                  {calendarSyncState.lastMirrorSyncError ? (
-                    <Alert severity="warning" variant="outlined" aria-live="polite">
-                      Last mirror reconciliation issue: {calendarSyncState.lastMirrorSyncError}
-                    </Alert>
-                  ) : null}
-                  {connectCalendarRead.isError ? (
-                    <Alert severity="error" variant="outlined" aria-live="polite">
-                      {connectCalendarRead.error instanceof Error ? connectCalendarRead.error.message : 'Forge could not connect Google Calendar.'}
-                    </Alert>
-                  ) : null}
-                  {connectCalendarWrite.isError ? (
-                    <Alert severity="error" variant="outlined" aria-live="polite">
-                      {connectCalendarWrite.error instanceof Error ? connectCalendarWrite.error.message : 'Forge could not enable Calendar write mirroring.'}
-                    </Alert>
-                  ) : null}
-                  {refreshCalendarCache.isError ? (
-                    <Alert severity="error" variant="outlined" aria-live="polite">
-                      {refreshCalendarCache.error instanceof Error ? refreshCalendarCache.error.message : 'Forge could not refresh the Calendar cache.'}
-                    </Alert>
-                  ) : null}
-                  {syncCalendarMirrors.isError ? (
-                    <Alert severity="error" variant="outlined" aria-live="polite">
-                      {syncCalendarMirrors.error instanceof Error ? syncCalendarMirrors.error.message : 'Forge could not reconcile mirrored Calendar blocks.'}
-                    </Alert>
-                  ) : null}
-                  {disconnectCalendar.isError ? (
-                    <Alert severity="error" variant="outlined" aria-live="polite">
-                      {disconnectCalendar.error instanceof Error ? disconnectCalendar.error.message : 'Forge could not disconnect Google Calendar.'}
-                    </Alert>
-                  ) : null}
-                  {syncCalendarMirrors.data ? (
-                    <Alert severity={syncCalendarMirrors.data.errorCount > 0 ? 'warning' : 'success'} variant="outlined" aria-live="polite">
-                      Mirror sync result: {syncCalendarMirrors.data.createdCount} created, {syncCalendarMirrors.data.updatedCount} updated, {syncCalendarMirrors.data.deletedCount} deleted, {syncCalendarMirrors.data.errorCount} failed.
-                    </Alert>
-                  ) : null}
-                </Stack>
-              </SettingsSubsection>
-            </Stack>
-          </SurfaceCard>
-        </Stack>
-
-        <Stack spacing={2.5} sx={{ order: { xs: 1, lg: 2 }, minWidth: 0 }}>
-          <SurfaceCard
-            eyebrow="System Posture"
-            title="What is healthy, degraded, or still limited"
-            description="Launch posture, runtime truth, and capability boundaries at a glance."
-            action={
-              <Chip
-                label={operationalDiagnostics.headline}
-                size="small"
-                variant="outlined"
-                color={getOperationalTone(operationalDiagnostics.overallSeverity)}
-              />
-            }
-          >
-            <Stack spacing={1.5}>
-              <Alert severity={getOperationalTone(operationalDiagnostics.overallSeverity)} variant="outlined">
-                {operationalDiagnostics.summary}
-              </Alert>
-
-              <SettingsSubsection title="Operational diagnostics">
-                <Stack spacing={0.85}>
-                  {operationalDiagnostics.items.map((item) => (
+            <SettingsSubsection title="Scheduled recovery candidates">
+              <Stack spacing={1}>
+                {eligibleServerBackups.length > 0 ? (
+                  eligibleServerBackups.map((backup) => (
                     <SettingsStatusRow
-                      key={item.key}
-                      label={item.label}
-                      summary={item.summary}
-                      meta={`Owner ${item.owner}${item.lastObservedAt ? ` · Last observed ${formatCalendarTimestamp(item.lastObservedAt, 'Not observed yet')}` : ''}`}
+                      key={backup.id}
+                      label={`Scheduled backup · ${formatCalendarTimestamp(backup.createdAt, backup.createdAt)}`}
+                      summary={`Status ${backup.status} · ${backup.sourceRecordCount} records`}
+                      meta={`Payload ${backup.payloadPointer?.provider ?? 'legacy metadata'} · eligibility ${backup.restoreEligibility?.status ?? 'unknown'}`}
                       trailing={
-                        <Chip
-                          label={item.statusLabel}
-                          size="small"
-                          variant="outlined"
-                          color={getOperationalTone(item.severity)}
-                        />
-                      }
-                    />
-                  ))}
-                  {operationalDiagnostics.blindSpots.map((blindSpot) => (
-                    <Alert key={blindSpot} severity="info" variant="outlined">
-                      {blindSpot}
-                    </Alert>
-                  ))}
-                </Stack>
-              </SettingsSubsection>
-
-              <SettingsSubsection title="Auth and runtime">
-                <Stack spacing={0.85}>
-                  <SettingsStatusRow
-                    label="Firebase auth"
-                    summary={`Current auth state ${status}`}
-                    meta="Auth remains the gate for sync replay and provider work."
-                    trailing={<Chip label={status} size="small" variant="outlined" color={status === 'authenticated' ? 'success' : 'default'} />}
-                  />
-                  <SettingsStatusRow
-                    label="Runtime shell"
-                    summary={platformWorkspace.summary}
-                    meta={`Support tier ${platformWorkspace.shellSupportLabel} · Install posture ${platformWorkspace.installSurfaceLabel}`}
-                    trailing={<Chip label={platformWorkspace.shellLabel} size="small" variant="outlined" color={getShellTone(platformWorkspace)} />}
-                  />
-                  <Typography variant="body2" color="text.secondary">
-                    Pending update: {platformWorkspace.needRefresh ? 'Yes' : 'No'} · Offline shell ready: {platformWorkspace.offlineReady ? 'Yes' : 'No'}
-                  </Typography>
-                </Stack>
-              </SettingsSubsection>
-
-              <SettingsSubsection title="Capability boundary">
-                <Stack spacing={0.85}>
-                  {platformWorkspace.capabilities.map((capability) => (
-                    <SettingsStatusRow
-                      key={capability.key}
-                      label={capability.label}
-                      summary={capability.summary}
-                      trailing={
-                        <Chip
-                          label={capability.status}
-                          size="small"
-                          variant="outlined"
-                          color={getCapabilityTone(capability.status)}
-                        />
-                      }
-                    />
-                  ))}
-                  {platformWorkspace.supportNotes.map((note) => (
-                    <Alert key={note} severity="info" variant="outlined">
-                      {note}
-                    </Alert>
-                  ))}
-                </Stack>
-              </SettingsSubsection>
-            </Stack>
-          </SurfaceCard>
-
-          <SurfaceCard
-            eyebrow="Platform Operations"
-            title="Browser vs Functions ownership"
-            description="Which responsibilities still belong to the browser and which already belong to Functions."
-            action={
-              <Chip
-                label={`${platformServices.functionsOwned.length} Functions-owned`}
-                size="small"
-                variant="outlined"
-                color="primary"
-              />
-            }
-          >
-            <Stack spacing={1.25}>
-              {platformServices.boundaries.map((boundary) => (
-                <SettingsStatusRow
-                  key={boundary.key}
-                  label={boundary.label}
-                  summary={boundary.description}
-                  meta={`Why this owner is correct: ${boundary.rationale}`}
-                  trailing={
-                    <Stack direction={{ xs: 'column', sm: 'row' }} spacing={0.75} alignItems={{ xs: 'flex-start', sm: 'center' }}>
-                      <Chip
-                        label={boundary.owner}
-                        size="small"
-                        variant="outlined"
-                        color={boundary.owner === 'firebaseFunctions' ? 'primary' : 'default'}
-                      />
-                      <Chip
-                        label={boundary.status}
-                        size="small"
-                        variant="outlined"
-                        color={boundary.status === 'active' ? 'success' : 'default'}
-                      />
-                      {boundary.callableName ? (
                         <Button
                           variant="outlined"
                           size="small"
-                          disabled={invokePlatformOperation.isPending || status !== 'authenticated'}
-                          onClick={() => invokePlatformOperation.mutate(boundary.key as 'scheduledBackups' | 'scheduledNotifications' | 'analyticsSnapshots')}
+                          startIcon={loadServerRestoreStage.isPending ? <CircularProgress size={16} color="inherit" /> : <RestoreRoundedIcon />}
+                          disabled={loadServerRestoreStage.isPending || applyRestoreStage.isPending}
+                          onClick={() =>
+                            loadServerRestoreStage.mutate(backup, {
+                              onSuccess: (stage) => {
+                                setRestoreStage(stage)
+                                setRestoreError(null)
+                                setBackupNotice(`Staged remote restore from ${formatCalendarTimestamp(backup.createdAt, backup.createdAt)}.`)
+                              },
+                            })
+                          }
                         >
-                          {invokePlatformOperation.isPending && invokePlatformOperation.variables === boundary.key
-                            ? 'Running...'
-                            : boundary.manualTriggerLabel ?? 'Run now'}
+                          {loadServerRestoreStage.isPending ? 'Loading...' : 'Stage restore'}
                         </Button>
-                      ) : null}
-                    </Stack>
+                      }
+                    />
+                  ))
+                ) : (
+                  <Typography variant="body2" color="text.secondary">
+                    No restore-ready scheduled backups yet.
+                  </Typography>
+                )}
+                {ineligibleServerBackups.length > 0 ? (
+                  <Alert severity="info" variant="outlined">
+                    Not restore-ready yet: {ineligibleServerBackups
+                      .map((backup) => `${backup.id} (${backup.restoreEligibility?.status ?? 'unknown'})`)
+                      .join(' · ')}
+                  </Alert>
+                ) : null}
+              </Stack>
+            </SettingsSubsection>
+
+            <SettingsSubsection title="Restore stage">
+              <Stack spacing={1}>
+                <Typography variant="body2" color="text.secondary">
+                  Source: {restoreStage ? restoreStage.source.label : 'No restore staged yet.'}
+                </Typography>
+                <Typography variant="body2" color="text.secondary">
+                  Recent jobs: {recentRestoreJobs.length === 0 ? 'None yet.' : recentRestoreJobs.map((job) => `${job.status} (${job.createdAt.slice(0, 10)})`).join(' · ')}
+                </Typography>
+                {backupSource.operations !== backupSource.recentBackups ? (
+                  <Alert severity="info" variant="outlined">
+                    Backup health is using {backupSource.operations}, while the recent list is using {backupSource.recentBackups}.
+                  </Alert>
+                ) : null}
+                {restoreError ? (
+                  <Alert severity="error" variant="outlined" aria-live="polite">
+                    {restoreError}
+                  </Alert>
+                ) : null}
+                {loadServerRestoreStage.isError ? (
+                  <Alert severity="error" variant="outlined" aria-live="polite">
+                    {loadServerRestoreStage.error instanceof Error
+                      ? loadServerRestoreStage.error.message
+                      : 'Forge could not load the selected scheduled backup.'}
+                  </Alert>
+                ) : null}
+                {createManualBackup.isError ? (
+                  <Alert severity="error" variant="outlined" aria-live="polite">
+                    {createManualBackup.error instanceof Error
+                      ? createManualBackup.error.message
+                      : 'Forge could not generate the requested backup export.'}
+                  </Alert>
+                ) : null}
+                {backupNotice ? (
+                  <Alert severity="success" variant="outlined" aria-live="polite">
+                    {backupNotice}
+                  </Alert>
+                ) : null}
+                {restoreStage ? (
+                  <Alert severity="info" variant="outlined" aria-live="polite">
+                    {restoreStage.summary} Source: {restoreStage.source.label}.
+                    {restoreStage.warnings.length > 0 ? ` Warnings: ${restoreStage.warnings.join(' ')}` : ''}
+                  </Alert>
+                ) : null}
+                {applyRestoreStage.isError ? (
+                  <Alert severity="error" variant="outlined" aria-live="polite">
+                    {applyRestoreStage.error instanceof Error
+                      ? applyRestoreStage.error.message
+                      : 'Forge could not apply the staged restore.'}
+                  </Alert>
+                ) : null}
+                {applyRestoreStage.data ? (
+                  <Alert severity={applyRestoreStage.data.status === 'applied' ? 'success' : 'warning'} variant="outlined" aria-live="polite">
+                    {applyRestoreStage.data.summary}
+                    {applyRestoreStage.data.warnings.length > 0 ? ` ${applyRestoreStage.data.warnings.join(' ')}` : ''}
+                  </Alert>
+                ) : null}
+                <Button
+                  variant="contained"
+                  color="secondary"
+                  startIcon={<RestoreRoundedIcon />}
+                  onClick={() =>
+                    restoreStage &&
+                    applyRestoreStage.mutate(restoreStage, {
+                      onSuccess: () => {
+                        setRestoreStage(null)
+                        setRestoreError(null)
+                        setBackupNotice('Restore applied. Forge refreshed local workspaces from the restored state.')
+                      },
+                    })
+                  }
+                  disabled={!restoreStage || applyRestoreStage.isPending}
+                  sx={{ alignSelf: 'flex-start' }}
+                >
+                  Apply staged restore
+                </Button>
+              </Stack>
+            </SettingsSubsection>
+          </Stack>
+        </SurfaceCard>
+
+        <SurfaceCard
+          eyebrow="System Posture"
+          title="What is healthy, degraded, or still limited"
+          description="Runtime truth and capability boundaries."
+          action={
+            <Chip
+              label={operationalDiagnostics.headline}
+              size="small"
+              variant="outlined"
+              color={getOperationalTone(operationalDiagnostics.overallSeverity)}
+            />
+          }
+        >
+          <Stack spacing={1.5}>
+            <Alert severity={getOperationalTone(operationalDiagnostics.overallSeverity)} variant="outlined">
+              {operationalDiagnostics.summary}
+            </Alert>
+
+            <SettingsSubsection title="Operational diagnostics">
+              <Stack spacing={0.85}>
+                {operationalDiagnostics.items.map((item) => (
+                  <SettingsStatusRow
+                    key={item.key}
+                    label={item.label}
+                    summary={item.summary}
+                    meta={`${item.owner}${item.lastObservedAt ? ` · ${formatCalendarTimestamp(item.lastObservedAt, 'Not observed yet')}` : ''}`}
+                    trailing={
+                      <Chip
+                        label={item.statusLabel}
+                        size="small"
+                        variant="outlined"
+                        color={getOperationalTone(item.severity)}
+                      />
+                    }
+                  />
+                ))}
+                {operationalDiagnostics.blindSpots.map((blindSpot) => (
+                  <Alert key={blindSpot} severity="info" variant="outlined">
+                    {blindSpot}
+                  </Alert>
+                ))}
+              </Stack>
+            </SettingsSubsection>
+
+            <SettingsSubsection title="Auth and runtime">
+              <Stack spacing={0.85}>
+                <SettingsStatusRow
+                  label="Firebase auth"
+                  summary={`Current auth state ${status}`}
+                  meta="Gate for sync and provider work."
+                  trailing={<Chip label={status} size="small" variant="outlined" color={status === 'authenticated' ? 'success' : 'default'} />}
+                />
+                <SettingsStatusRow
+                  label="Runtime shell"
+                  summary={platformWorkspace.summary}
+                  meta={`Tier ${platformWorkspace.shellSupportLabel} · Install ${platformWorkspace.installSurfaceLabel}`}
+                  trailing={<Chip label={platformWorkspace.shellLabel} size="small" variant="outlined" color={getShellTone(platformWorkspace)} />}
+                />
+                <Typography variant="body2" color="text.secondary">
+                  Update needed: {platformWorkspace.needRefresh ? 'Yes' : 'No'} · Offline ready: {platformWorkspace.offlineReady ? 'Yes' : 'No'}
+                </Typography>
+              </Stack>
+            </SettingsSubsection>
+
+            <SettingsSubsection title="Capability boundary">
+              <Stack spacing={0.85}>
+                {platformWorkspace.capabilities.map((capability) => (
+                  <SettingsStatusRow
+                    key={capability.key}
+                    label={capability.label}
+                    summary={capability.summary}
+                    trailing={
+                      <Chip
+                        label={capability.status}
+                        size="small"
+                        variant="outlined"
+                        color={getCapabilityTone(capability.status)}
+                      />
+                    }
+                  />
+                ))}
+                {platformWorkspace.supportNotes.map((note) => (
+                  <Alert key={note} severity="info" variant="outlined">
+                    {note}
+                  </Alert>
+                ))}
+              </Stack>
+            </SettingsSubsection>
+          </Stack>
+        </SurfaceCard>
+      </Box>
+
+      <Box
+        sx={{
+          display: 'grid',
+          gap: 2.5,
+          gridTemplateColumns: { xs: '1fr', lg: 'repeat(2, minmax(0, 1fr))' },
+          alignItems: 'start',
+        }}
+      >
+        <SurfaceCard
+          eyebrow="Calendar Operations"
+          title="Read pressure and explicit write mirroring"
+          description="Read pressure stays continuous. Write mirroring stays explicit."
+          action={
+            <Chip
+              label={`read ${calendarSyncState.externalEventSyncStatus} · mirror ${calendarSyncState.mirrorSyncStatus}`}
+              size="small"
+              variant="outlined"
+              color={calendarTone}
+            />
+          }
+        >
+          <Stack spacing={1.5}>
+            <SettingsSubsection title="Connection posture">
+              <Stack spacing={0.85}>
+                <SettingsStatusRow
+                  label="Provider"
+                  summary={`${calendarConnection.provider} · gate ${calendarConnection.featureGate}`}
+                  meta={`Mode ${calendarConnection.managedEventMode}`}
+                  trailing={
+                    <Chip
+                      label={calendarConnection.connectionStatus}
+                      size="small"
+                      variant="outlined"
+                      color={calendarConnection.connectionStatus === 'connected' ? 'success' : 'default'}
+                    />
                   }
                 />
-              ))}
-              {invokePlatformOperation.isError ? (
-                <Alert severity="error" variant="outlined" aria-live="polite">
-                  {invokePlatformOperation.error instanceof Error
-                    ? invokePlatformOperation.error.message
-                    : 'Forge could not run the selected Functions-backed platform operation.'}
-                </Alert>
-              ) : null}
-              {invokePlatformOperation.data ? (
-                <Alert severity="success" variant="outlined" aria-live="polite">
-                  Ran {invokePlatformOperation.data.callableName} through Firebase Functions for {invokePlatformOperation.data.key}.
-                </Alert>
-              ) : null}
-              <Alert severity="info" variant="outlined">
-                Planned Functions-owned areas are documented here intentionally, but not prematurely implemented.
-              </Alert>
-            </Stack>
-          </SurfaceCard>
+                <SettingsStatusRow
+                  label="Read sync"
+                  summary={`Last external sync ${formatCalendarTimestamp(calendarSyncState.lastExternalSyncAt)}`}
+                  meta={`Cached events ${calendarSyncState.cachedEventCount}`}
+                />
+                <SettingsStatusRow
+                  label="Mirror sync"
+                  summary={`Last mirror sync ${formatCalendarTimestamp(calendarSyncState.lastMirrorSyncAt)}`}
+                  meta={`Mirrored blocks ${calendarMirroredBlockCount} · errors ${calendarMirrorErrorCount}`}
+                />
+              </Stack>
+            </SettingsSubsection>
 
-          <SurfaceCard
-            eyebrow="Notification Engine"
-            title="Browser-owned delivery and permission posture"
-            description="Permission, delivery truth, and runtime limits stay visible beside the actions."
-            action={
-              <Chip
-                label={notificationState.permission}
-                size="small"
-                variant="outlined"
-                color={notificationState.permission === 'granted' ? 'success' : notificationState.permission === 'denied' ? 'warning' : 'default'}
-              />
-            }
-          >
-            <Stack spacing={1.25}>
-              <SettingsSubsection title="Notification controls">
-                <Stack spacing={1}>
-                  <Stack
-                    direction={{ xs: 'column', sm: 'row' }}
-                    spacing={1}
-                    justifyContent="space-between"
-                    alignItems={{ xs: 'flex-start', sm: 'center' }}
-                  >
-                    <Stack spacing={0.25}>
-                      <Typography variant="body2" color="text.primary">
-                        Notification rules enabled
-                      </Typography>
-                      <Typography variant="body2" color="text.secondary">
-                        Daily cap {notificationState.dailyCap} · Supported channels {notificationState.supportedChannels.join(', ')}
-                      </Typography>
-                    </Stack>
-                    <Switch
-                      checked={settings?.notificationsEnabled ?? true}
-                      onChange={(_, checked) => updateNotificationPreference.mutate(checked)}
-                      disabled={updateNotificationPreference.isPending}
-                      inputProps={{
-                        'aria-label': 'Enable operational notifications',
-                      }}
-                    />
-                  </Stack>
-                  <Typography variant="body2" color="text.secondary">
-                    Permission {notificationState.permission}. Delivered today {notificationState.countersByDate[new Date().toISOString().slice(0, 10)]?.delivered ?? 0}. Suppressed today {notificationState.countersByDate[new Date().toISOString().slice(0, 10)]?.suppressed ?? 0}.
-                  </Typography>
+            <SettingsSubsection title="Calendar actions">
+              <Stack spacing={1}>
+                <Stack direction={{ xs: 'column', sm: 'row' }} spacing={1} useFlexGap flexWrap="wrap">
                   <Button
                     variant="contained"
-                    startIcon={<NotificationsActiveRoundedIcon />}
-                    onClick={() => requestNotificationPermission.mutate()}
-                    disabled={requestNotificationPermission.isPending || notificationState.permission === 'granted'}
-                    sx={{ alignSelf: 'flex-start' }}
+                    startIcon={connectCalendarRead.isPending ? <CircularProgress size={16} color="inherit" /> : <CalendarMonthRoundedIcon />}
+                    onClick={() => connectCalendarRead.mutate()}
+                    disabled={Boolean(calendarActionPendingLabel) || status !== 'authenticated'}
                   >
-                    {notificationState.permission === 'granted' ? 'Permission granted' : 'Request browser permission'}
+                    {connectCalendarRead.isPending
+                      ? 'Connecting read access...'
+                      : calendarConnection.connectionStatus === 'connected'
+                        ? 'Reconnect read access'
+                        : 'Connect read access'}
                   </Button>
-                  <Typography variant="body2" color="text.secondary">
-                    Recent records: {recentNotificationLogs.length === 0 ? 'None yet.' : recentNotificationLogs.slice(0, 2).map((log) => `${log.ruleKey} (${log.status})`).join(' · ')}
-                  </Typography>
+                  <Button
+                    variant="outlined"
+                    startIcon={connectCalendarWrite.isPending ? <CircularProgress size={16} color="inherit" /> : <CalendarMonthRoundedIcon />}
+                    onClick={() => connectCalendarWrite.mutate()}
+                    disabled={Boolean(calendarActionPendingLabel) || status !== 'authenticated'}
+                  >
+                    {connectCalendarWrite.isPending
+                      ? 'Enabling write mirroring...'
+                      : calendarConnection.featureGate === 'writeEnabled'
+                        ? 'Refresh write access'
+                        : 'Enable write mirroring'}
+                  </Button>
+                  <Button
+                    variant="outlined"
+                    startIcon={refreshCalendarCache.isPending ? <CircularProgress size={16} color="inherit" /> : undefined}
+                    onClick={() => refreshCalendarCache.mutate()}
+                    disabled={Boolean(calendarActionPendingLabel) || calendarConnection.connectionStatus !== 'connected'}
+                  >
+                    {refreshCalendarCache.isPending ? 'Refreshing external events...' : 'Refresh read cache'}
+                  </Button>
+                  <Button
+                    variant="outlined"
+                    startIcon={syncCalendarMirrors.isPending ? <CircularProgress size={16} color="inherit" /> : undefined}
+                    onClick={() => syncCalendarMirrors.mutate()}
+                    disabled={
+                      Boolean(calendarActionPendingLabel) ||
+                      calendarConnection.connectionStatus !== 'connected' ||
+                      calendarConnection.featureGate !== 'writeEnabled'
+                    }
+                  >
+                    {syncCalendarMirrors.isPending ? 'Reconciling mirrored blocks...' : 'Sync major blocks'}
+                  </Button>
+                  <Button
+                    variant="text"
+                    color="inherit"
+                    onClick={() => disconnectCalendar.mutate()}
+                    disabled={Boolean(calendarActionPendingLabel) || calendarConnection.connectionStatus === 'notConnected'}
+                  >
+                    {disconnectCalendar.isPending ? 'Disconnecting...' : 'Disconnect'}
+                  </Button>
                 </Stack>
-              </SettingsSubsection>
+                {calendarActionPendingLabel ? (
+                  <Typography variant="body2" color="text.secondary">
+                    {calendarActionPendingLabel}
+                  </Typography>
+                ) : null}
+              </Stack>
+            </SettingsSubsection>
 
-              <SettingsSubsection title="Runtime note">
-                <Stack spacing={1}>
-                  <Alert severity="info" variant="outlined">
-                    Forge only asks for browser permission because browser and installed-PWA delivery are the current supported channels.
+            <SettingsSubsection title="Operational truth">
+              <Stack spacing={1}>
+                <Typography variant="body2" color="text.secondary">
+                  Calendar: {calendarConnection.selectedCalendarIds[0] ?? 'primary'} · Mirror title: {mirroredBlockPreview.eventTitle}
+                </Typography>
+                <Typography variant="body2" color="text.secondary">
+                  Read sync: {calendarSyncState.externalEventSyncStatus}. Mirror sync: {calendarSyncState.mirrorSyncStatus}.
+                </Typography>
+                {calendarSyncState.lastSyncError ? (
+                  <Alert severity="warning" variant="outlined" aria-live="polite">
+                    Calendar issue: {calendarSyncState.lastSyncError}
                   </Alert>
-                </Stack>
-              </SettingsSubsection>
-            </Stack>
-          </SurfaceCard>
+                ) : null}
+                {calendarSyncState.lastMirrorSyncError ? (
+                  <Alert severity="warning" variant="outlined" aria-live="polite">
+                    Last mirror reconciliation issue: {calendarSyncState.lastMirrorSyncError}
+                  </Alert>
+                ) : null}
+                {connectCalendarRead.isError ? (
+                  <Alert severity="error" variant="outlined" aria-live="polite">
+                    {connectCalendarRead.error instanceof Error ? connectCalendarRead.error.message : 'Forge could not connect Google Calendar.'}
+                  </Alert>
+                ) : null}
+                {connectCalendarWrite.isError ? (
+                  <Alert severity="error" variant="outlined" aria-live="polite">
+                    {connectCalendarWrite.error instanceof Error ? connectCalendarWrite.error.message : 'Forge could not enable Calendar write mirroring.'}
+                  </Alert>
+                ) : null}
+                {refreshCalendarCache.isError ? (
+                  <Alert severity="error" variant="outlined" aria-live="polite">
+                    {refreshCalendarCache.error instanceof Error ? refreshCalendarCache.error.message : 'Forge could not refresh the Calendar cache.'}
+                  </Alert>
+                ) : null}
+                {syncCalendarMirrors.isError ? (
+                  <Alert severity="error" variant="outlined" aria-live="polite">
+                    {syncCalendarMirrors.error instanceof Error ? syncCalendarMirrors.error.message : 'Forge could not reconcile mirrored Calendar blocks.'}
+                  </Alert>
+                ) : null}
+                {disconnectCalendar.isError ? (
+                  <Alert severity="error" variant="outlined" aria-live="polite">
+                    {disconnectCalendar.error instanceof Error ? disconnectCalendar.error.message : 'Forge could not disconnect Google Calendar.'}
+                  </Alert>
+                ) : null}
+                {syncCalendarMirrors.data ? (
+                  <Alert severity={syncCalendarMirrors.data.errorCount > 0 ? 'warning' : 'success'} variant="outlined" aria-live="polite">
+                    Mirror sync result: {syncCalendarMirrors.data.createdCount} created, {syncCalendarMirrors.data.updatedCount} updated, {syncCalendarMirrors.data.deletedCount} deleted, {syncCalendarMirrors.data.errorCount} failed.
+                  </Alert>
+                ) : null}
+              </Stack>
+            </SettingsSubsection>
+          </Stack>
+        </SurfaceCard>
 
-          <SurfaceCard
-            eyebrow="Health & Future Providers"
-            title="Scaffolded integrations without fake connectivity"
-            description="Future provider work stays visible without pretending anything is already connected."
-            action={
-              <Chip
-                label={healthIntegration.connectionSummary}
-                size="small"
-                variant="outlined"
-                icon={<MonitorHeartRoundedIcon />}
-                color="default"
-              />
-            }
-          >
-            <Stack spacing={1.5}>
-              <SettingsSubsection title="Health integration">
-                <Stack spacing={0.85}>
-                  <Typography variant="body2" color="text.secondary">
-                    {healthIntegration.statusSummaryLabel}
-                  </Typography>
-                  <Typography variant="body2" color="text.secondary">
-                    Available signals: {healthIntegration.availableSignalCount} of {healthIntegration.totalSignalCount}
-                  </Typography>
-                  {healthIntegration.providers.map((provider) => (
-                    <SettingsStatusRow
-                      key={provider.provider}
-                      label={provider.displayName}
-                      summary={provider.unavailableLabel}
-                      trailing={<Chip label={provider.unavailableLabel} size="small" variant="outlined" color="default" />}
+        <SurfaceCard
+          eyebrow="Notification Engine"
+          title="Browser-owned delivery and permission posture"
+          description="Permission, delivery truth, and runtime limits."
+          action={
+            <Chip
+              label={notificationState.permission}
+              size="small"
+              variant="outlined"
+              color={notificationState.permission === 'granted' ? 'success' : notificationState.permission === 'denied' ? 'warning' : 'default'}
+            />
+          }
+        >
+          <Stack spacing={1.25}>
+            <SettingsSubsection title="Notification controls">
+              <Stack spacing={1}>
+                <Stack
+                  direction={{ xs: 'column', sm: 'row' }}
+                  spacing={1}
+                  justifyContent="space-between"
+                  alignItems={{ xs: 'flex-start', sm: 'center' }}
+                >
+                  <Stack spacing={0.25}>
+                    <Typography variant="body2" color="text.primary">
+                      Notification rules enabled
+                    </Typography>
+                    <Typography variant="body2" color="text.secondary">
+                      Daily cap {notificationState.dailyCap} · Channels {notificationState.supportedChannels.join(', ')}
+                    </Typography>
+                  </Stack>
+                  <Switch
+                    checked={settings?.notificationsEnabled ?? true}
+                    onChange={(_, checked) => updateNotificationPreference.mutate(checked)}
+                    disabled={updateNotificationPreference.isPending}
+                    inputProps={{
+                      'aria-label': 'Enable operational notifications',
+                    }}
+                  />
+                </Stack>
+                <Typography variant="body2" color="text.secondary">
+                  Permission {notificationState.permission} · Delivered {notificationState.countersByDate[new Date().toISOString().slice(0, 10)]?.delivered ?? 0} · Suppressed {notificationState.countersByDate[new Date().toISOString().slice(0, 10)]?.suppressed ?? 0}
+                </Typography>
+                <Button
+                  variant="contained"
+                  startIcon={<NotificationsActiveRoundedIcon />}
+                  onClick={() => requestNotificationPermission.mutate()}
+                  disabled={requestNotificationPermission.isPending || notificationState.permission === 'granted'}
+                  sx={{ alignSelf: 'flex-start' }}
+                >
+                  {notificationState.permission === 'granted' ? 'Permission granted' : 'Request browser permission'}
+                </Button>
+                <Typography variant="body2" color="text.secondary">
+                  Recent: {recentNotificationLogs.length === 0 ? 'None yet.' : recentNotificationLogs.slice(0, 2).map((log) => `${log.ruleKey} (${log.status})`).join(' · ')}
+                </Typography>
+              </Stack>
+            </SettingsSubsection>
+
+            <SettingsSubsection title="Runtime note">
+              <Stack spacing={1}>
+                <Alert severity="info" variant="outlined">
+                  Browser and installed-PWA delivery are the only supported channels today.
+                </Alert>
+              </Stack>
+            </SettingsSubsection>
+          </Stack>
+        </SurfaceCard>
+      </Box>
+
+      <Box
+        sx={{
+          display: 'grid',
+          gap: 2.5,
+          gridTemplateColumns: { xs: '1fr', lg: 'repeat(2, minmax(0, 1fr))' },
+          alignItems: 'start',
+        }}
+      >
+        <SurfaceCard
+          eyebrow="Platform Operations"
+          title="Browser vs Functions ownership"
+          description="What belongs to the browser vs Functions."
+          action={
+            <Chip
+              label={`${platformServices.functionsOwned.length} Functions-owned`}
+              size="small"
+              variant="outlined"
+              color="primary"
+            />
+          }
+        >
+          <Stack spacing={1.25}>
+            {platformServices.boundaries.map((boundary) => (
+              <SettingsStatusRow
+                key={boundary.key}
+                label={boundary.label}
+                summary={boundary.description}
+                trailing={
+                  <Stack direction={{ xs: 'column', sm: 'row' }} spacing={0.75} alignItems={{ xs: 'flex-start', sm: 'center' }}>
+                    <Chip
+                      label={boundary.owner}
+                      size="small"
+                      variant="outlined"
+                      color={boundary.owner === 'firebaseFunctions' ? 'primary' : 'default'}
                     />
-                  ))}
-                </Stack>
-              </SettingsSubsection>
+                    <Chip
+                      label={boundary.status}
+                      size="small"
+                      variant="outlined"
+                      color={boundary.status === 'active' ? 'success' : 'default'}
+                    />
+                    {boundary.callableName ? (
+                      <Button
+                        variant="outlined"
+                        size="small"
+                        disabled={invokePlatformOperation.isPending || status !== 'authenticated'}
+                        onClick={() => invokePlatformOperation.mutate(boundary.key as 'scheduledBackups' | 'scheduledNotifications' | 'analyticsSnapshots')}
+                      >
+                        {invokePlatformOperation.isPending && invokePlatformOperation.variables === boundary.key
+                          ? 'Running...'
+                          : boundary.manualTriggerLabel ?? 'Run now'}
+                      </Button>
+                    ) : null}
+                  </Stack>
+                }
+              />
+            ))}
+            {invokePlatformOperation.isError ? (
+              <Alert severity="error" variant="outlined" aria-live="polite">
+                {invokePlatformOperation.error instanceof Error
+                  ? invokePlatformOperation.error.message
+                  : 'Forge could not run the selected Functions-backed platform operation.'}
+              </Alert>
+            ) : null}
+            {invokePlatformOperation.data ? (
+              <Alert severity="success" variant="outlined" aria-live="polite">
+                Ran {invokePlatformOperation.data.callableName} through Firebase Functions for {invokePlatformOperation.data.key}.
+              </Alert>
+            ) : null}
+            <Alert severity="info" variant="outlined">
+              Planned Functions-owned areas stay documented only.
+            </Alert>
+          </Stack>
+        </SurfaceCard>
 
-              <SettingsSubsection title="Roadmap truth">
-                <Stack spacing={0.85}>
-                  <Typography variant="body2" color="text.secondary">
-                    Collision-aware recommendations: {featureFlags.collisionAwareRecommendations ? 'Enabled at the type boundary' : 'Off'}
-                  </Typography>
-                  <Typography variant="body2" color="text.secondary">
-                    Read mirror: {featureFlags.readMirror} · Write mirror: {featureFlags.writeMirror}
-                  </Typography>
-                  <Alert severity="info" variant="outlined">
-                    Health integration seams are typed and ready for future providers. No fake connectivity or dead buttons exist here.
-                  </Alert>
-                </Stack>
-              </SettingsSubsection>
-            </Stack>
-          </SurfaceCard>
-        </Stack>
+        <SurfaceCard
+          eyebrow="Health & Future Providers"
+          title="Scaffolded integrations only"
+          description="Provider seams stay visible without pretending anything is connected."
+          action={
+            <Chip
+              label={healthIntegration.connectionSummary}
+              size="small"
+              variant="outlined"
+              icon={<MonitorHeartRoundedIcon />}
+              color="default"
+            />
+          }
+        >
+          <Stack spacing={1.5}>
+            <SettingsSubsection title="Health integration">
+              <Stack spacing={0.85}>
+                <Typography variant="body2" color="text.secondary">
+                  {healthIntegration.statusSummaryLabel}
+                </Typography>
+                <Typography variant="body2" color="text.secondary">
+                  Signals: {healthIntegration.availableSignalCount} of {healthIntegration.totalSignalCount}
+                </Typography>
+                {healthIntegration.providers.map((provider) => (
+                  <SettingsStatusRow
+                    key={provider.provider}
+                    label={provider.displayName}
+                    summary={getProviderSupportSummary(provider.unavailableReason)}
+                    trailing={<Chip label={getProviderSupportSummary(provider.unavailableReason)} size="small" variant="outlined" color="default" />}
+                  />
+                ))}
+              </Stack>
+            </SettingsSubsection>
+
+            <SettingsSubsection title="Roadmap truth">
+              <Stack spacing={0.85}>
+                <Typography variant="body2" color="text.secondary">
+                  Collision-aware recommendations: {featureFlags.collisionAwareRecommendations ? 'Enabled at the type boundary' : 'Off'}
+                </Typography>
+                <Typography variant="body2" color="text.secondary">
+                  Read mirror: {featureFlags.readMirror} · Write mirror: {featureFlags.writeMirror}
+                </Typography>
+                <Alert severity="info" variant="outlined">
+                  Health seams are typed and future-ready. No fake connectivity lives here.
+                </Alert>
+              </Stack>
+            </SettingsSubsection>
+          </Stack>
+        </SurfaceCard>
       </Box>
     </Stack>
   )
@@ -1019,7 +1047,11 @@ function SettingsStatusRow({
           {summary}
         </Typography>
         {meta ? (
-          <Typography variant="caption" color="text.secondary">
+          <Typography
+            variant="caption"
+            color="text.secondary"
+            sx={{ display: { xs: 'none', sm: 'block' } }}
+          >
             {meta}
           </Typography>
         ) : null}

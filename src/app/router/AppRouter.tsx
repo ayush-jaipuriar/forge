@@ -40,8 +40,8 @@ function ProtectedLayout() {
         title={flowPhase === 'returning' ? 'Completing Google sign-in' : 'Verifying your command surface'}
         description={
           flowPhase === 'returning'
-            ? 'Finishing sign-in and restoring Forge.'
-            : 'Restoring your session.'
+            ? 'Restoring your workspace.'
+            : 'Checking your session.'
         }
         loading
       />
@@ -64,7 +64,7 @@ function PublicOnlyRoute() {
         title={flowPhase === 'redirecting' ? 'Redirecting to Google' : 'Connecting to Forge'}
         description={
           flowPhase === 'redirecting'
-            ? 'Sending this session to Google.'
+            ? 'Leaving Forge for sign-in.'
             : flowPhase === 'returning'
               ? 'Google returned. Restoring Forge.'
               : 'Checking Firebase Auth.'

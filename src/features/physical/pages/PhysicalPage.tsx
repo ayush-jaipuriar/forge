@@ -100,22 +100,25 @@ export function PhysicalPage() {
                 <Typography variant="overline" color="primary.light">
                   Workout state
                 </Typography>
-                <Stack direction="row" spacing={1} useFlexGap flexWrap="wrap">
+                <Stack direction="row" spacing={1} useFlexGap flexWrap="wrap" role="group" aria-label="Workout state">
                   <Button
                     size="small"
                     variant={activeWorkout.status === 'done' ? 'contained' : 'outlined'}
                     disabled={updateWorkoutMutation.isPending}
-                    onClick={() =>
-                      updateWorkoutMutation.mutate({
-                        date: data.dateKey,
-                        patch: {
-                          ...activeWorkout,
-                          status: 'done',
-                          note: activeWorkoutNoteDraft.trim() || undefined,
-                          missReason: undefined,
-                        },
-                      })
-                    }
+                    aria-pressed={activeWorkout.status === 'done'}
+                    onClick={() => {
+                      if (activeWorkout.status !== 'done') {
+                        updateWorkoutMutation.mutate({
+                          date: data.dateKey,
+                          patch: {
+                            ...activeWorkout,
+                            status: 'done',
+                            note: activeWorkoutNoteDraft.trim() || undefined,
+                            missReason: undefined,
+                          },
+                        })
+                      }
+                    }}
                   >
                     Mark Done
                   </Button>
@@ -123,17 +126,20 @@ export function PhysicalPage() {
                     size="small"
                     variant={activeWorkout.status === 'skipped' ? 'contained' : 'outlined'}
                     disabled={updateWorkoutMutation.isPending}
-                    onClick={() =>
-                      updateWorkoutMutation.mutate({
-                        date: data.dateKey,
-                        patch: {
-                          ...activeWorkout,
-                          status: 'skipped',
-                          note: undefined,
-                          missReason: activeWorkoutNoteDraft.trim() || 'Skipped without a recorded reason.',
-                        },
-                      })
-                    }
+                    aria-pressed={activeWorkout.status === 'skipped'}
+                    onClick={() => {
+                      if (activeWorkout.status !== 'skipped') {
+                        updateWorkoutMutation.mutate({
+                          date: data.dateKey,
+                          patch: {
+                            ...activeWorkout,
+                            status: 'skipped',
+                            note: undefined,
+                            missReason: activeWorkoutNoteDraft.trim() || 'Skipped without a recorded reason.',
+                          },
+                        })
+                      }
+                    }}
                   >
                     Skip
                   </Button>
@@ -141,17 +147,20 @@ export function PhysicalPage() {
                     size="small"
                     variant={activeWorkout.status === 'rescheduled' ? 'contained' : 'outlined'}
                     disabled={updateWorkoutMutation.isPending}
-                    onClick={() =>
-                      updateWorkoutMutation.mutate({
-                        date: data.dateKey,
-                        patch: {
-                          ...activeWorkout,
-                          status: 'rescheduled',
-                          note: activeWorkoutNoteDraft.trim() || 'Rescheduled to a different slot.',
-                          missReason: undefined,
-                        },
-                      })
-                    }
+                    aria-pressed={activeWorkout.status === 'rescheduled'}
+                    onClick={() => {
+                      if (activeWorkout.status !== 'rescheduled') {
+                        updateWorkoutMutation.mutate({
+                          date: data.dateKey,
+                          patch: {
+                            ...activeWorkout,
+                            status: 'rescheduled',
+                            note: activeWorkoutNoteDraft.trim() || 'Rescheduled to a different slot.',
+                            missReason: undefined,
+                          },
+                        })
+                      }
+                    }}
                   >
                     Reschedule
                   </Button>
@@ -159,19 +168,22 @@ export function PhysicalPage() {
                     size="small"
                     variant={activeWorkout.status === (data.scheduledWorkout?.status ?? 'optional') ? 'contained' : 'outlined'}
                     disabled={updateWorkoutMutation.isPending}
-                    onClick={() =>
-                      updateWorkoutMutation.mutate({
-                        date: data.dateKey,
-                        patch: {
+                    aria-pressed={activeWorkout.status === (data.scheduledWorkout?.status ?? 'optional')}
+                    onClick={() => {
+                      if (activeWorkout.status !== (data.scheduledWorkout?.status ?? 'optional')) {
+                        updateWorkoutMutation.mutate({
                           date: data.dateKey,
-                          workoutType: activeWorkout.workoutType,
-                          label: activeWorkout.label,
-                          status: data.scheduledWorkout?.status ?? 'optional',
-                          note: undefined,
-                          missReason: undefined,
-                        },
-                      })
-                    }
+                          patch: {
+                            date: data.dateKey,
+                            workoutType: activeWorkout.workoutType,
+                            label: activeWorkout.label,
+                            status: data.scheduledWorkout?.status ?? 'optional',
+                            note: undefined,
+                            missReason: undefined,
+                          },
+                        })
+                      }
+                    }}
                   >
                     Reset
                   </Button>

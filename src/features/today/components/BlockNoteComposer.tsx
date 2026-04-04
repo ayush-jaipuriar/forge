@@ -52,7 +52,7 @@ export function BlockNoteComposer({
         value={draft}
         disabled={disabled}
         onChange={(event) => setDraft(event.target.value)}
-        helperText="Use this for fast context: why it slipped, what changed, or what the next clean move is."
+        helperText="Fast context for slips, changes, or the next clean move."
       />
       <Stack direction={{ xs: 'column', sm: 'row' }} spacing={1}>
         <Button

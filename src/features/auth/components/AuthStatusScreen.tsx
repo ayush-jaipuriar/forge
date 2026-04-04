@@ -1,4 +1,5 @@
-import { Box, CircularProgress, Stack, Typography } from '@mui/material'
+import { Box } from '@mui/material'
+import { EmptyState } from '@/components/common/EmptyState'
 
 type AuthStatusScreenProps = {
   title: string
@@ -16,11 +17,16 @@ export function AuthStatusScreen({ title, description, loading = false }: AuthSt
         px: 2,
       }}
     >
-      <Stack spacing={2} alignItems="center" textAlign="center" maxWidth={480}>
-        {loading ? <CircularProgress color="primary" /> : null}
-        <Typography variant="h2">{title}</Typography>
-        <Typography color="text.secondary">{description}</Typography>
-      </Stack>
+      <Box sx={{ width: '100%', maxWidth: 540 }} data-forge-page-transition="true">
+        <EmptyState
+          eyebrow="Session Status"
+          title={title}
+          description={description}
+          loading={loading}
+          tone="info"
+          align="center"
+        />
+      </Box>
     </Box>
   )
 }

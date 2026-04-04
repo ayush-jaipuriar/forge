@@ -31,6 +31,27 @@ describe('UI primitives', () => {
     expect(screen.getByText('The empty-state pattern should be consistent.')).toBeInTheDocument()
   })
 
+  it('supports centered loading-state rendering without losing the title and action affordance', () => {
+    render(
+      <AppProviders>
+        <EmptyState
+          eyebrow="Session Status"
+          title="Restoring Forge"
+          description="Checking your session."
+          loading
+          align="center"
+          tone="info"
+          action={<button type="button">Retry</button>}
+        />
+      </AppProviders>,
+    )
+
+    expect(screen.getByRole('status')).toBeInTheDocument()
+    expect(screen.getByText('Session Status')).toBeInTheDocument()
+    expect(screen.getByText('Restoring Forge')).toBeInTheDocument()
+    expect(screen.getByRole('button', { name: /retry/i })).toBeInTheDocument()
+  })
+
   it('keeps SurfaceCard headers left-aligned when no action is provided', () => {
     render(
       <AppProviders>

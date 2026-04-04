@@ -16,7 +16,14 @@ type DayModeSelectorProps = {
 
 export function DayModeSelector({ activeDayMode, disabled = false, onSelect }: DayModeSelectorProps) {
   return (
-    <Stack direction="row" spacing={1} useFlexGap flexWrap="wrap">
+    <Stack
+      direction="row"
+      spacing={1}
+      useFlexGap
+      flexWrap="wrap"
+      role="group"
+      aria-label="Day mode selector"
+    >
       {dayModeOptions.map((option) => {
         const selected = option.value === activeDayMode
 
@@ -26,12 +33,15 @@ export function DayModeSelector({ activeDayMode, disabled = false, onSelect }: D
             size="small"
             variant={selected ? 'contained' : 'outlined'}
             color={selected ? 'primary' : 'inherit'}
-            disabled={disabled || selected}
+            disabled={disabled}
             aria-pressed={selected}
             onClick={() => {
               if (!selected) {
                 onSelect(option.value)
               }
+            }}
+            sx={{
+              minWidth: 104,
             }}
           >
             {option.label}

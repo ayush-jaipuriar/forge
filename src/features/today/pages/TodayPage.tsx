@@ -168,8 +168,7 @@ export function TodayPage() {
           gap: 2.5,
           gridTemplateColumns: {
             xs: '1fr',
-            lg: 'minmax(0, 1fr) 340px',
-            xl: '280px minmax(0, 1.15fr) 360px',
+            lg: 'minmax(0, 1.38fr) 360px',
           },
           alignItems: 'start',
         }}
@@ -177,8 +176,9 @@ export function TodayPage() {
         <Stack
           spacing={2.5}
           sx={{
-            order: { xs: 3, lg: 2, xl: 1 },
-            gridColumn: { lg: 2, xl: 1 },
+            order: { xs: 2, lg: 'unset' },
+            gridColumn: { xs: 1, lg: 2 },
+            gridRow: { xs: 'auto', lg: 1 },
           }}
         >
           <SurfaceCard
@@ -272,22 +272,65 @@ export function TodayPage() {
             </Stack>
           </SurfaceCard>
 
-          {recommendationHistory.length > 0 ? (
-            <SurfaceCard
-              eyebrow="Recommendation History"
-              title="Recent explanation shifts"
-              description="This creates a lightweight memory of how the recommendation layer is adapting as the day changes."
-            >
-              <Stack spacing={1.25}>
-                {recommendationHistory.map((item) => (
-                  <Stack key={`${item.timestamp}-${item.actionLabel}`} spacing={0.35}>
-                    <Typography variant="subtitle2" color="primary.light">
-                      {item.timestamp} · {item.actionLabel}
-                    </Typography>
+          <SurfaceCard
+            eyebrow="Pressure Stack"
+            title="Projected score and readiness pressure"
+            description="Keep pressure visible without overwhelming the live execution surface."
+          >
+            <Stack spacing={1.5}>
+              <CompactMetric
+                label="War State"
+                value={scorePreview.label}
+                detail={`${topPriorities.length} live priority blocks remain in the current queue`}
+              />
+              <CompactMetric
+                label="Subscores"
+                value={`Prep ${scorePreview.subscores.interviewPrep} · Physical ${scorePreview.subscores.physical}`}
+                detail={`Discipline ${scorePreview.subscores.discipline} · Consistency ${scorePreview.subscores.consistency}`}
+              />
+              <Stack spacing={1}>
+                {scorePreview.breakdown.map((item) => (
+                  <Stack
+                    key={`${item.key}-${item.label}`}
+                    direction="row"
+                    justifyContent="space-between"
+                    spacing={2}
+                  >
                     <Typography variant="body2" color="text.secondary">
-                      {item.explanation}
+                      {item.label}
+                    </Typography>
+                    <Typography variant="body2" color="primary.light">
+                      {item.earned}/{item.projected}/{item.max}
                     </Typography>
                   </Stack>
+                ))}
+                <Typography variant="caption" color="text.secondary">
+                  earned / projected / max
+                </Typography>
+              </Stack>
+              {scorePreview.constraints.map((constraint) => (
+                <Typography key={constraint} variant="body2" color="warning.main">
+                  Constraint: {constraint}
+                </Typography>
+              ))}
+            </Stack>
+          </SurfaceCard>
+
+          {operationalSignals.length > 0 ? (
+            <SurfaceCard
+              eyebrow="Operational Alerts"
+              title="What deserves protection right now"
+              description="Signals that should bend the day, not just report it."
+            >
+              <Stack spacing={1.25}>
+                {operationalSignals.map((signal) => (
+                  <OperationalSignalCard
+                    key={signal.id}
+                    title={signal.title}
+                    detail={signal.detail}
+                    tone={signal.tone}
+                    badge={signal.badge}
+                  />
                 ))}
               </Stack>
             </SurfaceCard>
@@ -297,8 +340,9 @@ export function TodayPage() {
         <Stack
           spacing={2.5}
           sx={{
-            order: { xs: 1, lg: 1, xl: 2 },
-            gridColumn: { lg: 1, xl: 2 },
+            order: { xs: 1, lg: 'unset' },
+            gridColumn: { xs: 1, lg: 1 },
+            gridRow: { xs: 'auto', lg: 1 },
           }}
         >
           <SurfaceCard
@@ -443,7 +487,7 @@ export function TodayPage() {
           <SurfaceCard
             eyebrow="Execution Timeline"
             title="Agenda"
-            description={`This stack stays chronological and dense so the day reads like an operational timeline instead of a wall of separate cards.`}
+            description="Read the day as an operational timeline instead of a wall of disconnected cards."
           >
             <Stack spacing={1.5}>
               {dayInstance.blocks.map((block) => {
@@ -623,82 +667,24 @@ export function TodayPage() {
             </Stack>
           </SurfaceCard>
         </Stack>
-
-        <Stack
-          spacing={2.5}
+        <Box
           sx={{
-            order: { xs: 2, lg: 3, xl: 3 },
-            gridColumn: { lg: 2, xl: 3 },
+            display: 'grid',
+            gap: 2.5,
+            alignItems: 'start',
+            order: { xs: 3, lg: 'unset' },
+            gridColumn: '1 / -1',
+            gridRow: { xs: 'auto', lg: 2 },
+            gridTemplateColumns: {
+              xs: '1fr',
+              md: 'repeat(2, minmax(0, 1fr))',
+            },
           }}
         >
           <SurfaceCard
-            eyebrow="Pressure Stack"
-            title="Projected score and readiness pressure"
-            description="This column exists to keep pressure honest without distracting from the live execution surface."
-          >
-            <Stack spacing={1.5}>
-              <CompactMetric
-                label="War State"
-                value={scorePreview.label}
-                detail={`${topPriorities.length} live priority blocks remain in the current queue`}
-              />
-              <CompactMetric
-                label="Subscores"
-                value={`Prep ${scorePreview.subscores.interviewPrep} · Physical ${scorePreview.subscores.physical}`}
-                detail={`Discipline ${scorePreview.subscores.discipline} · Consistency ${scorePreview.subscores.consistency}`}
-              />
-              <Stack spacing={1}>
-                {scorePreview.breakdown.map((item) => (
-                  <Stack
-                    key={`${item.key}-${item.label}`}
-                    direction="row"
-                    justifyContent="space-between"
-                    spacing={2}
-                  >
-                    <Typography variant="body2" color="text.secondary">
-                      {item.label}
-                    </Typography>
-                    <Typography variant="body2" color="primary.light">
-                      {item.earned}/{item.projected}/{item.max}
-                    </Typography>
-                  </Stack>
-                ))}
-                <Typography variant="caption" color="text.secondary">
-                  earned / projected / max
-                </Typography>
-              </Stack>
-              {scorePreview.constraints.map((constraint) => (
-                <Typography key={constraint} variant="body2" color="warning.main">
-                  Constraint: {constraint}
-                </Typography>
-              ))}
-            </Stack>
-          </SurfaceCard>
-
-          {operationalSignals.length > 0 ? (
-            <SurfaceCard
-              eyebrow="Operational Alerts"
-              title="What deserves protection right now"
-              description="These signals should bend the day, not merely report what already happened."
-            >
-              <Stack spacing={1.25}>
-                {operationalSignals.map((signal) => (
-                  <OperationalSignalCard
-                    key={signal.id}
-                    title={signal.title}
-                    detail={signal.detail}
-                    tone={signal.tone}
-                    badge={signal.badge}
-                  />
-                ))}
-              </Stack>
-            </SurfaceCard>
-          ) : null}
-
-          <SurfaceCard
             eyebrow="Calendar Pressure"
             title="External commitments that constrain today"
-            description="Forge reads your primary Google Calendar into the execution model to protect routine integrity, not replace it."
+            description="Calendar pressure stays visible as a constraint, not a replacement for the routine."
             action={
               <Chip
                 icon={<CalendarMonthRoundedIcon />}
@@ -711,7 +697,7 @@ export function TodayPage() {
           >
             <Stack spacing={1}>
               <Typography variant="body2" color="text.secondary">
-                Cached events today: {calendarEvents.length}. Mirrored major blocks today: {calendarMirrors.length}.
+                Cached events today: {calendarEvents.length}. Mirrored major blocks: {calendarMirrors.length}.
               </Typography>
               <Typography variant="body2" color="text.secondary">
                 Last external sync: {formatCalendarTimestamp(calendarSyncState.lastExternalSyncAt)}.
@@ -727,7 +713,7 @@ export function TodayPage() {
                 ))
               ) : (
                 <Typography variant="body2" color="text.secondary">
-                  No external calendar collisions are currently constraining the timed blocks in today&apos;s plan.
+                  No external calendar collisions are constraining today&apos;s timed blocks.
                 </Typography>
               )}
               {calendarSyncState.lastMirrorSyncError ? (
@@ -741,7 +727,7 @@ export function TodayPage() {
           <SurfaceCard
             eyebrow="Support Layer"
             title="Readiness and expectation summary"
-            description="This keeps the physiological and expectation context visible without letting it take over the page."
+            description="Keep the physiological and expectation context visible without letting it dominate the page."
           >
             <Stack spacing={1.25}>
               <SupportDataRow label="Sleep Signal" value={sleepLabel(sleepStatus)} detail="Current logged sleep posture" />
@@ -757,7 +743,30 @@ export function TodayPage() {
               ))}
             </Stack>
           </SurfaceCard>
-        </Stack>
+
+          {recommendationHistory.length > 0 ? (
+            <Box sx={{ gridColumn: { xs: '1', md: '1 / span 2' } }}>
+              <SurfaceCard
+                eyebrow="Recommendation History"
+                title="Recent explanation shifts"
+                description="A compact memory of how the recommendation layer adapted through the day."
+              >
+                <Stack spacing={1.25}>
+                  {recommendationHistory.map((item) => (
+                    <Stack key={`${item.timestamp}-${item.actionLabel}`} spacing={0.35}>
+                      <Typography variant="subtitle2" color="primary.light">
+                        {item.timestamp} · {item.actionLabel}
+                      </Typography>
+                      <Typography variant="body2" color="text.secondary">
+                        {item.explanation}
+                      </Typography>
+                    </Stack>
+                  ))}
+                </Stack>
+              </SurfaceCard>
+            </Box>
+          ) : null}
+        </Box>
       </Box>
     </Stack>
   )
