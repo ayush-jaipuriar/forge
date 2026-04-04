@@ -22,7 +22,7 @@ export function MetricTile({ eyebrow, value, detail, tone = 'neutral' }: MetricT
     <Stack
       spacing={1}
       sx={{
-        minHeight: 144,
+        minHeight: { xs: 132, md: 144 },
         border: '1px solid',
         borderColor: 'divider',
         borderRadius: 4,

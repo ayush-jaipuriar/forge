@@ -26,6 +26,7 @@ ui-debug.log*
 
 # Local UI automation artifacts
 output/playwright/
+.playwright-cli/
 
 # Future Functions / local backend env files
 functions/.env
