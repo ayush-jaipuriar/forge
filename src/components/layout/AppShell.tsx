@@ -45,7 +45,7 @@ export function AppShell() {
         sx={{
           minHeight: '100vh',
           display: { xs: 'block', md: 'grid' },
-          gridTemplateColumns: { md: '104px minmax(0, 1fr)' },
+          gridTemplateColumns: { md: '88px minmax(0, 1fr)' },
         }}
       >
         <Box
@@ -56,12 +56,12 @@ export function AppShell() {
             height: '100vh',
             display: { xs: 'none', md: 'flex' },
             flexDirection: 'column',
-            gap: 3,
+            gap: 2.5,
             borderRight: '1px solid',
             borderColor: 'divider',
             backgroundColor: alpha(forgeTokens.palette.background.nav, 0.92),
             backdropFilter: 'blur(18px)',
-            px: 1.25,
+            px: 1,
             py: 2,
           }}
         >
@@ -69,16 +69,9 @@ export function AppShell() {
             <Typography
               variant="overline"
               color="primary.light"
-              sx={{ fontSize: '0.6rem', letterSpacing: '0.18em', whiteSpace: 'nowrap' }}
+              sx={{ fontSize: '0.82rem', letterSpacing: '0.08em', whiteSpace: 'nowrap' }}
             >
-              FG
-            </Typography>
-            <Typography
-              variant="body2"
-              color="text.secondary"
-              sx={{ fontSize: '0.68rem', textAlign: 'center', maxWidth: 72 }}
-            >
-              Execution OS
+              F
             </Typography>
           </Stack>
 
@@ -96,11 +89,10 @@ export function AppShell() {
                   sx={{
                     position: 'relative',
                     display: 'flex',
-                    flexDirection: 'column',
                     alignItems: 'center',
-                    gap: 0.5,
+                    justifyContent: 'center',
                     px: 1,
-                    py: 1.25,
+                    py: 1.2,
                     borderRadius: 3,
                     color: isActive ? 'text.primary' : 'text.secondary',
                     textDecoration: 'none',
@@ -128,17 +120,6 @@ export function AppShell() {
                   }}
                 >
                   <Icon fontSize="small" />
-                  <Typography
-                    sx={{
-                      fontFamily: '"Plus Jakarta Sans", "Inter", "Segoe UI", sans-serif',
-                      fontSize: '0.66rem',
-                      fontWeight: isActive ? 700 : 600,
-                      lineHeight: 1.1,
-                      textAlign: 'center',
-                    }}
-                  >
-                    {getCompactNavigationLabel(label)}
-                  </Typography>
                 </Box>
               )
             })}
@@ -147,8 +128,8 @@ export function AppShell() {
           <Stack spacing={1} alignItems="center">
             <Avatar
               sx={{
-                width: 40,
-                height: 40,
+                width: 36,
+                height: 36,
                 bgcolor: alpha(forgeTokens.palette.accent.ember, 0.2),
                 color: 'primary.light',
                 border: '1px solid',
@@ -159,18 +140,6 @@ export function AppShell() {
             >
               {getUserInitials(user?.displayName ?? user?.email ?? 'Forge')}
             </Avatar>
-            <Typography
-              color="text.secondary"
-              sx={{
-                fontSize: '0.64rem',
-                lineHeight: 1.25,
-                textAlign: 'center',
-                px: 0.5,
-                maxWidth: 72,
-              }}
-            >
-              {user?.displayName ?? 'Authenticated'}
-            </Typography>
           </Stack>
         </Box>
 
@@ -203,7 +172,7 @@ export function AppShell() {
                     <MenuRoundedIcon />
                   </IconButton>
 
-                  <Stack spacing={0.35} sx={{ minWidth: 0 }}>
+                  <Stack spacing={0.25} sx={{ minWidth: 0 }}>
                     <Typography variant="overline" color="primary.light">
                       Personal Execution OS
                     </Typography>
@@ -220,7 +189,7 @@ export function AppShell() {
                         color="text.secondary"
                         sx={{
                           fontFamily: '"JetBrains Mono", "SFMono-Regular", monospace',
-                          fontSize: '0.72rem',
+                          fontSize: '0.68rem',
                           letterSpacing: '0.04em',
                           textTransform: 'uppercase',
                           whiteSpace: { xs: 'normal', sm: 'nowrap' },
@@ -233,15 +202,6 @@ export function AppShell() {
                 </Stack>
 
                 <Stack direction="row" spacing={1} alignItems="center" sx={{ minWidth: 0 }}>
-                  <Box sx={{ display: { xs: 'none', lg: 'block' } }}>
-                    <StatusBadge
-                      label={warState === 'onTrack' ? 'On Track' : titleFromToken(warState)}
-                      tone={warState}
-                    />
-                  </Box>
-                  <Box sx={{ display: { xs: 'none', md: 'block' } }}>
-                    <StatusBadge label={titleFromToken(dayMode)} tone={dayMode} />
-                  </Box>
                   <Box sx={{ display: { xs: 'none', sm: 'block' } }}>
                     <SyncIndicator status={syncStatus} />
                   </Box>
@@ -262,6 +222,28 @@ export function AppShell() {
           <Box component="main" sx={{ px: { xs: 2, md: 3 }, py: { xs: 2, md: 3 }, pb: { xs: 12, md: 4 } }}>
             <Container maxWidth={false} sx={{ px: 0, maxWidth: 1480 }}>
               <Stack spacing={3}>
+                <Stack
+                  direction={{ xs: 'column', sm: 'row' }}
+                  spacing={1}
+                  justifyContent="space-between"
+                  alignItems={{ xs: 'flex-start', sm: 'center' }}
+                >
+                  <Stack direction="row" spacing={1} useFlexGap flexWrap="wrap">
+                    <StatusBadge
+                      label={warState === 'onTrack' ? 'On Track' : titleFromToken(warState)}
+                      tone={warState}
+                    />
+                    <StatusBadge label={titleFromToken(dayMode)} tone={dayMode} />
+                  </Stack>
+                  <Typography
+                    variant="caption"
+                    color="text.secondary"
+                    sx={{ display: { xs: 'none', md: 'block' } }}
+                  >
+                    {user?.displayName ?? user?.email ?? 'Authenticated Operator'}
+                  </Typography>
+                </Stack>
+
                 {showPwaSurface ? (
                   <PwaStatusCard
                     isOnline={isOnline}
@@ -382,18 +364,20 @@ export function AppShell() {
                   color: isActive ? 'text.primary' : 'text.secondary',
                 }}
               >
-                <Stack spacing={0.45} alignItems="center">
+                <Stack spacing={0.35} alignItems="center">
                   <Icon fontSize="small" />
-                  <Typography
-                    sx={{
-                      fontFamily: '"Plus Jakarta Sans", "Inter", "Segoe UI", sans-serif',
-                      fontSize: '0.62rem',
-                      fontWeight: 700,
-                      lineHeight: 1,
-                    }}
-                  >
-                    {getCompactNavigationLabel(label)}
-                  </Typography>
+                  {isActive ? (
+                    <Typography
+                      sx={{
+                        fontFamily: '"Plus Jakarta Sans", "Inter", "Segoe UI", sans-serif',
+                        fontSize: '0.6rem',
+                        fontWeight: 700,
+                        lineHeight: 1,
+                      }}
+                    >
+                      {getCompactNavigationLabel(label)}
+                    </Typography>
+                  ) : null}
                 </Stack>
               </Box>
             )

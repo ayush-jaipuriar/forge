@@ -2,9 +2,11 @@ import DashboardRoundedIcon from '@mui/icons-material/DashboardRounded'
 import FlagRoundedIcon from '@mui/icons-material/FlagRounded'
 import PsychologyAltRoundedIcon from '@mui/icons-material/PsychologyAltRounded'
 import TrackChangesRoundedIcon from '@mui/icons-material/TrackChangesRounded'
-import { useMemo, useState } from 'react'
-import { Box, Button, Chip, CircularProgress, Grid, Stack, Typography } from '@mui/material'
 import ErrorOutlineRoundedIcon from '@mui/icons-material/ErrorOutlineRounded'
+import { useMemo, useState } from 'react'
+import { alpha } from '@mui/material/styles'
+import { Box, Button, Chip, CircularProgress, Stack, Typography } from '@mui/material'
+import { forgeTokens } from '@/app/theme/tokens'
 import { SectionHeader } from '@/components/common/SectionHeader'
 import { SurfaceCard } from '@/components/common/SurfaceCard'
 import { analyticsRollingWindowKeys, type AnalyticsRollingWindowKey } from '@/domain/analytics/types'
@@ -44,6 +46,7 @@ export function CommandCenterPage() {
 
     return { label: 'Pattern window ready', color: 'success' as const }
   }, [data])
+
   const sleepComparisonReady = hasMeaningfulSleepPerformanceComparison(data?.sleepPerformanceCorrelation ?? [])
 
   if (isError) {
@@ -91,25 +94,80 @@ export function CommandCenterPage() {
       <SurfaceCard
         contentSx={{
           background:
-            'radial-gradient(circle at top right, rgba(77, 96, 122, 0.22), transparent 32%), linear-gradient(180deg, rgba(18, 24, 36, 0.98) 0%, rgba(9, 11, 18, 1) 100%)',
+            'radial-gradient(circle at top right, rgba(212, 111, 60, 0.12), transparent 30%), linear-gradient(180deg, rgba(21, 27, 38, 0.98) 0%, rgba(11, 14, 21, 1) 100%)',
         }}
       >
-        <SectionHeader
-          eyebrow="Analytics Cockpit"
-          title="Command Center"
-          description="See the pattern, not just the day. This surface is desktop-heavy by design so trends, projections, warnings, and pressure signals can sit together without collapsing into a toy dashboard."
-          action={
-            <Stack direction={{ xs: 'column', sm: 'row' }} spacing={1} alignItems={{ xs: 'flex-start', sm: 'center' }}>
-              {primaryStatusChip ? <Chip label={primaryStatusChip.label} color={primaryStatusChip.color} size="small" /> : null}
-              {isStale ? <Chip label="Snapshot stale" size="small" color="warning" /> : null}
-              <Chip label={`Source ${data.sourceLabel}`} size="small" />
+        <Stack spacing={2.5}>
+          <SectionHeader
+            eyebrow="Command Center"
+            title="Command Center"
+            description="See the pattern, not just the day. This surface is where warnings, projections, trend shifts, and continuity signals become usable strategic judgment instead of disconnected charts."
+            action={
+              <Stack direction={{ xs: 'column', sm: 'row' }} spacing={1} alignItems={{ xs: 'flex-start', sm: 'center' }}>
+                {primaryStatusChip ? <Chip label={primaryStatusChip.label} color={primaryStatusChip.color} size="small" /> : null}
+                {isStale ? <Chip label="Snapshot stale" size="small" color="warning" /> : null}
+                <Chip label={data.sourceLabel} size="small" />
+              </Stack>
+            }
+          />
+
+          <Box
+            sx={{
+              display: 'grid',
+              gap: 2,
+              gridTemplateColumns: { xs: '1fr', lg: 'minmax(0, 1.3fr) 320px' },
+            }}
+          >
+            <Stack spacing={1.25}>
+              <Typography variant="overline" color="primary.light">
+                Strategic Summary
+              </Typography>
+              <Typography
+                variant="h1"
+                sx={{
+                  fontSize: { xs: '2.25rem', md: '3rem' },
+                  maxWidth: 820,
+                }}
+              >
+                {data.coachSummary.title}
+              </Typography>
+              <Typography variant="body1" color="text.secondary" sx={{ maxWidth: 820 }}>
+                {data.coachSummary.summary}
+              </Typography>
             </Stack>
-          }
-        />
+
+            <Stack
+              spacing={1.25}
+              sx={{
+                border: '1px solid',
+                borderColor: 'divider',
+                borderRadius: 4,
+                p: 2,
+                backgroundColor: alpha(forgeTokens.palette.background.elevated, 0.36),
+              }}
+            >
+              <CompactInsight label="Window" value={windowKey.toUpperCase()} detail={data.sourceLabel} />
+              <CompactInsight
+                label="Momentum"
+                value={`${data.momentum.score}/100`}
+                detail={data.momentum.label}
+              />
+              <CompactInsight
+                label="Projection"
+                value={data.projection.statusLabel}
+                detail={data.projection.summary}
+              />
+            </Stack>
+          </Box>
+        </Stack>
       </SurfaceCard>
 
-      <Stack direction={{ xs: 'column', lg: 'row' }} spacing={2} alignItems={{ xs: 'stretch', lg: 'center' }}>
-        <Stack direction="row" spacing={1} useFlexGap flexWrap="wrap">
+      <SurfaceCard
+        eyebrow="Observation Window"
+        title="Choose the analysis frame."
+        description="Rolling windows matter because pattern detection is only as honest as the observation frame it is using."
+      >
+        <Stack direction={{ xs: 'column', md: 'row' }} spacing={1} useFlexGap flexWrap="wrap" alignItems={{ xs: 'stretch', md: 'center' }}>
           {analyticsRollingWindowKeys.map((key) => (
             <Button
               key={key}
@@ -121,69 +179,88 @@ export function CommandCenterPage() {
             </Button>
           ))}
         </Stack>
-        <Typography variant="body2" color="text.secondary">
-          Rolling windows matter because pattern detection is only as honest as the observation frame it is using.
-        </Typography>
-      </Stack>
+      </SurfaceCard>
 
-      <Grid container spacing={2}>
+      <Box
+        sx={{
+          display: 'grid',
+          gap: 2,
+          gridTemplateColumns: { xs: '1fr', sm: 'repeat(2, minmax(0, 1fr))', xl: 'repeat(4, minmax(0, 1fr))' },
+        }}
+      >
         {data.metrics.map((metric) => (
-          <Grid key={metric.id} size={{ xs: 12, sm: 6, xl: 3 }}>
-            <AnalyticsMetricTile
-              eyebrow={metric.eyebrow}
-              value={metric.value}
-              detail={metric.detail}
-              tone={metric.tone === 'success' ? 'success' : metric.tone === 'warning' ? 'gold' : 'steel'}
-            />
-          </Grid>
+          <AnalyticsMetricTile
+            key={metric.id}
+            eyebrow={metric.eyebrow}
+            value={metric.value}
+            detail={metric.detail}
+            tone={metric.tone === 'success' ? 'success' : metric.tone === 'warning' ? 'gold' : 'steel'}
+          />
         ))}
-      </Grid>
+      </Box>
 
-      <Grid container spacing={2.5}>
-        <Grid size={{ xs: 12, xl: 8 }}>
-          <Stack spacing={2.5}>
-            <Grid container spacing={2.5}>
-              <Grid size={{ xs: 12, lg: 7 }}>
+      <Box
+        sx={{
+          display: 'grid',
+          gap: 2.5,
+          gridTemplateColumns: { xs: '1fr', xl: 'minmax(0, 1fr) 360px' },
+          alignItems: 'start',
+        }}
+      >
+        <Stack spacing={2.5} sx={{ order: { xs: 2, xl: 1 } }}>
+          <SurfaceCard
+            eyebrow="Primary Diagnostics"
+            title="The main pace and output questions"
+            description="These charts carry the most strategic weight because they tell you whether readiness, score quality, and output are actually moving together."
+          >
+            <Stack spacing={2}>
+              <Box
+                sx={{
+                  display: 'grid',
+                  gap: 2,
+                  gridTemplateColumns: { xs: '1fr', lg: 'minmax(0, 1.15fr) minmax(280px, 0.85fr)' },
+                }}
+              >
                 <ChartCard
                   eyebrow="Projection"
                   title="Projected readiness curve"
-                  description="This is the lead chart in the Command Center because pace toward the target date is the main strategic question."
+                  description="Pace toward the target date stays first because it is the main strategic question."
                   tone="gold"
                   state={data.readinessCurve.length === 0 ? 'insufficientData' : isStale ? 'stale' : 'ready'}
                 >
                   <CurveChart data={data.readinessCurve} tone="gold" />
                 </ChartCard>
-              </Grid>
-              <Grid size={{ xs: 12, lg: 5 }}>
                 <ChartCard
                   eyebrow="Trend"
                   title="Daily score rhythm"
-                  description="Projected score bars with earned-score markers, so drift and recoverability stay visible at the same time."
+                  description="Projected score bars with earned-score markers keep drift and recoverability visible together."
                   tone="gold"
                   state={data.scoreTrend.length === 0 ? 'insufficientData' : isStale ? 'stale' : 'ready'}
                 >
                   <MiniTrendChart data={data.scoreTrend} tone="gold" secondaryLabel="earned score" />
                 </ChartCard>
-              </Grid>
-            </Grid>
+              </Box>
 
-            <Grid container spacing={2.5}>
-              <Grid size={{ xs: 12, lg: 5 }}>
+              <Box
+                sx={{
+                  display: 'grid',
+                  gap: 2,
+                  gridTemplateColumns: { xs: '1fr', lg: 'minmax(280px, 0.85fr) minmax(0, 1.15fr)' },
+                }}
+              >
                 <ChartCard
                   eyebrow="Trend"
                   title="Deep work throughput"
-                  description="Daily deep-block completions with prep-hour markers to show where interview output is actually landing."
+                  description="Daily deep-block completions with prep-hour markers show where interview output is actually landing."
                   tone="ember"
                   state={data.deepWorkTrend.length === 0 ? 'insufficientData' : isStale ? 'stale' : 'ready'}
                 >
                   <MiniTrendChart data={data.deepWorkTrend} tone="ember" secondaryLabel="prep hours" />
                 </ChartCard>
-              </Grid>
-              <Grid size={{ xs: 12, lg: 7 }}>
                 <ChartCard
                   eyebrow="Prep"
                   title="Prep hours by topic"
-                  description="Cumulative tracked topic hours from the current prep-progress model. This is honest about being topic-state-driven rather than fully event-timestamped history."
+                  description="Tracked topic hours stay visible, but still honestly framed as topic-state-driven history."
                   tone="ember"
                   state={data.prepTopicHours.length === 0 ? 'insufficientData' : isStale ? 'stale' : 'ready'}
                 >
@@ -199,52 +276,57 @@ export function CommandCenterPage() {
                     valueLabel="hours"
                   />
                 </ChartCard>
-              </Grid>
-            </Grid>
+              </Box>
+            </Stack>
+          </SurfaceCard>
 
-            <Grid container spacing={2.5}>
-              <Grid size={{ xs: 12, lg: 6 }}>
+          <SurfaceCard
+            eyebrow="Support Analytics"
+            title="Comparisons, context, and recovery balance"
+            description="These panels support interpretation. They matter, but they should sit below the primary pace and output charts."
+          >
+            <Stack spacing={2}>
+              <Box
+                sx={{
+                  display: 'grid',
+                  gap: 2,
+                  gridTemplateColumns: { xs: '1fr', lg: 'repeat(2, minmax(0, 1fr))' },
+                }}
+              >
                 <ChartCard
                   eyebrow="Sleep"
                   title="Sleep vs performance"
-                  description="Average prep and projected score grouped by logged sleep outcomes. This only becomes a true comparison once both met and missed sleep buckets exist."
-                  tone="steel"
+                  description="This only becomes a true comparison once both sleep-met and sleep-missed buckets exist."
+                  tone="gold"
                   state={sleepComparisonReady ? (isStale ? 'stale' : 'ready') : 'insufficientData'}
                   emptyTitle="Need both sleep-met and sleep-missed days"
-                  emptyDescription="Logged sleep data is still too one-sided to support a meaningful comparison. Unknown sleep entries can add context, but they should not stand in for a real comparison bucket."
+                  emptyDescription="Logged sleep data is still too one-sided to support a meaningful comparison."
                 >
                   <ComparisonBars
                     data={data.sleepPerformanceCorrelation}
-                    tone="steel"
+                    tone="gold"
                     primaryLabel="prep"
                     secondaryLabel="score"
                   />
                 </ChartCard>
-              </Grid>
-              <Grid size={{ xs: 12, lg: 6 }}>
                 <ChartCard
                   eyebrow="Context"
                   title="WFO vs WFH comparison"
-                  description="This view compares execution quality across the two canonical workday shapes where Phase 1 data is actually structured enough to support it."
-                  tone="gold"
+                  description="Execution quality across the two canonical workday shapes where the current data is structured enough to compare honestly."
+                  tone="ember"
                   state={data.wfoWfhComparison.length < 2 ? 'insufficientData' : isStale ? 'stale' : 'ready'}
                 >
                   <ComparisonBars
                     data={data.wfoWfhComparison}
-                    tone="gold"
+                    tone="ember"
                     primaryLabel="score"
                     secondaryLabel="deep"
                   />
                 </ChartCard>
-              </Grid>
-            </Grid>
-
-            <Grid container spacing={2.5}>
-              <Grid size={{ xs: 12, lg: 6 }}>
                 <ChartCard
                   eyebrow="Pressure"
                   title="Time-window execution reliability"
-                  description="This is currently a completion-stability view by time band. It highlights where blocks are most likely to land or drift without claiming deeper cognitive-performance scoring yet."
+                  description="This shows where blocks are most likely to land or drift without claiming deeper cognitive-performance scoring yet."
                   tone="critical"
                   state={data.timeWindowPerformance.length === 0 ? 'insufficientData' : isStale ? 'stale' : 'ready'}
                 >
@@ -255,30 +337,21 @@ export function CommandCenterPage() {
                     secondaryLabel="% skipped"
                   />
                 </ChartCard>
-              </Grid>
-              <Grid size={{ xs: 12, lg: 6 }}>
                 <ChartCard
                   eyebrow="Balance"
                   title="Prep domain attention"
-                  description="Approx prep hours allocated across focused domains inside this rolling window. This stays window-aware without pretending historical per-topic logging is deeper than it is."
+                  description="Approx prep hours allocated across focused domains inside the current rolling window."
                   tone="steel"
                   state={data.prepDomainBalance.length === 0 ? 'insufficientData' : isStale ? 'stale' : 'ready'}
                 >
                   <DistributionBars data={data.prepDomainBalance} tone="steel" valueLabel="hours" />
                 </ChartCard>
-              </Grid>
-            </Grid>
-
-            <Grid container spacing={2.5}>
-              <Grid size={{ xs: 12, lg: 6 }}>
                 <ChartCard
                   eyebrow="Recovery"
                   title="Gym vs productivity"
-                  description="Workout-complete days versus workout-expected days that drifted. This is correlation framing, not causal proof."
+                  description="Workout-complete days versus workout-expected days that drifted. Correlation framing, not causal proof."
                   tone="success"
-                  state={
-                    data.workoutProductivityCorrelation.length < 2 ? 'insufficientData' : isStale ? 'stale' : 'ready'
-                  }
+                  state={data.workoutProductivityCorrelation.length < 2 ? 'insufficientData' : isStale ? 'stale' : 'ready'}
                 >
                   <ComparisonBars
                     data={data.workoutProductivityCorrelation}
@@ -287,8 +360,6 @@ export function CommandCenterPage() {
                     secondaryLabel="score"
                   />
                 </ChartCard>
-              </Grid>
-              <Grid size={{ xs: 12, lg: 6 }}>
                 <ChartCard
                   eyebrow="Density"
                   title="Daily completion heatmap"
@@ -304,15 +375,27 @@ export function CommandCenterPage() {
                 >
                   <HeatmapCalendar cells={data.completionHeatmap} tone="ember" />
                 </ChartCard>
-              </Grid>
-            </Grid>
+              </Box>
+            </Stack>
+          </SurfaceCard>
 
-            <Grid container spacing={2.5}>
-              <Grid size={{ xs: 12, lg: 6 }}>
+          <SurfaceCard
+            eyebrow="Continuity & Missions"
+            title="What momentum is really built on"
+            description="These surfaces explain whether consistency is compounding and whether the current missions are tied to real deficits instead of vanity goals."
+          >
+            <Stack spacing={2}>
+              <Box
+                sx={{
+                  display: 'grid',
+                  gap: 2,
+                  gridTemplateColumns: { xs: '1fr', lg: 'minmax(0, 1fr) minmax(320px, 0.95fr)' },
+                }}
+              >
                 <ChartCard
                   eyebrow="Streak"
                   title="Execution streak calendar"
-                  description="The streak surface now uses the formal Milestone 7 discipline rules, so the calendar, streak counts, and break reasons all come from one shared derived engine."
+                  description="The calendar, streak counts, and break reasons now come from the formal shared discipline rules."
                   tone="gold"
                   state={
                     data.streakCalendar.cells.every((cell) => cell.status === 'none')
@@ -334,12 +417,11 @@ export function CommandCenterPage() {
                     </Typography>
                   </Stack>
                 </ChartCard>
-              </Grid>
-              <Grid size={{ xs: 12, lg: 6 }}>
+
                 <ChartCard
                   eyebrow="Missions"
                   title="Weekly pressure missions"
-                  description="These missions are selected from deficits, not vanity goals. They exist to focus the week on the behaviors most likely to change readiness and pace."
+                  description="These missions are selected from deficits, not vanity goals."
                   tone="critical"
                   state={data.missions.length === 0 ? 'insufficientData' : isStale ? 'stale' : 'ready'}
                   emptyTitle="Need more pressure signals before missions lock in"
@@ -351,96 +433,101 @@ export function CommandCenterPage() {
                     ))}
                   </Stack>
                 </ChartCard>
-              </Grid>
-            </Grid>
-          </Stack>
-        </Grid>
+              </Box>
+            </Stack>
+          </SurfaceCard>
+        </Stack>
 
-        <Grid size={{ xs: 12, xl: 4 }}>
-          <Stack spacing={2.5}>
-            <MomentumPanel momentum={data.momentum} posture={data.operatingTier} />
+        <Stack spacing={2.5} sx={{ order: { xs: 1, xl: 2 } }}>
+          <MomentumPanel momentum={data.momentum} posture={data.operatingTier} />
 
-            <SurfaceCard
-              eyebrow="Coach Summary"
-              title={data.coachSummary.title}
-              description={data.coachSummary.summary}
-              action={
-                <Chip
-                  label={data.coachSummary.severity === 'critical' ? 'Critical' : data.coachSummary.severity === 'warning' ? 'Warning' : 'Stable Read'}
-                  size="small"
-                  color={data.coachSummary.severity === 'critical' ? 'error' : data.coachSummary.severity === 'warning' ? 'warning' : 'default'}
+          <ProjectionPanel projection={data.projection} />
+
+          <SurfaceCard
+            eyebrow="Risk Stack"
+            title="What needs intervention now"
+            description="Warnings belong beside projections because an analytics cockpit is only useful if it points back toward action."
+            action={<TrackChangesRoundedIcon color="warning" />}
+          >
+            <Stack spacing={1.5}>
+              {data.warnings.length === 0 ? (
+                <AnalyticsStateNotice
+                  title="No active warning cards"
+                  description="Either the window is still young or the current risk rules are not seeing a clear intervention target."
+                  tone="success"
+                  kind="insufficientData"
                 />
-              }
-            >
-              <Stack spacing={0.5}>
-                <PsychologyAltRoundedIcon color={data.coachSummary.severity === 'critical' ? 'error' : data.coachSummary.severity === 'warning' ? 'warning' : 'primary'} />
-                <Typography variant="body2" color="text.secondary">
-                  This summary is generated from the shared rule engine, so Today and Readiness can consume the same judgment layer in later milestones.
-                </Typography>
-              </Stack>
-            </SurfaceCard>
+              ) : (
+                data.warnings.map((warning) => <WarningCard key={warning.id} warning={warning} />)
+              )}
+            </Stack>
+          </SurfaceCard>
 
-            <ProjectionPanel projection={data.projection} />
+          <SurfaceCard
+            eyebrow="Insight Stack"
+            title="Emerging signals"
+            description="These are the rule-backed pattern reads that explain why the charts and missions are pushing in a specific direction."
+            action={<DashboardRoundedIcon color="primary" />}
+          >
+            <Stack spacing={1.5}>
+              {data.insights.length === 0 ? (
+                <AnalyticsStateNotice
+                  title="Insights need more history"
+                  description="Forge avoids pretending certainty when the observation window is too shallow."
+                  tone="steel"
+                  kind="insufficientData"
+                />
+              ) : (
+                data.insights.map((insight) => <InsightCard key={insight.id} insight={insight} />)
+              )}
+            </Stack>
+          </SurfaceCard>
 
-            <SurfaceCard
-              eyebrow="Risk Stack"
-              title="What needs intervention now"
-              description="Warnings belong beside projections because an analytics cockpit is only useful if it points back toward action."
-              action={<TrackChangesRoundedIcon color="warning" />}
-            >
-              <Stack spacing={1.5}>
-                {data.warnings.length === 0 ? (
-                  <AnalyticsStateNotice
-                    title="No active warning cards"
-                    description="Either the window is still young or the current risk rules are not seeing a clear intervention target."
-                    tone="success"
-                    kind="insufficientData"
-                  />
-                ) : (
-                  data.warnings.map((warning) => <WarningCard key={warning.id} warning={warning} />)
-                )}
-              </Stack>
-            </SurfaceCard>
-
-            <SurfaceCard
-              eyebrow="Insight Stack"
-              title="Emerging signals"
-              description="These are rule-backed pattern reads from the shared analytics engine, meant to explain why the charts and missions are pushing in a specific direction."
-              action={<DashboardRoundedIcon color="primary" />}
-            >
-              <Stack spacing={1.5}>
-                {data.insights.length === 0 ? (
-                  <AnalyticsStateNotice
-                    title="Insights need more history"
-                    description="Forge avoids pretending certainty when the observation window is too shallow."
-                    tone="steel"
-                    kind="insufficientData"
-                  />
-                ) : (
-                  data.insights.map((insight) => <InsightCard key={insight.id} insight={insight} />)
-                )}
-              </Stack>
-            </SurfaceCard>
-
-            <SurfaceCard
-              eyebrow="Mission Posture"
-              title="Why these missions exist"
-              description="Forge should choose weekly pressure work from deficits and leverage points, not from whatever is easiest to complete."
-              action={<FlagRoundedIcon color="warning" />}
-            >
+          <SurfaceCard
+            eyebrow="Mission Posture"
+            title="Why these missions exist"
+            description="Missions should point back to leverage points, not easy completions."
+            action={<FlagRoundedIcon color="warning" />}
+          >
+            <Stack spacing={1}>
+              <PsychologyAltRoundedIcon
+                color={
+                  data.coachSummary.severity === 'critical'
+                    ? 'error'
+                    : data.coachSummary.severity === 'warning'
+                      ? 'warning'
+                      : 'primary'
+                }
+              />
               <Typography variant="body2" color="text.secondary">
                 Missions are weighted toward deep-work continuity, recovery, neglected prep breadth, weekend usefulness, and WFO continuity. Low-friction logging alone cannot inflate this layer.
               </Typography>
-            </SurfaceCard>
-          </Stack>
-        </Grid>
-      </Grid>
-
-      <Box sx={{ display: { xs: 'block', xl: 'none' } }}>
-        <Typography variant="body2" color="text.secondary">
-          Desktop is still the native mode for this surface. Mobile should degrade honestly into stacked panels, not fake a mini dashboard.
-        </Typography>
+            </Stack>
+          </SurfaceCard>
+        </Stack>
       </Box>
+    </Stack>
+  )
+}
+
+function CompactInsight({
+  label,
+  value,
+  detail,
+}: {
+  label: string
+  value: string
+  detail: string
+}) {
+  return (
+    <Stack spacing={0.35}>
+      <Typography variant="caption" color="primary.light">
+        {label}
+      </Typography>
+      <Typography variant="subtitle2">{value}</Typography>
+      <Typography variant="body2" color="text.secondary">
+        {detail}
+      </Typography>
     </Stack>
   )
 }

@@ -67,6 +67,8 @@ npm run preview -- --host 127.0.0.1 --port 4173
 - [Production Deployment And Phone Install Guide](/Users/ayushjaipuriar/Documents/GitHub/forge/docs/production-deployment-and-phone-install-guide.md)
 - [UI Modernization Implementation Plan](/Users/ayushjaipuriar/Documents/GitHub/forge/docs/ui-modernization-implementation-plan.md)
 - [UI Modernization Sprint 1 Plan](/Users/ayushjaipuriar/Documents/GitHub/forge/docs/ui-modernization-sprint-1-plan.md)
+- [UI Modernization Sprint 2 Plan](/Users/ayushjaipuriar/Documents/GitHub/forge/docs/ui-modernization-sprint-2-plan.md)
+- [UI Modernization Sprint 3 Plan](/Users/ayushjaipuriar/Documents/GitHub/forge/docs/ui-modernization-sprint-3-plan.md)
 - [Phase 4 Operational Diagnostics](/Users/ayushjaipuriar/Documents/GitHub/forge/docs/phase-4-operational-diagnostics.md)
 - [Phase 4 Native Shell Workflow](/Users/ayushjaipuriar/Documents/GitHub/forge/docs/phase-4-native-shell-workflow.md)
 - [Architecture Overview](/Users/ayushjaipuriar/Documents/GitHub/forge/docs/architecture-overview.md)
