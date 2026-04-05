@@ -42,4 +42,18 @@ describe('updateDailySignals', () => {
       sleepDurationHours: 8,
     })
   })
+
+  it('keeps guest signal writes local-only when sync is disabled', async () => {
+    const result = await updateDailySignals({
+      date: '2026-03-27',
+      sleepStatus: 'met',
+      energyStatus: 'high',
+      syncMode: 'localOnly',
+    })
+
+    const queueItems = await localSyncQueueRepository.listOutstanding()
+
+    expect(result.pendingCount).toBe(0)
+    expect(queueItems).toHaveLength(0)
+  })
 })

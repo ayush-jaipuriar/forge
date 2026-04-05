@@ -21,4 +21,16 @@ describe('notification preference service', () => {
     expect(queueItems).toHaveLength(1)
     expect(queueItems[0].actionType).toBe('upsertSettings')
   })
+
+  it('keeps guest notification preference changes local-only when sync is disabled', async () => {
+    const result = await updateNotificationPreference({
+      enabled: false,
+      syncMode: 'localOnly',
+    })
+
+    const queueItems = await localSyncQueueRepository.listOutstanding()
+
+    expect(result.pendingCount).toBe(0)
+    expect(queueItems).toHaveLength(0)
+  })
 })

@@ -1,10 +1,14 @@
 import { localSettingsRepository, localSyncQueueRepository } from '@/data/local'
-import { createSyncQueueItem } from '@/services/sync/syncQueue'
+import { persistSyncableChange, type SyncWriteMode } from '@/services/sync/persistSyncableChange'
 
 export async function updateNotificationPreference({
   enabled,
+  userId,
+  syncMode,
 }: {
   enabled: boolean
+  userId?: string
+  syncMode?: SyncWriteMode
 }) {
   const current = await localSettingsRepository.getDefault()
   const settings = current ?? (await localSettingsRepository.getDefault())
@@ -27,10 +31,15 @@ export async function updateNotificationPreference({
   }
 
   await localSettingsRepository.upsert(nextSettings)
-  await localSyncQueueRepository.enqueue(createSyncQueueItem('upsertSettings', nextSettings.id, nextSettings))
 
   return {
     settings: nextSettings,
-    pendingCount: await localSyncQueueRepository.countOutstanding(),
+    ...(await persistSyncableChange({
+      actionType: 'upsertSettings',
+      entityId: nextSettings.id,
+      payload: nextSettings,
+      userId,
+      mode: syncMode,
+    })),
   }
 }

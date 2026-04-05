@@ -24,6 +24,7 @@ export function useUpdateDailySignals() {
         energyStatus,
         sleepDurationHours,
         userId: status === 'authenticated' && user ? user.uid : undefined,
+        syncMode: status === 'guest' ? 'localOnly' : 'cloud',
       }),
     onMutate: async () => {
       const previousState = useUiStore.getState()

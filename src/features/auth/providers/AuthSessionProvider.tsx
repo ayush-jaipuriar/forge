@@ -12,12 +12,16 @@ import {
 import { getFirebaseAuth, getGoogleAuthProvider, getPrimaryGoogleAuthMethod } from '@/lib/firebase/client'
 import { hasFirebaseEnv, missingFirebaseEnvKeys } from '@/lib/firebase/config'
 import { AuthSessionContext } from '@/features/auth/providers/authSessionContext'
+import { bootstrapGuestSession } from '@/features/auth/services/bootstrapGuestSession'
 import { bootstrapUserSession } from '@/features/auth/services/bootstrapUserSession'
 import type { AuthFlowPhase, AuthSessionValue, AuthStatus, SessionUser } from '@/features/auth/types/auth'
 import { clearLocalCalendarSessionArtifacts } from '@/services/calendar/calendarIntegrationService'
 import { reportMonitoringError } from '@/services/monitoring/monitoringService'
+import { resetForgeDb } from '@/data/local/forgeDb'
 
 const GOOGLE_REDIRECT_INTENT_KEY = 'forge-auth-google-redirect'
+const GUEST_SESSION_INTENT_KEY = 'forge-auth-guest-session'
+const WORKSPACE_KIND_KEY = 'forge-local-workspace-kind'
 
 type AuthState = {
   status: AuthStatus
@@ -27,6 +31,15 @@ type AuthState = {
 }
 
 function getInitialState(): AuthState {
+  if (hasPendingGuestSession()) {
+    return {
+      status: 'checking',
+      flowPhase: 'guesting',
+      user: null,
+      errorMessage: null,
+    }
+  }
+
   if (!hasFirebaseEnv) {
     return {
       status: 'missing_config',
@@ -52,20 +65,82 @@ export function AuthSessionProvider({ children }: PropsWithChildren) {
   const [state, setState] = useState<AuthState>(getInitialState)
 
   useEffect(() => {
+    let active = true
+    let unsubscribe = () => {}
+
+    const initializeGuestSession = async () => {
+      setState({
+        status: 'checking',
+        flowPhase: 'guesting',
+        user: null,
+        errorMessage: null,
+      })
+
+      try {
+        await bootstrapGuestSession()
+
+        if (!active) {
+          return
+        }
+
+        markWorkspaceKind('guest')
+        setState({
+          status: 'guest',
+          flowPhase: 'idle',
+          user: getGuestSessionUser(),
+          errorMessage: null,
+        })
+      } catch (error) {
+        reportMonitoringError({
+          domain: 'auth',
+          action: 'bootstrap-guest-session',
+          message: 'Forge could not prepare the guest workspace.',
+          error,
+        })
+
+        clearPendingGuestSession()
+        clearWorkspaceKind()
+
+        if (!active) {
+          return
+        }
+
+        setState({
+          status: hasFirebaseEnv ? 'unauthenticated' : 'missing_config',
+          flowPhase: 'idle',
+          user: null,
+          errorMessage: getReadableAuthError(error),
+        })
+      }
+    }
+
+    if (hasPendingGuestSession()) {
+      void initializeGuestSession()
+
+      return () => {
+        active = false
+        unsubscribe()
+      }
+    }
+
     if (!hasFirebaseEnv) {
-      return
+      return () => {
+        active = false
+        unsubscribe()
+      }
     }
 
     const auth = getFirebaseAuth()
 
     if (!auth) {
-      return
+      return () => {
+        active = false
+        unsubscribe()
+      }
     }
 
-    let active = true
-    let unsubscribe = () => {}
-
     const initializeAuth = async () => {
+
       if (hasPendingGoogleRedirect()) {
         setState((current) => ({
           ...current,
@@ -131,12 +206,18 @@ export function AuthSessionProvider({ children }: PropsWithChildren) {
           }))
 
           try {
+            if (hasGuestWorkspace()) {
+              await resetForgeDb()
+              clearWorkspaceKind()
+            }
+
             await bootstrapUserSession(firebaseUser)
 
             if (!active) {
               return
             }
 
+            markWorkspaceKind('user')
             setState({
               status: 'authenticated',
               flowPhase: 'idle',
@@ -197,6 +278,8 @@ export function AuthSessionProvider({ children }: PropsWithChildren) {
     () => ({
       ...state,
       signInWithGoogle: async () => {
+        clearPendingGuestSession()
+
         if (!hasFirebaseEnv) {
           setState({
             status: 'missing_config',
@@ -257,7 +340,62 @@ export function AuthSessionProvider({ children }: PropsWithChildren) {
           })
         }
       },
+      signInAsGuest: async () => {
+        clearPendingGoogleRedirect()
+        markPendingGuestSession()
+        setState({
+          status: 'checking',
+          flowPhase: 'guesting',
+          user: null,
+          errorMessage: null,
+        })
+
+        try {
+          await bootstrapGuestSession()
+          markWorkspaceKind('guest')
+
+          setState({
+            status: 'guest',
+            flowPhase: 'idle',
+            user: getGuestSessionUser(),
+            errorMessage: null,
+          })
+        } catch (error) {
+          clearPendingGuestSession()
+          clearWorkspaceKind()
+
+          reportMonitoringError({
+            domain: 'auth',
+            action: 'sign-in-as-guest',
+            message: 'Forge could not start the guest workspace.',
+            error,
+          })
+
+          setState({
+            status: hasFirebaseEnv ? 'unauthenticated' : 'missing_config',
+            flowPhase: 'idle',
+            user: null,
+            errorMessage: getReadableAuthError(error),
+          })
+        }
+      },
       signOutUser: async () => {
+        if (state.status === 'guest' || state.user?.isGuest) {
+          clearPendingGoogleRedirect()
+          clearPendingGuestSession()
+          clearWorkspaceKind()
+          await resetForgeDb()
+          setState({
+            status: hasFirebaseEnv ? 'unauthenticated' : 'missing_config',
+            flowPhase: 'idle',
+            user: null,
+            errorMessage: hasFirebaseEnv
+              ? null
+              : `Firebase configuration is incomplete. Missing: ${missingFirebaseEnvKeys.join(', ')}`,
+          })
+          return
+        }
+
         const auth = getFirebaseAuth()
 
         if (!auth) {
@@ -283,6 +421,17 @@ function mapFirebaseUser(user: { uid: string; email: string | null; displayName:
     email: user.email,
     displayName: user.displayName,
     photoURL: user.photoURL,
+    isGuest: false,
+  }
+}
+
+function getGuestSessionUser(): SessionUser {
+  return {
+    uid: 'guest-local',
+    email: null,
+    displayName: 'Guest',
+    photoURL: null,
+    isGuest: true,
   }
 }
 
@@ -316,4 +465,52 @@ function clearPendingGoogleRedirect() {
   }
 
   window.sessionStorage.removeItem(GOOGLE_REDIRECT_INTENT_KEY)
+}
+
+function hasPendingGuestSession() {
+  if (typeof window === 'undefined') {
+    return false
+  }
+
+  return window.sessionStorage.getItem(GUEST_SESSION_INTENT_KEY) === 'active'
+}
+
+function markPendingGuestSession() {
+  if (typeof window === 'undefined') {
+    return
+  }
+
+  window.sessionStorage.setItem(GUEST_SESSION_INTENT_KEY, 'active')
+}
+
+function clearPendingGuestSession() {
+  if (typeof window === 'undefined') {
+    return
+  }
+
+  window.sessionStorage.removeItem(GUEST_SESSION_INTENT_KEY)
+}
+
+function hasGuestWorkspace() {
+  if (typeof window === 'undefined') {
+    return false
+  }
+
+  return window.localStorage.getItem(WORKSPACE_KIND_KEY) === 'guest'
+}
+
+function markWorkspaceKind(kind: 'guest' | 'user') {
+  if (typeof window === 'undefined') {
+    return
+  }
+
+  window.localStorage.setItem(WORKSPACE_KIND_KEY, kind)
+}
+
+function clearWorkspaceKind() {
+  if (typeof window === 'undefined') {
+    return
+  }
+
+  window.localStorage.removeItem(WORKSPACE_KIND_KEY)
 }

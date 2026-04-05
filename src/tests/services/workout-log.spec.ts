@@ -31,4 +31,22 @@ describe('updateWorkoutLog', () => {
     expect(queueItems).toHaveLength(1)
     expect(queueItems[0].actionType).toBe('upsertSettings')
   })
+
+  it('keeps guest workout writes local-only when sync is disabled', async () => {
+    const result = await updateWorkoutLog({
+      date: '2026-03-27',
+      patch: {
+        date: '2026-03-27',
+        workoutType: 'upperB',
+        label: 'Upper B',
+        status: 'done',
+      },
+      syncMode: 'localOnly',
+    })
+
+    const queueItems = await localSyncQueueRepository.listOutstanding()
+
+    expect(result.pendingCount).toBe(0)
+    expect(queueItems).toHaveLength(0)
+  })
 })

@@ -1,7 +1,7 @@
 import type { ReactNode } from 'react'
 import { render, screen, waitFor } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
-import { browserLocalPersistence, getRedirectResult, onAuthStateChanged, setPersistence, signInWithPopup, signInWithRedirect } from 'firebase/auth'
+import { browserLocalPersistence, getRedirectResult, onAuthStateChanged, setPersistence, signInWithPopup, signInWithRedirect, signOut } from 'firebase/auth'
 import { AuthSessionProvider } from '@/features/auth/providers/AuthSessionProvider'
 import { useAuthSession } from '@/features/auth/providers/useAuthSession'
 import type { GoogleAuthMethod } from '@/lib/firebase/client'
@@ -12,8 +12,10 @@ const authModuleMock = vi.hoisted(() => ({
 }))
 
 const bootstrapUserSessionMock = vi.hoisted(() => vi.fn(async () => {}))
+const bootstrapGuestSessionMock = vi.hoisted(() => vi.fn(async () => {}))
 const clearLocalCalendarSessionArtifactsMock = vi.hoisted(() => vi.fn(async () => {}))
 const reportMonitoringErrorMock = vi.hoisted(() => vi.fn())
+const resetForgeDbMock = vi.hoisted(() => vi.fn(async () => {}))
 const getPrimaryGoogleAuthMethodMock = vi.hoisted(() => vi.fn<() => GoogleAuthMethod>(() => 'redirect'))
 
 vi.mock('firebase/auth', () => ({
@@ -41,6 +43,10 @@ vi.mock('@/features/auth/services/bootstrapUserSession', () => ({
   bootstrapUserSession: bootstrapUserSessionMock,
 }))
 
+vi.mock('@/features/auth/services/bootstrapGuestSession', () => ({
+  bootstrapGuestSession: bootstrapGuestSessionMock,
+}))
+
 vi.mock('@/services/calendar/calendarIntegrationService', () => ({
   clearLocalCalendarSessionArtifacts: clearLocalCalendarSessionArtifactsMock,
 }))
@@ -49,16 +55,23 @@ vi.mock('@/services/monitoring/monitoringService', () => ({
   reportMonitoringError: reportMonitoringErrorMock,
 }))
 
+vi.mock('@/data/local/forgeDb', () => ({
+  resetForgeDb: resetForgeDbMock,
+}))
+
 function TestHarness() {
-  const { errorMessage, flowPhase, signInWithGoogle, status, user } = useAuthSession()
+  const { errorMessage, flowPhase, signInAsGuest, signInWithGoogle, signOutUser, status, user } = useAuthSession()
 
   return (
     <div>
       <div>{status}</div>
       <div>{flowPhase}</div>
       <div>{user?.email ?? 'no-user'}</div>
+      <div>{user?.displayName ?? 'no-name'}</div>
       <div>{errorMessage ?? 'no-error'}</div>
       <button onClick={() => void signInWithGoogle()}>sign in</button>
+      <button onClick={() => void signInAsGuest()}>guest in</button>
+      <button onClick={() => void signOutUser()}>sign out</button>
     </div>
   )
 }
@@ -88,10 +101,12 @@ describe('AuthSessionProvider', () => {
   beforeEach(() => {
     vi.clearAllMocks()
     window.sessionStorage.clear()
+    window.localStorage.clear()
     authModuleMock.auth.currentUser = null
     vi.mocked(setPersistence).mockResolvedValue(undefined)
     vi.mocked(signInWithRedirect).mockResolvedValue(undefined as never)
     vi.mocked(signInWithPopup).mockResolvedValue({} as never)
+    vi.mocked(signOut).mockResolvedValue(undefined)
     vi.mocked(getRedirectResult).mockResolvedValue(null)
     getPrimaryGoogleAuthMethodMock.mockReturnValue('redirect')
     vi.mocked(onAuthStateChanged).mockImplementation((_auth, onNext) => {
@@ -123,6 +138,23 @@ describe('AuthSessionProvider', () => {
     expect(signInWithPopup).toHaveBeenCalledWith(authModuleMock.auth, authModuleMock.provider)
     expect(signInWithRedirect).not.toHaveBeenCalled()
     expect(window.sessionStorage.getItem('forge-auth-google-redirect')).toBeNull()
+  })
+
+  it('prepares a local guest workspace and authenticates the guest session without Firebase auth', async () => {
+    const user = userEvent.setup()
+
+    renderProvider()
+
+    await user.click(screen.getByRole('button', { name: /guest in/i }))
+
+    await waitFor(() => {
+      expect(bootstrapGuestSessionMock).toHaveBeenCalled()
+      expect(screen.getByText('guest')).toBeInTheDocument()
+      expect(screen.getByText('Guest')).toBeInTheDocument()
+    })
+
+    expect(window.sessionStorage.getItem('forge-auth-guest-session')).toBe('active')
+    expect(window.localStorage.getItem('forge-local-workspace-kind')).toBe('guest')
   })
 
   it('completes a redirect return and authenticates the restored session', async () => {
@@ -192,5 +224,27 @@ describe('AuthSessionProvider', () => {
 
     expect(reportMonitoringErrorMock).toHaveBeenCalled()
     expect(window.sessionStorage.getItem('forge-auth-google-redirect')).toBeNull()
+  })
+
+  it('resets the local guest workspace when signing out of a guest session', async () => {
+    const user = userEvent.setup()
+
+    renderProvider()
+
+    await user.click(screen.getByRole('button', { name: /guest in/i }))
+
+    await waitFor(() => {
+      expect(screen.getByText('guest')).toBeInTheDocument()
+    })
+
+    await user.click(screen.getByRole('button', { name: /sign out/i }))
+
+    await waitFor(() => {
+      expect(resetForgeDbMock).toHaveBeenCalled()
+      expect(screen.getByText('unauthenticated')).toBeInTheDocument()
+    })
+
+    expect(window.sessionStorage.getItem('forge-auth-guest-session')).toBeNull()
+    expect(window.localStorage.getItem('forge-local-workspace-kind')).toBeNull()
   })
 })

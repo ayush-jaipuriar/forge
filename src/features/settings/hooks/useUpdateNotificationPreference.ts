@@ -1,13 +1,20 @@
 import { useMutation, useQueryClient } from '@tanstack/react-query'
 import { useUiStore } from '@/app/store/uiStore'
+import { useAuthSession } from '@/features/auth/providers/useAuthSession'
 import { updateNotificationPreference } from '@/services/settings/notificationPreferenceService'
 
 export function useUpdateNotificationPreference() {
   const queryClient = useQueryClient()
+  const { status, user } = useAuthSession()
   const setSyncStatus = useUiStore((state) => state.setSyncStatus)
 
   return useMutation({
-    mutationFn: async (enabled: boolean) => updateNotificationPreference({ enabled }),
+    mutationFn: async (enabled: boolean) =>
+      updateNotificationPreference({
+        enabled,
+        userId: status === 'authenticated' && user ? user.uid : undefined,
+        syncMode: status === 'guest' ? 'localOnly' : 'cloud',
+      }),
     onMutate: async () => {
       const previousState = useUiStore.getState()
       setSyncStatus('queued')

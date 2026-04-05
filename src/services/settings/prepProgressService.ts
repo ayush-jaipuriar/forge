@@ -1,12 +1,12 @@
 import type { PrepTopicProgressSnapshot } from '@/domain/prep/types'
 import { localSettingsRepository, localSyncQueueRepository } from '@/data/local'
-import { createSyncQueueItem } from '@/services/sync/syncQueue'
-import { flushSyncQueue } from '@/services/sync/syncOrchestrator'
+import { persistSyncableChange, type SyncWriteMode } from '@/services/sync/persistSyncableChange'
 
 type UpdatePrepTopicProgressInput = {
   topicId: string
   patch: Partial<PrepTopicProgressSnapshot>
   userId?: string
+  syncMode?: SyncWriteMode
 }
 
 type UpdatePrepTopicProgressResult = {
@@ -17,6 +17,7 @@ export async function updatePrepTopicProgress({
   topicId,
   patch,
   userId,
+  syncMode,
 }: UpdatePrepTopicProgressInput): Promise<UpdatePrepTopicProgressResult> {
   const currentSettings = await localSettingsRepository.getDefault()
   const currentProgress = currentSettings.prepTopicProgress[topicId] ?? {
@@ -50,31 +51,11 @@ export async function updatePrepTopicProgress({
   }
 
   await localSettingsRepository.upsert(nextSettings)
-  const outstandingItems = await localSyncQueueRepository.listOutstanding()
-  const supersededSettingsItems = outstandingItems.filter(
-    (item) => item.actionType === 'upsertSettings' && item.entityId === nextSettings.id,
-  )
-
-  await Promise.all(supersededSettingsItems.map((item) => localSyncQueueRepository.remove(item.id)))
-  await localSyncQueueRepository.enqueue(createSyncQueueItem('upsertSettings', nextSettings.id, nextSettings))
-
-  if (userId && isOnline()) {
-    const pendingCount = await flushSyncQueue(userId)
-
-    return {
-      pendingCount,
-    }
-  }
-
-  return {
-    pendingCount: await localSyncQueueRepository.countOutstanding(),
-  }
-}
-
-function isOnline() {
-  if (typeof navigator === 'undefined') {
-    return false
-  }
-
-  return navigator.onLine
+  return persistSyncableChange({
+    actionType: 'upsertSettings',
+    entityId: nextSettings.id,
+    payload: nextSettings,
+    userId,
+    mode: syncMode,
+  })
 }

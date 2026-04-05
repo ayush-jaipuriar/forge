@@ -3,13 +3,13 @@ import { localSettingsRepository, localSyncQueueRepository } from '@/data/local'
 import { forgeRoutine } from '@/data/seeds'
 import { isDayTypeOverrideAllowed, getScheduledDayTypeForDate } from '@/domain/schedule/overrideRules'
 import { markCalendarMirrorsStaleIfEnabled } from '@/services/calendar/calendarIntegrationService'
-import { createSyncQueueItem } from '@/services/sync/syncQueue'
-import { flushSyncQueue } from '@/services/sync/syncOrchestrator'
+import { persistSyncableChange, type SyncWriteMode } from '@/services/sync/persistSyncableChange'
 
 type UpdateDayTypeOverrideInput = {
   date: string
   dayType: DayType
   userId?: string
+  syncMode?: SyncWriteMode
 }
 
 type UpdateDayTypeOverrideResult = {
@@ -20,6 +20,7 @@ export async function updateDayTypeOverride({
   date,
   dayType,
   userId,
+  syncMode,
 }: UpdateDayTypeOverrideInput): Promise<UpdateDayTypeOverrideResult> {
   if (!isDayTypeOverrideAllowed(date, dayType)) {
     throw new Error('That day-type override is outside the V1 schedule guardrails.')
@@ -50,32 +51,12 @@ export async function updateDayTypeOverride({
   }
 
   await localSettingsRepository.upsert(nextSettings)
-  const outstandingItems = await localSyncQueueRepository.listOutstanding()
-  const supersededSettingsItems = outstandingItems.filter(
-    (item) => item.actionType === 'upsertSettings' && item.entityId === nextSettings.id,
-  )
-
-  await Promise.all(supersededSettingsItems.map((item) => localSyncQueueRepository.remove(item.id)))
-  await localSyncQueueRepository.enqueue(createSyncQueueItem('upsertSettings', nextSettings.id, nextSettings))
   await markCalendarMirrorsStaleIfEnabled()
-
-  if (userId && isOnline()) {
-    const pendingCount = await flushSyncQueue(userId)
-
-    return {
-      pendingCount,
-    }
-  }
-
-  return {
-    pendingCount: await localSyncQueueRepository.countOutstanding(),
-  }
-}
-
-function isOnline() {
-  if (typeof navigator === 'undefined') {
-    return false
-  }
-
-  return navigator.onLine
+  return persistSyncableChange({
+    actionType: 'upsertSettings',
+    entityId: nextSettings.id,
+    payload: nextSettings,
+    userId,
+    mode: syncMode,
+  })
 }

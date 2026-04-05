@@ -1,11 +1,12 @@
-export type AuthStatus = 'checking' | 'authenticated' | 'unauthenticated' | 'missing_config' | 'error'
-export type AuthFlowPhase = 'idle' | 'redirecting' | 'returning'
+export type AuthStatus = 'checking' | 'authenticated' | 'guest' | 'unauthenticated' | 'missing_config' | 'error'
+export type AuthFlowPhase = 'idle' | 'redirecting' | 'returning' | 'guesting'
 
 export type SessionUser = {
   uid: string
   email: string | null
   displayName: string | null
   photoURL: string | null
+  isGuest?: boolean
 }
 
 export type AuthSessionValue = {
@@ -14,5 +15,6 @@ export type AuthSessionValue = {
   user: SessionUser | null
   errorMessage: string | null
   signInWithGoogle: () => Promise<void>
+  signInAsGuest: () => Promise<void>
   signOutUser: () => Promise<void>
 }

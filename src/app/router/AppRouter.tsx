@@ -37,10 +37,18 @@ function ProtectedLayout() {
   if (status === 'checking' && !user) {
     return (
       <AuthStatusScreen
-        title={flowPhase === 'returning' ? 'Completing Google sign-in' : 'Verifying your command surface'}
+        title={
+          flowPhase === 'returning'
+            ? 'Completing Google sign-in'
+            : flowPhase === 'guesting'
+              ? 'Preparing guest workspace'
+              : 'Verifying your command surface'
+        }
         description={
           flowPhase === 'returning'
             ? 'Restoring your workspace.'
+            : flowPhase === 'guesting'
+              ? 'Seeding demo data for a local guest session.'
             : 'Checking your session.'
         }
         loading
@@ -48,7 +56,7 @@ function ProtectedLayout() {
     )
   }
 
-  if (status !== 'authenticated') {
+  if (status !== 'authenticated' && status !== 'guest') {
     return <Navigate to="/auth" replace />
   }
 
@@ -61,10 +69,18 @@ function PublicOnlyRoute() {
   if (status === 'checking') {
     return (
       <AuthStatusScreen
-        title={flowPhase === 'redirecting' ? 'Redirecting to Google' : 'Connecting to Forge'}
+        title={
+          flowPhase === 'redirecting'
+            ? 'Redirecting to Google'
+            : flowPhase === 'guesting'
+              ? 'Preparing guest workspace'
+              : 'Connecting to Forge'
+        }
         description={
           flowPhase === 'redirecting'
             ? 'Leaving Forge for sign-in.'
+            : flowPhase === 'guesting'
+              ? 'Building a temporary local demo session.'
             : flowPhase === 'returning'
               ? 'Google returned. Restoring Forge.'
               : 'Checking Firebase Auth.'
@@ -74,7 +90,7 @@ function PublicOnlyRoute() {
     )
   }
 
-  if (status === 'authenticated') {
+  if (status === 'authenticated' || status === 'guest') {
     return <Navigate to="/" replace />
   }
 

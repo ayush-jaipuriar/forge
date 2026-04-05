@@ -26,6 +26,7 @@ cp .env.example .env
 ```
 
 Fill in real Firebase web-app values in `.env` before expecting auth or Firestore-backed sync to work.
+Guest mode is also available from the auth screen and seeds a temporary local demo workspace without using cloud sync.
 
 ## Local Development
 
@@ -75,6 +76,7 @@ npm run preview -- --host 127.0.0.1 --port 4173
 - [UI Modernization Sprint 6 Plan](/Users/ayushjaipuriar/Documents/GitHub/forge/docs/ui-modernization-sprint-6-plan.md)
 - [UI Modernization Sprint 7 Plan](/Users/ayushjaipuriar/Documents/GitHub/forge/docs/ui-modernization-sprint-7-plan.md)
 - [Auth Hardening Sprint Plan](/Users/ayushjaipuriar/Documents/GitHub/forge/docs/auth-hardening-sprint-plan.md)
+- [Guest Workspace Implementation Notes](/Users/ayushjaipuriar/Documents/GitHub/forge/docs/guest-workspace-implementation-notes.md)
 - [Phase 4 Operational Diagnostics](/Users/ayushjaipuriar/Documents/GitHub/forge/docs/phase-4-operational-diagnostics.md)
 - [Phase 4 Native Shell Workflow](/Users/ayushjaipuriar/Documents/GitHub/forge/docs/phase-4-native-shell-workflow.md)
 - [Architecture Overview](/Users/ayushjaipuriar/Documents/GitHub/forge/docs/architecture-overview.md)

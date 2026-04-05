@@ -20,6 +20,7 @@ export function useUpdatePrepTopicProgress() {
         topicId,
         patch,
         userId: authStatus === 'authenticated' && user ? user.uid : undefined,
+        syncMode: authStatus === 'guest' ? 'localOnly' : 'cloud',
       }),
     onMutate: async () => {
       const previousState = useUiStore.getState()

@@ -32,4 +32,19 @@ describe('updatePrepTopicProgress', () => {
     expect(queueItems).toHaveLength(1)
     expect(queueItems[0].actionType).toBe('upsertSettings')
   })
+
+  it('keeps guest prep progress local-only when sync is disabled', async () => {
+    const result = await updatePrepTopicProgress({
+      topicId: 'dsa-arrays',
+      patch: {
+        revisionCount: 2,
+      },
+      syncMode: 'localOnly',
+    })
+
+    const queueItems = await localSyncQueueRepository.listOutstanding()
+
+    expect(result.pendingCount).toBe(0)
+    expect(queueItems).toHaveLength(0)
+  })
 })

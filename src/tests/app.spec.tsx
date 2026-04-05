@@ -17,6 +17,7 @@ const authMock = vi.hoisted(() => {
     },
     errorMessage: null,
     signInWithGoogle: vi.fn(async () => {}),
+    signInAsGuest: vi.fn(async () => {}),
     signOutUser: vi.fn(async () => {}),
   }
 
@@ -158,6 +159,7 @@ describe('App', () => {
       },
       errorMessage: null,
       signInWithGoogle: vi.fn(async () => {}),
+      signInAsGuest: vi.fn(async () => {}),
       signOutUser: vi.fn(async () => {}),
     }
     commandCenterMock.value = {

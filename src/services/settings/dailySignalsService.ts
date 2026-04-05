@@ -1,8 +1,7 @@
 import type { EnergyStatus, SleepStatus } from '@/domain/common/types'
 import { localSettingsRepository, localSyncQueueRepository } from '@/data/local'
 import { deriveSleepStatusFromDuration } from '@/domain/physical/selectors'
-import { createSyncQueueItem } from '@/services/sync/syncQueue'
-import { flushSyncQueue } from '@/services/sync/syncOrchestrator'
+import { persistSyncableChange, type SyncWriteMode } from '@/services/sync/persistSyncableChange'
 
 type UpdateDailySignalsInput = {
   date: string
@@ -10,6 +9,7 @@ type UpdateDailySignalsInput = {
   energyStatus?: EnergyStatus
   sleepDurationHours?: number | null
   userId?: string
+  syncMode?: SyncWriteMode
 }
 
 type UpdateDailySignalsResult = {
@@ -22,6 +22,7 @@ export async function updateDailySignals({
   energyStatus,
   sleepDurationHours,
   userId,
+  syncMode,
 }: UpdateDailySignalsInput): Promise<UpdateDailySignalsResult> {
   const currentSettings = await localSettingsRepository.getDefault()
   const currentSignals = currentSettings.dailySignals[date] ?? {
@@ -59,31 +60,11 @@ export async function updateDailySignals({
   }
 
   await localSettingsRepository.upsert(nextSettings)
-  const outstandingItems = await localSyncQueueRepository.listOutstanding()
-  const supersededSettingsItems = outstandingItems.filter(
-    (item) => item.actionType === 'upsertSettings' && item.entityId === nextSettings.id,
-  )
-
-  await Promise.all(supersededSettingsItems.map((item) => localSyncQueueRepository.remove(item.id)))
-  await localSyncQueueRepository.enqueue(createSyncQueueItem('upsertSettings', nextSettings.id, nextSettings))
-
-  if (userId && isOnline()) {
-    const pendingCount = await flushSyncQueue(userId)
-
-    return {
-      pendingCount,
-    }
-  }
-
-  return {
-    pendingCount: await localSyncQueueRepository.countOutstanding(),
-  }
-}
-
-function isOnline() {
-  if (typeof navigator === 'undefined') {
-    return false
-  }
-
-  return navigator.onLine
+  return persistSyncableChange({
+    actionType: 'upsertSettings',
+    entityId: nextSettings.id,
+    payload: nextSettings,
+    userId,
+    mode: syncMode,
+  })
 }

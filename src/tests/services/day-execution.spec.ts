@@ -142,4 +142,27 @@ describe('updateDayBlockStatus', () => {
       'Slipped because the commute ran long. Resume with the first focused 30-minute push.',
     )
   })
+
+  it('keeps guest block mutations local-only when sync is explicitly disabled', async () => {
+    const dayInstance = generateDayInstance({
+      date: '2026-03-26',
+      routine: forgeRoutine,
+    })
+
+    await localDayInstanceRepository.upsert(dayInstance)
+
+    const result = await updateDayBlockStatus({
+      date: dayInstance.date,
+      blockId: dayInstance.blocks[0].id,
+      status: 'completed',
+      syncMode: 'localOnly',
+    })
+
+    const updatedDay = await localDayInstanceRepository.getByDate(dayInstance.date)
+    const queueItems = await localSyncQueueRepository.listOutstanding()
+
+    expect(result.pendingCount).toBe(0)
+    expect(updatedDay?.blocks[0].status).toBe('completed')
+    expect(queueItems).toHaveLength(0)
+  })
 })

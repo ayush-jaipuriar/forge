@@ -11,6 +11,7 @@ const authMock = vi.hoisted(() => ({
     user: null,
     errorMessage: null,
     signInWithGoogle: vi.fn(async () => {}),
+    signInAsGuest: vi.fn(async () => {}),
     signOutUser: vi.fn(async () => {}),
   } as AuthSessionValue,
 }))
@@ -31,6 +32,7 @@ describe('AuthPage', () => {
       user: null,
       errorMessage: null,
       signInWithGoogle: vi.fn(async () => {}),
+      signInAsGuest: vi.fn(async () => {}),
       signOutUser: vi.fn(async () => {}),
     } as AuthSessionValue
   })
@@ -43,6 +45,16 @@ describe('AuthPage', () => {
     await user.click(screen.getByRole('button', { name: /continue with google/i }))
 
     expect(authMock.value.signInWithGoogle).toHaveBeenCalledTimes(1)
+  })
+
+  it('lets visitors start a guest workspace from the auth page', async () => {
+    const user = userEvent.setup()
+
+    render(<AuthPage />)
+
+    await user.click(screen.getByRole('button', { name: /try guest workspace/i }))
+
+    expect(authMock.value.signInAsGuest).toHaveBeenCalledTimes(1)
   })
 
   it('keeps the sign-in button in a compact connecting state while auth is busy', () => {

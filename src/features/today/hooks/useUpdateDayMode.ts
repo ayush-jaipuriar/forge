@@ -21,6 +21,7 @@ export function useUpdateDayMode() {
         date,
         dayMode,
         userId: status === 'authenticated' && user ? user.uid : undefined,
+        syncMode: status === 'guest' ? 'localOnly' : 'cloud',
       }),
     onMutate: async ({ dayMode }) => {
       const previousState = useUiStore.getState()

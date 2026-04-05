@@ -4,14 +4,14 @@ import { updateBlockExecutionNote, updateBlockStatus } from '@/domain/routine/mu
 import type { DayInstance } from '@/domain/routine/types'
 import { markCalendarMirrorsStaleIfEnabled } from '@/services/calendar/calendarIntegrationService'
 import { getOrCreateTodayWorkspace } from '@/services/routine/routinePersistenceService'
-import { createSyncQueueItem } from '@/services/sync/syncQueue'
-import { flushSyncQueue } from '@/services/sync/syncOrchestrator'
+import { persistSyncableChange, type SyncWriteMode } from '@/services/sync/persistSyncableChange'
 
 type UpdateDayBlockStatusInput = {
   date: string
   blockId: string
   status: BlockStatus
   userId?: string
+  syncMode?: SyncWriteMode
 }
 
 type UpdateDayBlockStatusResult = {
@@ -23,10 +23,12 @@ export async function updateDayBlockStatus({
   blockId,
   status,
   userId,
+  syncMode,
 }: UpdateDayBlockStatusInput): Promise<UpdateDayBlockStatusResult> {
   return updateDayInstance({
     date,
     userId,
+    syncMode,
     updater: (dayInstance) => updateBlockStatus(dayInstance, blockId, status),
   })
 }
@@ -36,6 +38,7 @@ type UpdateDayBlockNoteInput = {
   blockId: string
   executionNote: string
   userId?: string
+  syncMode?: SyncWriteMode
 }
 
 export async function updateDayBlockNote({
@@ -43,10 +46,12 @@ export async function updateDayBlockNote({
   blockId,
   executionNote,
   userId,
+  syncMode,
 }: UpdateDayBlockNoteInput): Promise<UpdateDayBlockStatusResult> {
   return updateDayInstance({
     date,
     userId,
+    syncMode,
     updater: (dayInstance) => updateBlockExecutionNote(dayInstance, blockId, executionNote),
   })
 }
@@ -54,10 +59,12 @@ export async function updateDayBlockNote({
 async function updateDayInstance({
   date,
   userId,
+  syncMode,
   updater,
 }: {
   date: string
   userId?: string
+  syncMode?: SyncWriteMode
   updater: (dayInstance: DayInstance) => DayInstance
 }): Promise<UpdateDayBlockStatusResult> {
   const dayInstance = await getExistingOrGeneratedDayInstance(date)
@@ -70,26 +77,14 @@ async function updateDayInstance({
   }
 
   await localDayInstanceRepository.upsert(nextDayInstance)
-  const outstandingItems = await localSyncQueueRepository.listOutstanding()
-  const supersededDayItems = outstandingItems.filter(
-    (item) => item.actionType === 'upsertDayInstance' && item.entityId === nextDayInstance.id,
-  )
-
-  await Promise.all(supersededDayItems.map((item) => localSyncQueueRepository.remove(item.id)))
-  await localSyncQueueRepository.enqueue(createSyncQueueItem('upsertDayInstance', nextDayInstance.id, nextDayInstance))
   await markCalendarMirrorsStaleIfEnabled()
-
-  if (userId && isOnline()) {
-    const pendingCount = await flushSyncQueue(userId)
-
-    return {
-      pendingCount,
-    }
-  }
-
-  return {
-    pendingCount: await localSyncQueueRepository.countOutstanding(),
-  }
+  return persistSyncableChange({
+    actionType: 'upsertDayInstance',
+    entityId: nextDayInstance.id,
+    payload: nextDayInstance,
+    userId,
+    mode: syncMode,
+  })
 }
 
 async function getExistingOrGeneratedDayInstance(date: string) {
@@ -100,12 +95,4 @@ async function getExistingOrGeneratedDayInstance(date: string) {
   }
 
   return (await getOrCreateTodayWorkspace(new Date(`${date}T00:00:00`))).dayInstance
-}
-
-function isOnline() {
-  if (typeof navigator === 'undefined') {
-    return false
-  }
-
-  return navigator.onLine
 }

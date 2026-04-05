@@ -2,7 +2,7 @@ import LogoutRoundedIcon from '@mui/icons-material/LogoutRounded'
 import MenuRoundedIcon from '@mui/icons-material/MenuRounded'
 import { useMemo, useState } from 'react'
 import { alpha } from '@mui/material/styles'
-import { Avatar, Box, Button, Container, Drawer, IconButton, Stack, Tooltip, Typography } from '@mui/material'
+import { Avatar, Box, Button, Chip, Container, Drawer, IconButton, Stack, Tooltip, Typography } from '@mui/material'
 import { NavLink, Outlet, useLocation } from 'react-router-dom'
 import { navigationItems } from '@/app/router/navigation'
 import { useUiStore } from '@/app/store/uiStore'
@@ -19,7 +19,7 @@ const mobileQuickNavPaths = ['/', '/command-center', '/schedule', '/settings']
 export function AppShell() {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
   const location = useLocation()
-  const { signOutUser, user } = useAuthSession()
+  const { signInWithGoogle, signOutUser, user } = useAuthSession()
   const dayMode = useUiStore((state) => state.dayMode)
   const warState = useUiStore((state) => state.warState)
   const syncStatus = useUiStore((state) => state.syncStatus)
@@ -164,6 +164,11 @@ export function AppShell() {
             >
               {getUserInitials(user?.displayName ?? user?.email ?? 'Forge')}
             </Avatar>
+            {user?.isGuest ? (
+              <Typography variant="caption" color="text.secondary">
+                Guest
+              </Typography>
+            ) : null}
           </Stack>
         </Box>
 
@@ -228,6 +233,7 @@ export function AppShell() {
                 </Stack>
 
                 <Stack direction="row" spacing={1} alignItems="center" sx={{ minWidth: 0 }}>
+                  {user?.isGuest ? <Chip label="Guest" size="small" variant="outlined" color="warning" /> : null}
                   <Box sx={{ display: { xs: 'none', sm: 'block' } }}>
                     <SyncIndicator status={syncStatus} compact />
                   </Box>
@@ -238,7 +244,7 @@ export function AppShell() {
                     onClick={() => void signOutUser()}
                     sx={{ display: { xs: 'none', md: 'inline-flex' }, whiteSpace: 'nowrap' }}
                   >
-                    Sign out
+                    {user?.isGuest ? 'Exit guest' : 'Sign out'}
                   </Button>
                 </Stack>
               </Stack>
@@ -266,9 +272,56 @@ export function AppShell() {
                     color="text.secondary"
                     sx={{ display: { xs: 'none', lg: 'block' } }}
                   >
-                    {user?.displayName ?? user?.email ?? 'Authenticated Operator'}
+                    {user?.isGuest ? 'Temporary local guest session' : user?.displayName ?? user?.email ?? 'Authenticated Operator'}
                   </Typography>
                 </Stack>
+
+                {user?.isGuest ? (
+                  <Stack
+                    direction={{ xs: 'column', lg: 'row' }}
+                    spacing={1.5}
+                    alignItems={{ xs: 'flex-start', lg: 'center' }}
+                    justifyContent="space-between"
+                    sx={{
+                      border: '1px solid',
+                      borderColor: alpha(forgeTokens.palette.accent.ember, 0.32),
+                      borderRadius: 4,
+                      px: { xs: 1.5, md: 2 },
+                      py: { xs: 1.5, md: 1.75 },
+                      backgroundColor: alpha(forgeTokens.palette.accent.ember, 0.08),
+                    }}
+                  >
+                    <Stack spacing={0.35} sx={{ minWidth: 0 }}>
+                      <Typography variant="overline" color="primary.light">
+                        Guest Workspace
+                      </Typography>
+                      <Typography variant="body1" sx={{ fontWeight: 700 }}>
+                        This session is temporary and stays local to this browser.
+                      </Typography>
+                      <Typography color="text.secondary" sx={{ maxWidth: 760 }}>
+                        Explore the seeded demo data freely. Sign in with Google if you want Forge to save progress to a real account.
+                      </Typography>
+                    </Stack>
+
+                    <Stack direction={{ xs: 'column', sm: 'row' }} spacing={1} sx={{ width: { xs: '100%', lg: 'auto' } }}>
+                      <Button
+                        variant="contained"
+                        onClick={() => void signInWithGoogle()}
+                        sx={{ whiteSpace: 'nowrap' }}
+                      >
+                        Sign in to keep progress
+                      </Button>
+                      <Button
+                        variant="outlined"
+                        color="inherit"
+                        onClick={() => void signOutUser()}
+                        sx={{ whiteSpace: 'nowrap' }}
+                      >
+                        Exit guest
+                      </Button>
+                    </Stack>
+                  </Stack>
+                ) : null}
 
                 {pwaSurfaceMode !== 'hidden' ? (
                   <PwaStatusCard
@@ -348,7 +401,7 @@ export function AppShell() {
             onClick={() => void signOutUser()}
             sx={{ alignSelf: 'flex-start' }}
           >
-            Sign out
+            {user?.isGuest ? 'Exit guest' : 'Sign out'}
           </Button>
         </Stack>
       </Drawer>

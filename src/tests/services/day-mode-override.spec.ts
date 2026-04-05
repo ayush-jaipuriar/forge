@@ -73,4 +73,19 @@ describe('updateDayModeOverride', () => {
 
     expect(queueItems[0].payload.dayModeOverrides['2026-03-26']).toBe('survival')
   })
+
+  it('keeps guest day-mode writes local-only when sync is disabled', async () => {
+    const result = await updateDayModeOverride({
+      date: '2026-03-26',
+      dayMode: 'survival',
+      syncMode: 'localOnly',
+    })
+
+    const settings = await localSettingsRepository.getDefault()
+    const queueItems = await localSyncQueueRepository.listOutstanding()
+
+    expect(result.pendingCount).toBe(0)
+    expect(settings?.dayModeOverrides['2026-03-26']).toBe('survival')
+    expect(queueItems).toHaveLength(0)
+  })
 })
