@@ -113,8 +113,44 @@ type ForgeDbSchema = DBSchema & {
   }
 }
 
+type ForgeStoreName =
+  | 'dayInstances'
+  | 'settings'
+  | 'syncQueue'
+  | 'syncDiagnostics'
+  | 'syncConflicts'
+  | 'notificationState'
+  | 'notificationLog'
+  | 'backups'
+  | 'backupOperations'
+  | 'restoreJobs'
+  | 'exportPayloads'
+  | 'calendarState'
+  | 'externalCalendarEvents'
+  | 'calendarSessions'
+  | 'calendarMirrors'
+  | 'healthIntegration'
+
 let dbPromise: Promise<IDBPDatabase<ForgeDbSchema>> | null = null
 const FORGE_DB_NAME = 'forge-db'
+const FORGE_STORE_NAMES: ForgeStoreName[] = [
+  'dayInstances',
+  'settings',
+  'syncQueue',
+  'syncDiagnostics',
+  'syncConflicts',
+  'notificationState',
+  'notificationLog',
+  'backups',
+  'backupOperations',
+  'restoreJobs',
+  'exportPayloads',
+  'calendarState',
+  'externalCalendarEvents',
+  'calendarSessions',
+  'calendarMirrors',
+  'healthIntegration',
+]
 
 export function getForgeDb() {
   if (!dbPromise) {
@@ -237,25 +273,11 @@ export function getForgeDb() {
 }
 
 export async function resetForgeDb() {
-  if (dbPromise) {
-    const db = await dbPromise
-    db.close()
-    dbPromise = null
-  }
+  const db = await getForgeDb()
+  const storeNames = FORGE_STORE_NAMES.filter((storeName) => db.objectStoreNames.contains(storeName))
 
-  await new Promise<void>((resolve, reject) => {
-    const request = indexedDB.deleteDatabase(FORGE_DB_NAME)
+  const transaction = db.transaction(storeNames, 'readwrite')
 
-    request.onerror = () => {
-      reject(request.error)
-    }
-
-    request.onblocked = () => {
-      resolve()
-    }
-
-    request.onsuccess = () => {
-      resolve()
-    }
-  })
+  await Promise.all(storeNames.map((storeName) => transaction.objectStore(storeName).clear()))
+  await transaction.done
 }

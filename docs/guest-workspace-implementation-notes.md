@@ -20,6 +20,8 @@ This iteration touched:
 - a final auth-entry placement pass so the panel sits centered in the composition instead of reading like a low-floating slab on desktop
 - removal of the extra dark top overlay behind the auth panel so the Forge-mark stage reads cleanly instead of like a shadow cap above the card
 - reduction and downward repositioning of the Forge-mark silhouette so the branded background stays visible without creating a dark cap above the centered auth panel
+- a production guest-to-user follow-up in `src/data/local/forgeDb.ts` so local workspace resets clear IndexedDB stores in place instead of deleting the entire database, which is safer for browser + installed-PWA sessions with multiple open connections
+- regression coverage in `src/tests/services/forge-db-reset.spec.ts` proving Forge can reopen local storage immediately after a full workspace reset
 
 ## Why This Shape
 
@@ -31,9 +33,14 @@ That means:
 - guest data is seeded into local IndexedDB as believable demo history
 - guest writes do not enqueue cloud sync work
 - signing out of guest mode clears the local workspace instead of preserving it as a real account
-- if a real authenticated session starts after guest usage, Forge resets the guest-local workspace before bootstrapping the authenticated user
+- if a real authenticated session starts after guest usage, Forge clears the guest-local workspace before bootstrapping the authenticated user
 
 This keeps the guest experience useful without creating misleading cloud behavior or contaminating real user state.
+
+The reset implementation now clears all local stores in place rather than calling `indexedDB.deleteDatabase()`.
+That tradeoff matters because installed PWAs and multi-tab browser sessions can keep extra IndexedDB connections open.
+If Forge tries to delete the whole database in that state, the delete can become blocked and the app can appear to load forever afterward.
+Clearing stores in place is less dramatic, but much more reliable for a real browser/PWA runtime.
 
 Forge now also surfaces a shared guest CTA inside the authenticated shell so visitors can:
 
