@@ -172,7 +172,7 @@ Current honest support posture:
 
 Current native-shell caveats:
 
-- Firebase Auth still depends on browser-oriented auth and callback assumptions, with localhost/dev retaining popup fallback and hosted surfaces preferring redirect
+- Firebase Auth still depends on browser-oriented auth and callback assumptions, with browser runtimes currently using the popup flow as the reliable production default
 - Google Calendar reconnect and mirroring still depend on browser-style Google session behavior
 - notifications still use browser-style delivery from the bundled web runtime; native push is not implemented
 - backup export and restore import still rely on webview download and file-selection behavior rather than native share or document-picker flows

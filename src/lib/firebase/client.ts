@@ -51,15 +51,10 @@ export function getGoogleAuthProvider() {
   return cachedProvider
 }
 
-export function getPrimaryGoogleAuthMethod() {
-  if (typeof window === 'undefined') {
-    return 'redirect' as const
-  }
-
-  const hostname = window.location.hostname
-  if (hostname === 'localhost' || hostname === '127.0.0.1') {
-    return 'popup' as const
-  }
-
-  return 'redirect' as const
+export function getPrimaryGoogleAuthMethod(): GoogleAuthMethod {
+  // Popup is the most reliable browser-wide default for Forge today.
+  // Redirect auth remains implemented in the provider, but it should only
+  // become the primary path again once the hosted OAuth callback setup is
+  // explicitly aligned outside the repo.
+  return 'popup'
 }

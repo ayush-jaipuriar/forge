@@ -270,6 +270,7 @@ describe('App', () => {
     expect(screen.getAllByRole('link', { name: /^today$/i }).length).toBeGreaterThan(0)
     expect(screen.getAllByRole('link', { name: /command center/i }).length).toBeGreaterThan(0)
     expect(screen.getAllByRole('link', { name: /schedule/i }).length).toBeGreaterThan(0)
+    expect(screen.getAllByRole('link', { name: /about/i }).length).toBeGreaterThan(0)
   })
 
   it('routes unauthenticated users to the auth entry screen', () => {
@@ -323,6 +324,35 @@ describe('App', () => {
 
     expect(await screen.findByRole('heading', { name: /command center could not load/i })).toBeInTheDocument()
     expect(screen.getByText(/indexeddb could not be opened/i)).toBeInTheDocument()
+  })
+
+  it('renders the About route inside the protected shell', async () => {
+    window.history.pushState({}, '', '/about')
+
+    render(<App />)
+
+    expect(await screen.findByRole('heading', { name: /forge exists to make disciplined execution easier to sustain/i })).toBeInTheDocument()
+    expect(screen.getAllByRole('heading', { name: /^ayush jaipuriar$/i }).length).toBeGreaterThan(0)
+  })
+
+  it('keeps the About route accessible during a guest session', async () => {
+    window.history.pushState({}, '', '/about')
+    authMock.value = {
+      ...authMock.value,
+      status: 'guest',
+      user: {
+        uid: 'guest-user',
+        email: null,
+        displayName: 'Guest Workspace',
+        photoURL: null,
+        isGuest: true,
+      },
+    }
+
+    render(<App />)
+
+    expect(await screen.findByRole('heading', { name: /forge exists to make disciplined execution easier to sustain/i })).toBeInTheDocument()
+    expect(screen.getByText(/guest workspace/i)).toBeInTheDocument()
   })
 
   it('shows the redirect-return status copy while the protected shell is restoring a Google sign-in', () => {

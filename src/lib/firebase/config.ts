@@ -25,19 +25,7 @@ export const firebaseAppCheckSiteKey = import.meta.env.VITE_FIREBASE_APPCHECK_SI
 export const hasAppCheckSiteKey = firebaseAppCheckSiteKey.length > 0
 
 export function getFirebaseConfig(): FirebaseConfig {
-  if (typeof window === 'undefined') {
-    return rawFirebaseConfig
-  }
-
-  const hostname = window.location.hostname
-  const isLocalHost = hostname === 'localhost' || hostname === '127.0.0.1'
-
-  if (isLocalHost) {
-    return rawFirebaseConfig
-  }
-
   return {
     ...rawFirebaseConfig,
-    authDomain: window.location.host,
   }
 }

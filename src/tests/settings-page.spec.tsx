@@ -30,7 +30,12 @@ const platformWorkspaceMock = vi.hoisted(() => ({
     offlineReady: true,
     supportNotes: ['Browser is the reference runtime for launch, support, and troubleshooting today.'],
     capabilities: [
-      { key: 'auth', label: 'Firebase Auth', status: 'supported', summary: 'Browser auth is supported today, with redirect on hosted surfaces and popup fallback on localhost/dev.' },
+      {
+        key: 'auth',
+        label: 'Firebase Auth',
+        status: 'supported',
+        summary: 'Browser auth is supported today through the Google popup flow, with redirect retained only as a future hosted fallback once callback setup is aligned.',
+      },
       { key: 'notifications', label: 'Notifications', status: 'supported', summary: 'Browser notifications are supported once permission is granted.' },
       { key: 'backupExport', label: 'Backup Export', status: 'supported', summary: 'Backup export uses browser downloads.' },
       { key: 'restoreImport', label: 'Restore Import', status: 'supported', summary: 'Restore import uses the browser file picker.' },

@@ -47,7 +47,7 @@ Expected result:
 
 Operator notes:
 
-- if sign-in fails, check Firebase Auth authorized origins plus whether the current runtime should be using hosted redirect or localhost popup fallback
+- if sign-in fails, check Firebase Auth authorized origins plus whether the popup flow opened and returned cleanly in the current browser session
 - if sign-out looks partial, check whether local Calendar session state was cleared as expected
 
 ### 2. Today Execution

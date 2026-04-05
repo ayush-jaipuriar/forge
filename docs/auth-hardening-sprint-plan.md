@@ -4,6 +4,28 @@
 
 This document defines a focused auth-improvement sprint for Forge.
 
+## 2026-04-05 Production Follow-Up
+
+After the About-page release, hosted sign-in regressed in two visible ways:
+
+- desktop could stall on the `Completing Google sign-in` status surface
+- mobile could bounce both Google and guest sessions back to the sign-in screen
+
+The root cause analysis for this follow-up narrowed the regression to two weaknesses:
+
+- the auth provider waited on redirect completion before the auth observer was fully in charge of restoring session state
+- the PWA service worker was still allowed to treat Firebase reserved `__/auth` helper paths like ordinary app navigations
+
+The follow-up fix therefore:
+
+- moved auth restoration to an observer-first model inside [src/features/auth/providers/AuthSessionProvider.tsx](/Users/ayushjaipuriar/Documents/GitHub/forge/src/features/auth/providers/AuthSessionProvider.tsx)
+- updated [vite.config.ts](/Users/ayushjaipuriar/Documents/GitHub/forge/vite.config.ts) so Workbox leaves Firebase reserved `__/` paths alone instead of trying to serve the app shell there
+- added redirect-restoration regression coverage in [src/tests/auth-session-provider.spec.tsx](/Users/ayushjaipuriar/Documents/GitHub/forge/src/tests/auth-session-provider.spec.tsx)
+- reverted the hosted `authDomain` override in [src/lib/firebase/config.ts](/Users/ayushjaipuriar/Documents/GitHub/forge/src/lib/firebase/config.ts) after live Google sign-in showed `redirect_uri_mismatch`; Forge now uses the Firebase-configured auth domain from environment instead of inventing a hosted callback URL that Google has not authorized
+- switched browser auth back to popup-first in [src/lib/firebase/client.ts](/Users/ayushjaipuriar/Documents/GitHub/forge/src/lib/firebase/client.ts) after live production verification showed that redirect auth still returned users to the sign-in page even with the callback mismatch resolved. This keeps production sign-in reliable while same-origin redirect callback setup is treated as a future configuration project rather than an assumed-in-code behavior.
+
+This follow-up is deliberately about runtime truth, not UI polish: Firebase helper routes are infrastructure boundaries and should never be absorbed into the SPA navigation model.
+
 The sprint exists because Sprint 3.1 proved that the app-side `Cross-Origin-Opener-Policy` gap was real and fixable, but it also proved that the remaining Google popup-return console noise is not something we should keep chasing with more header tuning alone.
 
 The next correct step is to change the browser sign-in model itself.
@@ -413,3 +435,23 @@ This sprint is done when:
 
 - confirm hosted redirect behavior on the final Firebase-hosted origin
 - document native-shell follow-on observations honestly
+
+### 2026-04-05 Popup Restoration Follow-Up
+
+- Production Google sign-in still showed a browser-complete OAuth handoff but dropped the operator back on `/auth`.
+- The remaining weak point was the popup flow itself: Forge waited for the Firebase auth observer to notice the new user instead of using the authenticated user returned directly by `signInWithPopup()`.
+- Auth bootstrap is now hydrated immediately from the popup result, then reconciled with the observer. This reduces a real timing risk:
+  - popup succeeds
+  - observer lags or emits a transient `null`
+  - Forge incorrectly falls back to `/auth`
+- Files touched in this follow-up:
+  - [src/features/auth/providers/AuthSessionProvider.tsx](/Users/ayushjaipuriar/Documents/GitHub/forge/src/features/auth/providers/AuthSessionProvider.tsx)
+  - [src/tests/auth-session-provider.spec.tsx](/Users/ayushjaipuriar/Documents/GitHub/forge/src/tests/auth-session-provider.spec.tsx)
+- Validation added:
+  - popup sign-in now has explicit regression coverage proving Forge can authenticate from the popup result even before the auth observer catches up.
+  - `npm run lint` passed
+  - `npm run typecheck` passed
+  - `npm run test:run` passed with `67` files and `247` tests
+  - `npm run build` passed
+- Deployment:
+  - Hosting was redeployed to the existing live site `https://forge-510f3.web.app` after the popup-restoration fix.

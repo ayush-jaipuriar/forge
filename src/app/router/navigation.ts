@@ -1,3 +1,4 @@
+import InfoOutlinedIcon from '@mui/icons-material/InfoOutlined'
 import type { SvgIconComponent } from '@mui/icons-material'
 import BoltRoundedIcon from '@mui/icons-material/BoltRounded'
 import CalendarMonthRoundedIcon from '@mui/icons-material/CalendarMonthRounded'
@@ -21,5 +22,6 @@ export const navigationItems: NavigationItem[] = [
   { label: 'Prep', path: '/prep', icon: SchoolRoundedIcon },
   { label: 'Physical', path: '/physical', icon: FitnessCenterRoundedIcon },
   { label: 'Readiness', path: '/readiness', icon: QueryStatsRoundedIcon },
+  { label: 'About', path: '/about', icon: InfoOutlinedIcon },
   { label: 'Settings', path: '/settings', icon: SettingsRoundedIcon },
 ]

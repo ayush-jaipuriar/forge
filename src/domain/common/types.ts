@@ -9,6 +9,7 @@ export type RoutePath =
   | '/prep'
   | '/physical'
   | '/readiness'
+  | '/about'
   | '/settings'
 
 export type Weekday =

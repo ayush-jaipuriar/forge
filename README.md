@@ -11,6 +11,7 @@ Phase 1 now exists across the core domain, UI, persistence, scoring, recommendat
 - persisted prep progress, workout logging, sleep and energy signals, and readiness heuristics
 - weighted daily scoring and rules-based next-action recommendations
 - installable PWA shell with offline baseline behavior and Hosting configuration
+- in-product About page with project background, developer profile links, and guest-visible access inside the main shell
 - Phase 2 Command Center with PRS-priority charts, projection framing, and risk/insight panels
 - Phase 2 modular pattern-detection engine with confidence-aware warnings, insights, and coach summaries
 - Phase 2 disciplined gamification layer with formal streaks, deficit-driven missions, and anti-padding momentum
@@ -77,6 +78,7 @@ npm run preview -- --host 127.0.0.1 --port 4173
 - [UI Modernization Sprint 7 Plan](/Users/ayushjaipuriar/Documents/GitHub/forge/docs/ui-modernization-sprint-7-plan.md)
 - [Auth Hardening Sprint Plan](/Users/ayushjaipuriar/Documents/GitHub/forge/docs/auth-hardening-sprint-plan.md)
 - [Guest Workspace Implementation Notes](/Users/ayushjaipuriar/Documents/GitHub/forge/docs/guest-workspace-implementation-notes.md)
+- [About Page Implementation Plan](/Users/ayushjaipuriar/Documents/GitHub/forge/docs/about-page-implementation-plan.md)
 - [Phase 4 Operational Diagnostics](/Users/ayushjaipuriar/Documents/GitHub/forge/docs/phase-4-operational-diagnostics.md)
 - [Phase 4 Native Shell Workflow](/Users/ayushjaipuriar/Documents/GitHub/forge/docs/phase-4-native-shell-workflow.md)
 - [Architecture Overview](/Users/ayushjaipuriar/Documents/GitHub/forge/docs/architecture-overview.md)

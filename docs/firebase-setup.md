@@ -195,9 +195,9 @@ Current Phase 4 note:
 
 Why this matters:
 
-- Forge uses Google redirect sign-in on hosted browser and installed-PWA surfaces, with popup fallback on localhost/dev preview where redirect needs extra same-origin setup
+- Forge currently uses the Google popup flow as the primary browser sign-in path because it is the most reliable production setup for this project today
 - if Google is not enabled, the sign-in button may appear but the auth flow will fail
-- redirect-based auth is still sensitive to origin/domain mismatches
+- redirect-based auth is still implemented, but should only become primary again after hosted callback setup is explicitly aligned in Firebase/Auth and Google OAuth configuration
 
 ### 5. Create Firestore
 
@@ -264,13 +264,13 @@ Click `Continue with Google`.
 
 Expected outcome:
 
-- on hosted browser surfaces, Google redirects back to Forge and the session restores automatically
-- on localhost/dev preview, Forge may use a popup fallback so local sign-in stays reliable
+- Forge opens the Google sign-in popup and returns to the same browser session with the authenticated shell restored
+- localhost/dev and hosted browser surfaces now follow the same popup-first browser path
 
 Why this matters:
 
 - this verifies the Authentication product itself, not just local config parsing
-- it also exercises the session observer path used by the app
+- it also exercises the same popup/session observer path used in production today
 
 ### 9. Verify bootstrap documents in Firestore
 

@@ -1,5 +1,5 @@
 import type { PropsWithChildren } from 'react'
-import { useEffect, useMemo, useState } from 'react'
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import {
   browserLocalPersistence,
   getRedirectResult,
@@ -9,6 +9,7 @@ import {
   signInWithRedirect,
   signOut,
 } from 'firebase/auth'
+import type { User as FirebaseUser } from 'firebase/auth'
 import { getFirebaseAuth, getGoogleAuthProvider, getPrimaryGoogleAuthMethod } from '@/lib/firebase/client'
 import { hasFirebaseEnv, missingFirebaseEnvKeys } from '@/lib/firebase/config'
 import { AuthSessionContext } from '@/features/auth/providers/authSessionContext'
@@ -63,10 +64,82 @@ function getInitialState(): AuthState {
 
 export function AuthSessionProvider({ children }: PropsWithChildren) {
   const [state, setState] = useState<AuthState>(getInitialState)
+  const mountedRef = useRef(true)
+  const bootstrappingUidRef = useRef<string | null>(null)
+
+  useEffect(
+    () => () => {
+      mountedRef.current = false
+    },
+    [],
+  )
+
+  const finalizeAuthenticatedSession = useCallback(async (firebaseUser: FirebaseUser, flowPhase: AuthFlowPhase = 'idle') => {
+    const mappedUser = mapFirebaseUser(firebaseUser)
+
+    if (mountedRef.current) {
+      setState({
+        status: 'authenticated',
+        flowPhase,
+        user: mappedUser,
+        errorMessage: null,
+      })
+    }
+
+    if (bootstrappingUidRef.current === firebaseUser.uid) {
+      return
+    }
+
+    bootstrappingUidRef.current = firebaseUser.uid
+
+    try {
+      if (hasGuestWorkspace()) {
+        await resetForgeDb()
+        clearWorkspaceKind()
+      }
+
+      await bootstrapUserSession(firebaseUser)
+
+      if (!mountedRef.current) {
+        return
+      }
+
+      markWorkspaceKind('user')
+      setState({
+        status: 'authenticated',
+        flowPhase: 'idle',
+        user: mappedUser,
+        errorMessage: null,
+      })
+    } catch (error) {
+      reportMonitoringError({
+        domain: 'auth',
+        action: 'bootstrap-user-session',
+        message: 'Failed to bootstrap the authenticated Firebase session.',
+        error,
+      })
+
+      if (!mountedRef.current) {
+        return
+      }
+
+      setState({
+        status: 'error',
+        flowPhase: 'idle',
+        user: null,
+        errorMessage: getReadableAuthError(error),
+      })
+    } finally {
+      if (bootstrappingUidRef.current === firebaseUser.uid) {
+        bootstrappingUidRef.current = null
+      }
+    }
+  }, [])
 
   useEffect(() => {
     let active = true
     let unsubscribe = () => {}
+    let awaitingRedirectResult = hasPendingGoogleRedirect()
 
     const initializeGuestSession = async () => {
       setState({
@@ -139,45 +212,20 @@ export function AuthSessionProvider({ children }: PropsWithChildren) {
       }
     }
 
-    const initializeAuth = async () => {
-
-      if (hasPendingGoogleRedirect()) {
-        setState((current) => ({
-          ...current,
-          status: current.user ? 'authenticated' : 'checking',
-          flowPhase: 'returning',
-          errorMessage: null,
-        }))
-
-        try {
-          await getRedirectResult(auth)
-        } catch (error) {
-          reportMonitoringError({
-            domain: 'auth',
-            action: 'complete-google-redirect',
-            message: 'Google redirect sign-in failed after returning to Forge.',
-            error,
-          })
-
-          clearPendingGoogleRedirect()
-
-          if (active) {
-            setState({
-              status: 'unauthenticated',
-              flowPhase: 'idle',
-              user: null,
-              errorMessage: getReadableAuthError(error),
-            })
-          }
-        }
-
-        clearPendingGoogleRedirect()
-      }
-
+    const transitionToUnauthenticated = (errorMessage: string | null = null) => {
       if (!active) {
         return
       }
 
+      setState((current) => ({
+        status: 'unauthenticated',
+        flowPhase: 'idle',
+        user: null,
+        errorMessage: errorMessage ?? current.errorMessage,
+      }))
+    }
+
+    const initializeAuth = async () => {
       unsubscribe = onAuthStateChanged(
         auth,
         async (firebaseUser) => {
@@ -186,63 +234,19 @@ export function AuthSessionProvider({ children }: PropsWithChildren) {
           }
 
           if (!firebaseUser) {
-            setState((current) => ({
-              status: 'unauthenticated',
-              flowPhase: 'idle',
-              user: null,
-              errorMessage: current.errorMessage,
-            }))
+            if (awaitingRedirectResult) {
+              return
+            }
+
+            transitionToUnauthenticated()
 
             return
           }
 
-          const mappedUser = mapFirebaseUser(firebaseUser)
-          setState((current) => ({
-            ...current,
-            status: 'authenticated',
-            flowPhase: current.flowPhase === 'returning' ? 'returning' : 'idle',
-            user: mappedUser,
-            errorMessage: null,
-          }))
-
-          try {
-            if (hasGuestWorkspace()) {
-              await resetForgeDb()
-              clearWorkspaceKind()
-            }
-
-            await bootstrapUserSession(firebaseUser)
-
-            if (!active) {
-              return
-            }
-
-            markWorkspaceKind('user')
-            setState({
-              status: 'authenticated',
-              flowPhase: 'idle',
-              user: mappedUser,
-              errorMessage: null,
-            })
-          } catch (error) {
-            reportMonitoringError({
-              domain: 'auth',
-              action: 'bootstrap-user-session',
-              message: 'Failed to bootstrap the authenticated Firebase session.',
-              error,
-            })
-
-            if (!active) {
-              return
-            }
-
-            setState({
-              status: 'error',
-              flowPhase: 'idle',
-              user: null,
-              errorMessage: getReadableAuthError(error),
-            })
-          }
+          const nextFlowPhase: AuthFlowPhase = awaitingRedirectResult ? 'returning' : 'idle'
+          awaitingRedirectResult = false
+          clearPendingGoogleRedirect()
+          await finalizeAuthenticatedSession(firebaseUser, nextFlowPhase)
         },
         (error) => {
           reportMonitoringError({
@@ -264,6 +268,37 @@ export function AuthSessionProvider({ children }: PropsWithChildren) {
           })
         },
       )
+
+      if (!awaitingRedirectResult) {
+        return
+      }
+
+      setState((current) => ({
+        ...current,
+        status: current.user ? 'authenticated' : 'checking',
+        flowPhase: 'returning',
+        errorMessage: null,
+      }))
+
+      void getRedirectResult(auth)
+        .catch((error) => {
+          reportMonitoringError({
+            domain: 'auth',
+            action: 'complete-google-redirect',
+            message: 'Google redirect sign-in failed after returning to Forge.',
+            error,
+          })
+
+          transitionToUnauthenticated(getReadableAuthError(error))
+        })
+        .finally(() => {
+          awaitingRedirectResult = false
+          clearPendingGoogleRedirect()
+
+          if (!auth.currentUser) {
+            transitionToUnauthenticated()
+          }
+        })
     }
 
     void initializeAuth()
@@ -272,7 +307,7 @@ export function AuthSessionProvider({ children }: PropsWithChildren) {
       active = false
       unsubscribe()
     }
-  }, [])
+  }, [finalizeAuthenticatedSession])
 
   const value = useMemo<AuthSessionValue>(
     () => ({
@@ -321,7 +356,15 @@ export function AuthSessionProvider({ children }: PropsWithChildren) {
             return
           }
 
-          await signInWithPopup(auth, getGoogleAuthProvider())
+          const popupResult = await signInWithPopup(auth, getGoogleAuthProvider())
+          const popupUser = popupResult.user ?? auth.currentUser
+
+          if (!popupUser) {
+            throw new Error('Google sign-in completed without returning an authenticated Firebase user.')
+          }
+
+          clearPendingGoogleRedirect()
+          await finalizeAuthenticatedSession(popupUser)
         } catch (error) {
           clearPendingGoogleRedirect()
 
@@ -409,7 +452,7 @@ export function AuthSessionProvider({ children }: PropsWithChildren) {
         await signOut(auth)
       },
     }),
-    [state],
+    [finalizeAuthenticatedSession, state],
   )
 
   return <AuthSessionContext.Provider value={value}>{children}</AuthSessionContext.Provider>

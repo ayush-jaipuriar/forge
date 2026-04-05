@@ -197,7 +197,7 @@ function buildCapabilityDescriptors(runtime: PlatformRuntimeShell): PlatformCapa
   }
 
   return [
-    capability('auth', 'Firebase Auth', 'supported', 'Browser auth is supported today, with redirect on hosted surfaces and popup fallback on localhost/dev.'),
+    capability('auth', 'Firebase Auth', 'supported', 'Browser auth is supported today through the Google popup flow, with redirect retained only as a future hosted fallback once callback setup is aligned.'),
     capability('notifications', 'Notifications', 'supported', 'Browser notifications are supported once permission is granted.'),
     capability('backupExport', 'Backup Export', 'supported', 'Backup export uses browser downloads.'),
     capability('restoreImport', 'Restore Import', 'supported', 'Restore import uses the browser file picker.'),

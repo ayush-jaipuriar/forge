@@ -16,10 +16,11 @@ export default defineConfig({
       workbox: {
         cleanupOutdatedCaches: true,
         navigateFallback: '/index.html',
+        navigateFallbackDenylist: [/^\/__\//],
         globPatterns: ['**/*.{js,css,html,svg,png,woff2,webmanifest}'],
         runtimeCaching: [
           {
-            urlPattern: ({ request }) => request.mode === 'navigate',
+            urlPattern: ({ request, url }) => request.mode === 'navigate' && !/^\/__\//.test(url.pathname),
             handler: 'NetworkFirst',
             options: {
               cacheName: 'forge-pages',
