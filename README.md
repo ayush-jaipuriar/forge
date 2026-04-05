@@ -1,139 +1,390 @@
 # Forge
 
-Forge is a personal execution OS for disciplined interview preparation, physical training, and recovery-aware daily planning.
+Forge is a personal execution system built for disciplined daily planning, interview preparation, physical training, and recovery-aware decision making.
 
-Phase 1 now exists across the core domain, UI, persistence, scoring, recommendation, PWA, and calendar-scaffolding layers, and its core environment verification has been completed.
+It is designed to answer a simple question well:
 
-## What Exists
+**What should I do next, and how do I stay honest about whether the day is actually working?**
 
-- fixed seeded routine engine with day generation, fallback modes, and operational overrides
-- local-first execution flow for Today and Schedule backed by IndexedDB plus queued sync
-- persisted prep progress, workout logging, sleep and energy signals, and readiness heuristics
-- weighted daily scoring and rules-based next-action recommendations
-- installable PWA shell with offline baseline behavior and Hosting configuration
-- in-product About page with project background, developer profile links, and guest-visible access inside the main shell
-- Phase 2 Command Center with PRS-priority charts, projection framing, and risk/insight panels
-- Phase 2 modular pattern-detection engine with confidence-aware warnings, insights, and coach summaries
-- Phase 2 disciplined gamification layer with formal streaks, deficit-driven missions, and anti-padding momentum
-- Phase 2 operational analytics surfacing across Today, Readiness, and Schedule with shared pressure signals
-- Phase 3 Google Calendar integration with primary-calendar read pressure, bounded event caching, and explicit major-block write mirroring
-- Phase 4 native shell foundation with explicit platform-capability boundaries and Functions-backed operator actions for backups, notifications, and analytics regeneration
+Unlike a generic productivity dashboard, Forge treats routine, prep, training, readiness, and calendar pressure as parts of the same operating surface.
 
-## Setup
+## Why This Project Stands Out
+
+Forge is not just a UI demo. It is a complete product-style build with:
+
+- a multi-surface React application
+- local-first persistence with IndexedDB
+- typed domain modeling for routines, scoring, prep, readiness, sync, and backup flows
+- Firebase-backed auth, hosting, storage, and server-side operational functions
+- installable PWA behavior with offline shell support
+- guest-mode onboarding with seeded demo data
+- structured product documentation, implementation planning, and test coverage
+
+For recruiters and hiring teams, this project demonstrates:
+
+- product thinking, not just feature coding
+- frontend architecture and UX systems work
+- local persistence and sync design
+- practical Firebase platform integration
+- release verification discipline
+
+## What Forge Does
+
+Forge helps a user run their day with more structure and less drift.
+
+Core product goals:
+
+- keep the day plan visible and actionable
+- make prep progress measurable
+- treat physical training and recovery as execution inputs, not separate apps
+- show when calendar pressure is starting to distort the routine
+- make the next best action clearer
+
+## Main Product Surfaces
+
+### Today
+
+The live execution surface.
+
+It shows:
+
+- current execution context
+- the current block
+- quick sleep and energy updates
+- day-mode posture
+- operational alerts
+- calendar pressure and support context
+
+### Command Center
+
+The strategic overview.
+
+It focuses on:
+
+- momentum
+- pressure
+- risk
+- projections
+- analytics and diagnostic summaries
+
+### Schedule
+
+The weekly planning board.
+
+It helps the user:
+
+- inspect the seeded weekly routine
+- review selected-day details
+- see constraints created by external calendar pressure
+- apply overrides without turning the app into a free-form planner
+
+### Prep
+
+A progress and readiness workspace for interview preparation.
+
+It tracks:
+
+- focused domains
+- topic progress
+- revision confidence
+- preparation pressure
+
+### Physical
+
+A physical execution support surface.
+
+It keeps workout and recovery context visible as part of the broader system rather than treating fitness as a disconnected tracker.
+
+### Readiness
+
+A readiness and pressure view derived from the prep model, daily signals, and execution pace.
+
+### About
+
+A lightweight in-product page explaining the project and its developer.
+
+### Settings
+
+The operator surface for runtime truth.
+
+It includes:
+
+- auth/runtime posture
+- backup and restore status
+- notification state
+- calendar integration state
+- platform capability boundaries
+- future-provider scaffolding
+
+## Key Features
+
+- Local-first workspace backed by IndexedDB
+- Installable PWA shell
+- Google sign-in
+- Guest workspace with temporary demo data
+- Daily scoring and recommendation system
+- Day-mode overrides for real-world pressure
+- Prep progress tracking
+- Workout and signal logging
+- Calendar pressure awareness
+- Backup and restore scaffolding
+- Firebase Functions for operational jobs
+
+## Tech Stack
+
+### Frontend
+
+- React 19
+- TypeScript
+- Vite
+- Material UI
+- Zustand
+- TanStack Query
+
+### Persistence and Platform
+
+- IndexedDB via `idb`
+- Firebase Auth
+- Firestore
+- Cloud Storage
+- Firebase Functions
+- Firebase Hosting
+
+### Quality and Tooling
+
+- Vitest
+- Testing Library
+- ESLint
+- TypeScript project builds
+- Capacitor Android foundation
+
+## Architecture Summary
+
+Forge is built around a few clear layers:
+
+- `src/domain`
+  Business rules, scoring, readiness, schedule rules, recommendation logic, and typed contracts.
+
+- `src/services`
+  Application services for persistence, analytics, calendar integration, notifications, sync, backup, and platform operations.
+
+- `src/data`
+  Local repositories and IndexedDB storage access.
+
+- `src/features`
+  Product surfaces and their hooks, pages, and feature-level components.
+
+- `functions/`
+  Firebase Functions for scheduled or operator-driven background work.
+
+This separation makes the project easier to test, reason about, and extend.
+
+## Guest Mode
+
+Forge supports a guest workspace so anyone can explore the product without signing in.
+
+Guest mode:
+
+- seeds local demo data
+- works without cloud sync
+- is safe to experiment with
+- clears when the guest exits
+
+This is useful for:
+
+- product demos
+- recruiter review
+- quick evaluation without account setup
+
+## Getting Started
+
+### 1. Install dependencies
 
 ```bash
 npm install
+npm run functions:install
+```
+
+### 2. Create your local environment file
+
+```bash
 cp .env.example .env
 ```
 
-Fill in real Firebase web-app values in `.env` before expecting auth or Firestore-backed sync to work.
-Guest mode is also available from the auth screen and seeds a temporary local demo workspace without using cloud sync.
+Add real Firebase web app values to `.env`.
 
-## Local Development
+Important:
+
+- Forge needs valid Firebase config for authenticated flows
+- guest mode can still be useful for product exploration
+
+### 3. Start the app locally
 
 ```bash
 npm run dev
 ```
 
-Useful scripts:
+Open the URL printed by Vite, usually:
 
-- `npm run lint`
-- `npm run test:run`
-- `npm run typecheck`
-- `npm run build`
-- `npm run preview`
-- `npm run launch:verify`
-- `npm run functions:verify`
-- `npm run native:doctor`
-- `npm run android:assemble`
-- `npm run android:install`
+```text
+http://127.0.0.1:5173
+```
 
-For a production-like PWA check:
+## Recommended Local Test Flow
+
+### Fast development loop
+
+```bash
+npm run dev
+```
+
+Use this when you are changing UI or product behavior.
+
+### Production-like local check
 
 ```bash
 npm run build
-npm run preview -- --host 127.0.0.1 --port 4173
+npm run preview -- --host 127.0.0.1 --port 4181
 ```
 
-## Core Docs
+Then open:
 
-- [Phase 1 Spec & Implementation Plan](/Users/ayushjaipuriar/Documents/GitHub/forge/docs/phase-1-spec-implementation-plan.md)
-- [Phase 2 Spec & Implementation Plan](/Users/ayushjaipuriar/Documents/GitHub/forge/docs/phase-2-spec-implementation-plan.md)
-- [Phase 3 Spec & Implementation Plan](/Users/ayushjaipuriar/Documents/GitHub/forge/docs/phase-3-spec-implementation-plan.md)
-- [Phase 4 Spec & Implementation Plan](/Users/ayushjaipuriar/Documents/GitHub/forge/docs/phase-4-spec-implementation-plan.md)
-- [Phase 4 Launch Baseline Audit](/Users/ayushjaipuriar/Documents/GitHub/forge/docs/phase-4-launch-baseline-audit.md)
-- [Phase 4 Configuration Safety Checklist](/Users/ayushjaipuriar/Documents/GitHub/forge/docs/phase-4-configuration-safety-checklist.md)
-- [Phase 4 Launch Operations](/Users/ayushjaipuriar/Documents/GitHub/forge/docs/phase-4-launch-operations.md)
-- [Phase 4 Release Readiness Checklist](/Users/ayushjaipuriar/Documents/GitHub/forge/docs/phase-4-release-readiness-checklist.md)
-- [Phase 4 Launch Candidate Summary](/Users/ayushjaipuriar/Documents/GitHub/forge/docs/phase-4-launch-candidate-summary.md)
-- [Production Deployment And Phone Install Guide](/Users/ayushjaipuriar/Documents/GitHub/forge/docs/production-deployment-and-phone-install-guide.md)
-- [UI Modernization Implementation Plan](/Users/ayushjaipuriar/Documents/GitHub/forge/docs/ui-modernization-implementation-plan.md)
-- [UI Modernization Sprint 1 Plan](/Users/ayushjaipuriar/Documents/GitHub/forge/docs/ui-modernization-sprint-1-plan.md)
-- [UI Modernization Sprint 2 Plan](/Users/ayushjaipuriar/Documents/GitHub/forge/docs/ui-modernization-sprint-2-plan.md)
-- [UI Modernization Sprint 3 Plan](/Users/ayushjaipuriar/Documents/GitHub/forge/docs/ui-modernization-sprint-3-plan.md)
-- [UI Modernization Sprint 3.1 Plan](/Users/ayushjaipuriar/Documents/GitHub/forge/docs/ui-modernization-sprint-3-1-plan.md)
-- [UI Modernization Sprint 4 Plan](/Users/ayushjaipuriar/Documents/GitHub/forge/docs/ui-modernization-sprint-4-plan.md)
-- [UI Modernization Sprint 5 Plan](/Users/ayushjaipuriar/Documents/GitHub/forge/docs/ui-modernization-sprint-5-plan.md)
-- [UI Modernization Sprint 6 Plan](/Users/ayushjaipuriar/Documents/GitHub/forge/docs/ui-modernization-sprint-6-plan.md)
-- [UI Modernization Sprint 7 Plan](/Users/ayushjaipuriar/Documents/GitHub/forge/docs/ui-modernization-sprint-7-plan.md)
-- [Auth Hardening Sprint Plan](/Users/ayushjaipuriar/Documents/GitHub/forge/docs/auth-hardening-sprint-plan.md)
-- [Guest Workspace Implementation Notes](/Users/ayushjaipuriar/Documents/GitHub/forge/docs/guest-workspace-implementation-notes.md)
-- [About Page Implementation Plan](/Users/ayushjaipuriar/Documents/GitHub/forge/docs/about-page-implementation-plan.md)
-- [Phase 4 Operational Diagnostics](/Users/ayushjaipuriar/Documents/GitHub/forge/docs/phase-4-operational-diagnostics.md)
-- [Phase 4 Native Shell Workflow](/Users/ayushjaipuriar/Documents/GitHub/forge/docs/phase-4-native-shell-workflow.md)
-- [Architecture Overview](/Users/ayushjaipuriar/Documents/GitHub/forge/docs/architecture-overview.md)
-- [Command Center Visualization System](/Users/ayushjaipuriar/Documents/GitHub/forge/docs/command-center-visualization-system.md)
-- [Command Center Metric Definitions](/Users/ayushjaipuriar/Documents/GitHub/forge/docs/command-center-metric-definitions.md)
-- [Analytics Insight Rules](/Users/ayushjaipuriar/Documents/GitHub/forge/docs/analytics-insight-rules.md)
-- [Analytics Gamification Rules](/Users/ayushjaipuriar/Documents/GitHub/forge/docs/analytics-gamification-rules.md)
-- [Analytics Operational Signals](/Users/ayushjaipuriar/Documents/GitHub/forge/docs/analytics-operational-signals.md)
-- [Analytics Performance Notes](/Users/ayushjaipuriar/Documents/GitHub/forge/docs/analytics-performance-notes.md)
-- [Notification Delivery Rules](/Users/ayushjaipuriar/Documents/GitHub/forge/docs/notification-delivery-rules.md)
-- [Notification Scheduling Operations](/Users/ayushjaipuriar/Documents/GitHub/forge/docs/notification-scheduling-operations.md)
-- [Backup and Restore Operations](/Users/ayushjaipuriar/Documents/GitHub/forge/docs/backup-and-restore-operations.md)
-- [Phase 3 Spec and Implementation Plan](/Users/ayushjaipuriar/Documents/GitHub/forge/docs/phase-3-spec-implementation-plan.md)
-- [Firebase Setup](/Users/ayushjaipuriar/Documents/GitHub/forge/docs/firebase-setup.md)
-- [Deployment Guide](/Users/ayushjaipuriar/Documents/GitHub/forge/docs/deployment-guide.md)
-- [Google Calendar Integration Notes](/Users/ayushjaipuriar/Documents/GitHub/forge/docs/google-calendar-scaffolding.md)
-- [Future Extension Notes](/Users/ayushjaipuriar/Documents/GitHub/forge/docs/future-extension-notes.md)
-- [Release Readiness Checklist](/Users/ayushjaipuriar/Documents/GitHub/forge/docs/release-readiness-checklist.md)
-- [Phase 2 Release Readiness Checklist](/Users/ayushjaipuriar/Documents/GitHub/forge/docs/phase-2-release-readiness-checklist.md)
-- [Phase 3 Release Readiness Checklist](/Users/ayushjaipuriar/Documents/GitHub/forge/docs/phase-3-release-readiness-checklist.md)
+```text
+http://127.0.0.1:4181
+```
 
-## Verification Status
+Use this when checking:
 
-The repo currently passes the full Phase 4 launch path:
+- PWA shell behavior
+- auth behavior closer to production
+- final layout and asset output
 
-- `npm run launch:verify`
+## Useful Commands
 
-That launch path currently covers:
+```bash
+npm run dev
+npm run lint
+npm run typecheck
+npm run test:run
+npm run build
+npm run preview
+npm run launch:verify
+npm run functions:verify
+```
 
-- `npm run lint`
-- `npm run test:run`
-- `npm run typecheck`
-- `npm run build`
-- `npm run functions:verify`
+### Android / native shell support
 
-Desktop Chromium verification has also been completed for the built PWA shell, including manifest visibility, service-worker control, and forced offline reload of the auth shell.
-Android Chrome verification has now also been completed on a real `adb`-connected device, including successful shell rendering, visible install surface, and cached-shell reload after the local preview origin was stopped.
-Live Firebase verification has also been completed against a real project, including Google sign-in plus creation of `users/{uid}` and `users/{uid}/settings/default`.
+```bash
+npm run native:doctor
+npm run android:sync
+npm run android:assemble
+npm run android:install
+```
 
-## Known Limitations
+## Verification
 
-- Notifications are browser and installed-PWA only. Scheduled Functions create evaluation records and candidate metadata, but they do not provide native mobile push delivery.
-- Scheduled backups are durable and versioned, and recent restore-ready backups can now be staged from Settings, but Forge still does not provide a full backup-management console or automatic cross-device recovery.
-- Google Calendar now supports primary-calendar pressure plus explicit major-block write mirroring in Phase 3, but long-lived server-managed OAuth and background reconciliation are not complete yet.
-- Health integration is a persisted scaffold and typed normalization seam, not a live provider sync system yet.
-- Offline behavior is intentionally shell-first and action-focused. It does not attempt full query-cache persistence for every screen.
-- Native shell now exists through Capacitor on Android, but native auth callback handling, native push delivery, and native health bridges are still not complete yet.
-- Phase 4 now surfaces explicit runtime-capability boundaries in-product, so browser, installed-PWA, and native-shell support posture are visible instead of implied.
-- Phase 4 also documents planned Functions-owned boundaries like long-lived integration token handling and richer remote diagnostics, but those are still intentionally deferred rather than half-implemented.
+The main pre-deploy verification path is:
 
-## Product Boundary
+```bash
+npm run launch:verify
+```
 
-Forge is not a generic habit tracker, routine editor, or analytics toy. The current codebase intentionally protects these boundaries:
+That runs:
 
-- routines are seeded and config-driven
-- operational overrides are allowed; free-form template editing is not
-- scoring favors real execution and cannot be padded by low-value completions
-- integrations are scaffolded only when they can be introduced without rewiring the core product
+- lint
+- typecheck
+- tests
+- production build
+- Functions verification
+
+## Deployment
+
+Forge is deployed on Firebase Hosting.
+
+### Hosting-only deploy
+
+Use this when only the frontend/PWA shell changed:
+
+```bash
+npm run build
+firebase deploy --project forge-510f3 --only hosting
+```
+
+### Full deploy
+
+Use this when rules, storage, or functions changed too:
+
+```bash
+npm run launch:verify
+firebase deploy --project forge-510f3 --only hosting,firestore:rules,firestore:indexes,storage,functions
+```
+
+Live site:
+
+```text
+https://forge-510f3.web.app
+```
+
+## How To Evaluate The Product Quickly
+
+If you are new to Forge, this is the fastest useful walkthrough:
+
+1. Open the app and sign in, or enter guest mode.
+2. Go to `Today` to understand the live execution model.
+3. Open `Command Center` to see the analytics and pressure layer.
+4. Open `Schedule` to see the weekly routine board.
+5. Open `Prep`, `Physical`, and `Readiness` to understand how execution, training, and recovery connect.
+6. Open `Settings` to inspect runtime truth and platform boundaries.
+7. Open `About` for project context and developer links.
+
+## Current Product Boundaries
+
+Forge is intentionally **not**:
+
+- a generic habit tracker
+- a free-form calendar replacement
+- a template-driven dashboard toy
+- a social productivity app
+
+The current product philosophy is:
+
+- routines are seeded and structured
+- overrides are allowed when reality changes
+- metrics should support honest execution, not vanity tracking
+- integrations should exist only when they add real operational value
+
+## Current Limitations
+
+- browser and installed-PWA notifications are supported more directly than native mobile push
+- health integrations are scaffolded, not fully live provider sync
+- native shell foundations exist, but full native capability parity is still incomplete
+- calendar support is intentionally bounded and not a complete long-lived server-managed integration system yet
+- offline support is strongest at the shell and local workspace level, not full cloud-state parity across every screen
+
+## Developer
+
+Built by **Ayush Jaipuriar**  
+**Developer at TransUnion**
+
+- LinkedIn: [Ayush Jaipuriar](https://www.linkedin.com/in/ayush-jaipuriar/)
+- Portfolio: [Personal Portfolio](https://ayush-jaipuriar.github.io/Personal-Portfolio/about)
+
+## Core Project Docs
+
+If you want deeper technical or delivery context, start here:
+
+- [Architecture Overview](docs/architecture-overview.md)
+- [Firebase Setup](docs/firebase-setup.md)
+- [Deployment Guide](docs/deployment-guide.md)
+- [Production Deployment And Phone Install Guide](docs/production-deployment-and-phone-install-guide.md)
+- [UI Modernization Implementation Plan](docs/ui-modernization-implementation-plan.md)
+- [Auth Hardening Sprint Plan](docs/auth-hardening-sprint-plan.md)
+- [Guest Workspace Implementation Notes](docs/guest-workspace-implementation-notes.md)
+- [Phase 4 Native Shell Workflow](docs/phase-4-native-shell-workflow.md)
+- [Phase 4 Launch Operations](docs/phase-4-launch-operations.md)
+
+## Final Note
+
+Forge is a serious product project: part planner, part execution console, part operating surface.
+
+It was built to show that productivity software can be structured, opinionated, and honest without becoming noisy or generic.
