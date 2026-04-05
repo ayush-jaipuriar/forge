@@ -15,6 +15,11 @@ This iteration touched:
 - guest-aware mutation services and hooks across `Today`, `Schedule`, `Prep`, `Physical`, and `Settings`
 - auth and service regression tests
 - a shared in-app guest CTA in the shell so temporary sessions are explained after sign-in too
+- a redesigned auth entry surface that uses the Forge mark as a staged background element so guest and Google entry read like one intentional entry gate instead of a plain auth form
+- a follow-up auth-entry sizing pass so the panel keeps the staged composition without growing larger than the original entry-card footprint
+- a final auth-entry placement pass so the panel sits centered in the composition instead of reading like a low-floating slab on desktop
+- removal of the extra dark top overlay behind the auth panel so the Forge-mark stage reads cleanly instead of like a shadow cap above the card
+- reduction and downward repositioning of the Forge-mark silhouette so the branded background stays visible without creating a dark cap above the centered auth panel
 
 ## Why This Shape
 
