@@ -374,6 +374,7 @@ Built by **Ayush Jaipuriar**
 If you want deeper technical or delivery context, start here:
 
 - [Architecture Overview](docs/architecture-overview.md)
+- [Forge Senior Engineering Study Guide](docs/forge-senior-study-guide.md)
 - [Firebase Setup](docs/firebase-setup.md)
 - [Deployment Guide](docs/deployment-guide.md)
 - [Production Deployment And Phone Install Guide](docs/production-deployment-and-phone-install-guide.md)

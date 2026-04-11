@@ -18,12 +18,19 @@ Phase 1 should leave clean extension points for:
 - a dedicated [Phase 2 plan](/Users/ayushjaipuriar/Documents/GitHub/forge/docs/phase-2-spec-implementation-plan.md) now defines the analytics, Command Center, projection, streak, mission, and hardening path explicitly so this depth does not get improvised later
 - a dedicated [Phase 3 plan](/Users/ayushjaipuriar/Documents/GitHub/forge/docs/phase-3-spec-implementation-plan.md) now defines the notification, sync-hardening, backup, Calendar, and health-scaffolding path explicitly so integration work stays staged and honest
 
+Current sync truth:
+
+- Forge currently has a local-first write path plus Firestore replay for queued changes.
+- Forge does not yet have a full remote-to-local hydration layer that repopulates IndexedDB from Firestore on sign-in or keeps multiple devices converged in real time.
+- In practice, this means queue health can be clean while phone and desktop still drift if one device is looking at stale or default local state.
+
 ## What Should Stay Deferred
 
 - bidirectional Calendar sync
 - health wearable or device ingestion
 - dedicated backend extraction for orchestration or merge conflict resolution
 - AI-generated planning or coaching features
+- full bidirectional app-state convergence across devices
 
 ## Phase Boundary After Milestone 10
 
