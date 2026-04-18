@@ -33,14 +33,14 @@ function getSyncDiagnosticItem(syncDiagnostics?: SyncDiagnosticsSnapshot | null)
   if (diagnostics.healthState === 'conflicted' || diagnostics.healthState === 'degraded') {
     return {
       key: 'sync',
-      label: 'Sync replay',
+      label: 'Shared state',
       severity: 'critical',
       statusLabel: diagnostics.healthState,
       summary:
         diagnostics.healthState === 'conflicted'
           ? `Forge has ${diagnostics.conflictedCount} open sync conflict(s) that need explicit repair before state can be trusted across devices.`
           : `Forge has ${diagnostics.failedCount} failed sync item(s); local-first changes are no longer replaying cleanly.`,
-      owner: 'Browser queue + Firebase sync',
+      owner: 'Local cache + Firebase sync',
       lastObservedAt: diagnostics.lastFailedSyncAt ?? diagnostics.updatedAt,
     }
   }
@@ -48,25 +48,25 @@ function getSyncDiagnosticItem(syncDiagnostics?: SyncDiagnosticsSnapshot | null)
   if (diagnostics.healthState === 'queued' || diagnostics.healthState === 'stale') {
     return {
       key: 'sync',
-      label: 'Sync replay',
+      label: 'Shared state',
       severity: 'warning',
       statusLabel: diagnostics.healthState,
       summary:
         diagnostics.healthState === 'stale'
-          ? `Forge has ${diagnostics.staleEntityCount} stale queued item(s) that have exceeded the ${diagnostics.staleThresholdMinutes}-minute freshness threshold.`
-          : `Forge still has ${diagnostics.replayableCount} replayable item(s) waiting to sync.`,
-      owner: 'Browser queue + Firebase sync',
+          ? `Forge needs a cloud refresh because ${diagnostics.staleEntityCount} queued item(s) have exceeded the ${diagnostics.staleThresholdMinutes}-minute freshness threshold.`
+          : `Forge still has ${diagnostics.replayableCount} local change(s) waiting to reach shared cloud state.`,
+      owner: 'Local cache + Firebase sync',
       lastObservedAt: diagnostics.updatedAt,
     }
   }
 
   return {
     key: 'sync',
-    label: 'Sync replay',
+    label: 'Shared state',
     severity: 'healthy',
     statusLabel: diagnostics.healthState,
-    summary: 'Local-first state is currently replaying cleanly with no visible conflicts or stale queue items.',
-    owner: 'Browser queue + Firebase sync',
+    summary: 'Shared cloud-backed state is current and the local replay queue is clear.',
+    owner: 'Local cache + Firebase sync',
     lastObservedAt: diagnostics.lastSuccessfulSyncAt ?? diagnostics.updatedAt,
   }
 }

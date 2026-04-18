@@ -72,7 +72,7 @@ describe('UI primitives', () => {
       </AppProviders>,
     )
 
-    expect(screen.getByText('Queued to Sync')).toBeInTheDocument()
+    expect(screen.getByText('Local Changes')).toBeInTheDocument()
   })
 
   it('renders the richer degraded sync state copy for hardening-era shell feedback', () => {
@@ -82,7 +82,7 @@ describe('UI primitives', () => {
       </AppProviders>,
     )
 
-    expect(screen.getByText('Sync Degraded')).toBeInTheDocument()
+    expect(screen.getByText('Sync Issue')).toBeInTheDocument()
   })
 
   it('renders a command-center chart card with an honest insufficient-data state', () => {

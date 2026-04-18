@@ -110,6 +110,13 @@ const refreshCalendarCacheMock = vi.hoisted(() => ({
   error: null,
 }))
 
+const refreshCloudWorkspaceMock = vi.hoisted(() => ({
+  mutate: vi.fn(),
+  isPending: false,
+  isError: false,
+  error: null,
+}))
+
 const syncCalendarMirrorsMock = vi.hoisted(() => ({
   mutate: vi.fn(),
   isPending: false,
@@ -174,6 +181,10 @@ vi.mock('@/features/settings/hooks/useRefreshCalendarCache', () => ({
   useRefreshCalendarCache: () => refreshCalendarCacheMock,
 }))
 
+vi.mock('@/features/settings/hooks/useRefreshCloudWorkspace', () => ({
+  useRefreshCloudWorkspace: () => refreshCloudWorkspaceMock,
+}))
+
 vi.mock('@/features/settings/hooks/useSyncCalendarMirrors', () => ({
   useSyncCalendarMirrors: () => syncCalendarMirrorsMock,
 }))
@@ -193,6 +204,7 @@ describe('SettingsPage', () => {
     connectCalendarWriteMock.mutate.mockReset()
     disconnectCalendarMock.mutate.mockReset()
     refreshCalendarCacheMock.mutate.mockReset()
+    refreshCloudWorkspaceMock.mutate.mockReset()
     syncCalendarMirrorsMock.mutate.mockReset()
     applyRestoreStageMock.mutate.mockReset()
 
@@ -357,5 +369,15 @@ describe('SettingsPage', () => {
 
     await user.click(screen.getByRole('button', { name: /request browser permission/i }))
     expect(requestNotificationPermissionMock.mutate).toHaveBeenCalled()
+  })
+
+  it('offers a manual refresh from cloud action for shared state recovery', async () => {
+    const user = userEvent.setup()
+
+    render(<SettingsPage />)
+
+    await user.click(screen.getByRole('button', { name: /refresh from cloud/i }))
+
+    expect(refreshCloudWorkspaceMock.mutate).toHaveBeenCalled()
   })
 })

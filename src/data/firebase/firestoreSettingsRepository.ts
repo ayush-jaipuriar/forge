@@ -1,4 +1,4 @@
-import { doc, getDoc, setDoc } from 'firebase/firestore'
+import { doc, getDoc, onSnapshot, setDoc } from 'firebase/firestore'
 import { getFirebaseFirestore } from '@/lib/firebase/client'
 import type { UserSettings } from '@/domain/settings/types'
 
@@ -23,5 +23,17 @@ export class FirestoreSettingsRepository {
     const snapshot = await getDoc(doc(db, 'users', userId, 'settings', 'default'))
 
     return snapshot.exists() ? (snapshot.data() as UserSettings) : null
+  }
+
+  subscribeDefault(userId: string, onChange: (settings: UserSettings | null) => void) {
+    const db = getFirebaseFirestore()
+
+    if (!db) {
+      return () => {}
+    }
+
+    return onSnapshot(doc(db, 'users', userId, 'settings', 'default'), (snapshot) => {
+      onChange(snapshot.exists() ? (snapshot.data() as UserSettings) : null)
+    })
   }
 }

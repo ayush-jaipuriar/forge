@@ -21,6 +21,7 @@ import { useDisconnectCalendar } from '@/features/settings/hooks/useDisconnectCa
 import { useLoadServerRestoreStage } from '@/features/settings/hooks/useLoadServerRestoreStage'
 import { useInvokePlatformOperation } from '@/features/settings/hooks/useInvokePlatformOperation'
 import { useRefreshCalendarCache } from '@/features/settings/hooks/useRefreshCalendarCache'
+import { useRefreshCloudWorkspace } from '@/features/settings/hooks/useRefreshCloudWorkspace'
 import { useRequestNotificationPermission } from '@/features/settings/hooks/useRequestNotificationPermission'
 import { useSettingsWorkspace } from '@/features/settings/hooks/useSettingsWorkspace'
 import { useSyncCalendarMirrors } from '@/features/settings/hooks/useSyncCalendarMirrors'
@@ -90,12 +91,14 @@ export function SettingsPage() {
   const connectCalendarWrite = useConnectCalendarWrite()
   const disconnectCalendar = useDisconnectCalendar()
   const refreshCalendarCache = useRefreshCalendarCache()
+  const refreshCloudWorkspace = useRefreshCloudWorkspace(user?.uid)
   const syncCalendarMirrors = useSyncCalendarMirrors()
   const applyRestoreStage = useApplyRestoreStage()
   const restoreInputRef = useRef<HTMLInputElement | null>(null)
   const [restoreStage, setRestoreStage] = useState<RestoreStage | null>(null)
   const [restoreError, setRestoreError] = useState<string | null>(null)
   const [backupNotice, setBackupNotice] = useState<string | null>(null)
+  const [cloudRefreshNotice, setCloudRefreshNotice] = useState<string | null>(null)
 
   if (isLoading || !data) {
     return (
@@ -546,7 +549,7 @@ export function SettingsPage() {
                 <SettingsStatusRow
                   label="Firebase auth"
                   summary={`Current auth state ${status}`}
-                  meta="Gate for sync and provider work."
+                  meta="Gate for shared cloud state."
                   trailing={<Chip label={status} size="small" variant="outlined" color={status === 'authenticated' ? 'success' : 'default'} />}
                 />
                 <SettingsStatusRow
@@ -558,6 +561,39 @@ export function SettingsPage() {
                 <Typography variant="body2" color="text.secondary">
                   Update needed: {platformWorkspace.needRefresh ? 'Yes' : 'No'} · Offline ready: {platformWorkspace.offlineReady ? 'Yes' : 'No'}
                 </Typography>
+                <Stack direction={{ xs: 'column', sm: 'row' }} spacing={1} useFlexGap flexWrap="wrap">
+                  <Button
+                    variant="outlined"
+                    onClick={() =>
+                      refreshCloudWorkspace.mutate(undefined, {
+                        onSuccess: (result) => {
+                          setCloudRefreshNotice(
+                            `Cloud refresh applied. Settings ${result.hydratedSettings ? 'updated' : 'unchanged'} · ${result.hydratedDayInstances} day instance${result.hydratedDayInstances === 1 ? '' : 's'} hydrated.`,
+                          )
+                        },
+                      })
+                    }
+                    disabled={refreshCloudWorkspace.isPending || status !== 'authenticated'}
+                  >
+                    {refreshCloudWorkspace.isPending ? 'Refreshing cloud state...' : 'Refresh from cloud'}
+                  </Button>
+                  {cloudRefreshNotice ? (
+                    <Chip
+                      label={cloudRefreshNotice}
+                      size="small"
+                      variant="outlined"
+                      color="success"
+                      sx={{ maxWidth: '100%' }}
+                    />
+                  ) : null}
+                </Stack>
+                {refreshCloudWorkspace.isError ? (
+                  <Alert severity="error" variant="outlined" aria-live="polite">
+                    {refreshCloudWorkspace.error instanceof Error
+                      ? refreshCloudWorkspace.error.message
+                      : 'Forge could not refresh shared cloud state.'}
+                  </Alert>
+                ) : null}
               </Stack>
             </SettingsSubsection>
 

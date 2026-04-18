@@ -3,13 +3,71 @@ import { useEffect } from 'react'
 import { localSyncConflictRepository, localSyncDiagnosticsRepository, localSyncQueueRepository } from '@/data/local'
 import { useUiStore } from '@/app/store/uiStore'
 import { useAuthSession } from '@/features/auth/providers/useAuthSession'
-import { reportMonitoringEvent } from '@/services/monitoring/monitoringService'
+import { reportMonitoringError, reportMonitoringEvent } from '@/services/monitoring/monitoringService'
 import { assessSyncHealth, createInitialSyncDiagnosticsSnapshot, getSyncMonitoringSeverity } from '@/services/sync/syncHealthService'
+import { hydrateCloudSharedState, subscribeToCloudSharedState } from '@/services/sync/cloudSyncService'
 import { flushSyncQueue } from '@/services/sync/syncOrchestrator'
 
 export function SyncProvider({ children }: PropsWithChildren) {
   const { status, user } = useAuthSession()
   const setSyncStatus = useUiStore((state) => state.setSyncStatus)
+
+  useEffect(() => {
+    if (status !== 'authenticated' || !user) {
+      return
+    }
+
+    const userId = user.uid
+    let active = true
+    let unsubscribe = () => {}
+
+    async function hydrateAndSubscribe() {
+      try {
+        if (navigator.onLine) {
+          await hydrateCloudSharedState(userId)
+        }
+
+        if (!active) {
+          return
+        }
+
+        unsubscribe = subscribeToCloudSharedState(userId)
+      } catch (error) {
+        reportMonitoringError({
+          domain: 'sync',
+          action: 'hydrate-cloud-shared-state',
+          message: 'Forge could not hydrate shared cloud state into the local workspace.',
+          error,
+          metadata: {
+            userId,
+          },
+        })
+      }
+    }
+
+    function handleOnline() {
+      void hydrateCloudSharedState(userId).catch((error) => {
+        reportMonitoringError({
+          domain: 'sync',
+          action: 'refresh-cloud-shared-state',
+          message: 'Forge could not refresh shared cloud state after connectivity returned.',
+          error,
+          metadata: {
+            userId,
+          },
+        })
+      })
+    }
+
+    void hydrateAndSubscribe()
+    window.addEventListener('online', handleOnline)
+
+    return () => {
+      active = false
+      unsubscribe()
+      window.removeEventListener('online', handleOnline)
+    }
+  }, [status, user])
 
   useEffect(() => {
     let mounted = true

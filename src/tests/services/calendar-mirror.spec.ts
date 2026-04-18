@@ -14,6 +14,12 @@ import type { DayInstance } from '@/domain/routine/types'
 import { createDefaultUserSettings } from '@/domain/settings/types'
 import { googleCalendarIntegrationService } from '@/services/calendar/calendarIntegrationService'
 
+const flushSyncQueueMock = vi.hoisted(() => vi.fn(async () => 0))
+
+vi.mock('@/services/sync/syncOrchestrator', () => ({
+  flushSyncQueue: flushSyncQueueMock,
+}))
+
 function getActiveMirrorDate() {
   const date = new Date()
   date.setDate(date.getDate() + 1)
@@ -65,6 +71,7 @@ describe('calendar mirror integration service', () => {
   afterEach(() => {
     vi.restoreAllMocks()
     vi.unstubAllGlobals()
+    flushSyncQueueMock.mockClear()
   })
 
   it('upgrades the connection into write-enabled mirror mode', async () => {

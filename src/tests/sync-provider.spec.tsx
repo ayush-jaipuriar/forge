@@ -16,6 +16,8 @@ const diagnosticsGetDefaultMock = vi.hoisted(() => vi.fn<() => Promise<unknown>>
 const diagnosticsUpsertMock = vi.hoisted(() => vi.fn<(value: unknown) => Promise<void>>())
 const listOpenConflictsMock = vi.hoisted(() => vi.fn<() => Promise<unknown[]>>())
 const flushSyncQueueMock = vi.hoisted(() => vi.fn<(userId: string) => Promise<number>>())
+const hydrateCloudSharedStateMock = vi.hoisted(() => vi.fn<(userId: string) => Promise<unknown>>())
+const subscribeToCloudSharedStateMock = vi.hoisted(() => vi.fn<(userId: string) => () => void>())
 
 vi.mock('@/features/auth/providers/useAuthSession', () => ({
   useAuthSession: () => authMock.value,
@@ -38,6 +40,11 @@ vi.mock('@/services/sync/syncOrchestrator', () => ({
   flushSyncQueue: flushSyncQueueMock,
 }))
 
+vi.mock('@/services/sync/cloudSyncService', () => ({
+  hydrateCloudSharedState: hydrateCloudSharedStateMock,
+  subscribeToCloudSharedState: subscribeToCloudSharedStateMock,
+}))
+
 describe('SyncProvider', () => {
   beforeEach(() => {
     useUiStore.setState({ syncStatus: 'stable' })
@@ -46,6 +53,8 @@ describe('SyncProvider', () => {
     diagnosticsUpsertMock.mockReset()
     listOpenConflictsMock.mockReset()
     flushSyncQueueMock.mockReset()
+    hydrateCloudSharedStateMock.mockReset()
+    subscribeToCloudSharedStateMock.mockReset()
     authMock.value = {
       status: 'authenticated',
       user: {
@@ -55,6 +64,27 @@ describe('SyncProvider', () => {
     diagnosticsGetDefaultMock.mockResolvedValue(null)
     diagnosticsUpsertMock.mockResolvedValue()
     listOpenConflictsMock.mockResolvedValue([])
+    hydrateCloudSharedStateMock.mockResolvedValue({
+      hydratedSettings: true,
+      hydratedDayInstances: 0,
+    })
+    subscribeToCloudSharedStateMock.mockReturnValue(() => {})
+  })
+
+  it('hydrates shared cloud state and starts live subscriptions for authenticated users', async () => {
+    setNavigatorOnline(true)
+    listOutstandingMock.mockResolvedValue([])
+
+    render(
+      <SyncProvider>
+        <div>sync test</div>
+      </SyncProvider>,
+    )
+
+    await waitFor(() => {
+      expect(hydrateCloudSharedStateMock).toHaveBeenCalledWith('operator-1')
+      expect(subscribeToCloudSharedStateMock).toHaveBeenCalledWith('operator-1')
+    })
   })
 
   it('replays queued work after connectivity returns', async () => {
