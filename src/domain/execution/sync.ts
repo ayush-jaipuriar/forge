@@ -1,13 +1,15 @@
 import type { DayInstance } from '@/domain/routine/types'
 import type { UserSettings } from '@/domain/settings/types'
+import type { SettingsSyncPatch } from '@/domain/settings/sync'
 
-export type SyncActionType = 'upsertDayInstance' | 'upsertSettings'
+export type SyncActionType = 'upsertDayInstance' | 'upsertSettings' | 'patchSettings'
 
 export type SyncQueueStatus = 'pending' | 'retrying' | 'failed'
 
 export type SyncPayloadMap = {
   upsertDayInstance: DayInstance
   upsertSettings: UserSettings
+  patchSettings: SettingsSyncPatch
 }
 
 export type SyncQueueItem<TAction extends SyncActionType = SyncActionType> = {

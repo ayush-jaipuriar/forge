@@ -1,6 +1,7 @@
 import type { WorkoutLogEntry } from '@/domain/physical/types'
-import { localSettingsRepository, localSyncQueueRepository } from '@/data/local'
-import { persistSyncableChange, type SyncWriteMode } from '@/services/sync/persistSyncableChange'
+import { localSettingsRepository } from '@/data/local'
+import type { SyncWriteMode } from '@/services/sync/persistSyncableChange'
+import { getOutstandingSyncCount, persistSettingsPatch } from '@/services/settings/settingsSyncPersistence'
 
 type UpdateWorkoutLogInput = {
   date: string
@@ -24,25 +25,20 @@ export async function updateWorkoutLog({
 
   if (JSON.stringify(currentWorkout) === JSON.stringify(patch)) {
     return {
-      pendingCount: await localSyncQueueRepository.countOutstanding(),
+      pendingCount: await getOutstandingSyncCount(),
     }
   }
 
-  const nextSettings = {
-    ...currentSettings,
-    workoutLogs: {
-      ...currentSettings.workoutLogs,
-      [date]: patch,
+  return persistSettingsPatch({
+    patch: {
+      type: 'mergeWorkoutLogs',
+      settingsId: currentSettings.id,
+      entries: {
+        [date]: patch,
+      },
+      updatedAt: new Date().toISOString(),
     },
-    updatedAt: new Date().toISOString(),
-  }
-
-  await localSettingsRepository.upsert(nextSettings)
-  return persistSyncableChange({
-    actionType: 'upsertSettings',
-    entityId: nextSettings.id,
-    payload: nextSettings,
     userId,
-    mode: syncMode,
+    syncMode,
   })
 }

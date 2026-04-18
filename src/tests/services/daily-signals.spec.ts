@@ -25,7 +25,10 @@ describe('updateDailySignals', () => {
       sleepDurationHours: undefined,
     })
     expect(queueItems).toHaveLength(1)
-    expect(queueItems[0].actionType).toBe('upsertSettings')
+    expect(queueItems[0]).toMatchObject({
+      actionType: 'patchSettings',
+      entityId: 'default:dailySignals:2026-03-27',
+    })
   })
 
   it('derives sleep target status from manual duration input', async () => {

@@ -30,7 +30,10 @@ describe('updatePrepTopicProgress', () => {
       hoursSpent: 1.5,
     })
     expect(queueItems).toHaveLength(1)
-    expect(queueItems[0].actionType).toBe('upsertSettings')
+    expect(queueItems[0]).toMatchObject({
+      actionType: 'patchSettings',
+      entityId: 'default:prepTopicProgress:dsa-arrays',
+    })
   })
 
   it('keeps guest prep progress local-only when sync is disabled', async () => {

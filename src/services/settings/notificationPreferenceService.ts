@@ -1,5 +1,6 @@
-import { localSettingsRepository, localSyncQueueRepository } from '@/data/local'
-import { persistSyncableChange, type SyncWriteMode } from '@/services/sync/persistSyncableChange'
+import { localSettingsRepository } from '@/data/local'
+import type { SyncWriteMode } from '@/services/sync/persistSyncableChange'
+import { getOutstandingSyncCount, persistSettingsPatch } from '@/services/settings/settingsSyncPersistence'
 
 export async function updateNotificationPreference({
   enabled,
@@ -20,26 +21,24 @@ export async function updateNotificationPreference({
   if (settings.notificationsEnabled === enabled) {
     return {
       settings,
-      pendingCount: await localSyncQueueRepository.countOutstanding(),
+      pendingCount: await getOutstandingSyncCount(),
     }
   }
 
-  const nextSettings = {
-    ...settings,
-    notificationsEnabled: enabled,
-    updatedAt: new Date().toISOString(),
-  }
-
-  await localSettingsRepository.upsert(nextSettings)
+  const nextUpdatedAt = new Date().toISOString()
+  const result = await persistSettingsPatch({
+    patch: {
+      type: 'setNotificationsEnabled',
+      settingsId: settings.id,
+      value: enabled,
+      updatedAt: nextUpdatedAt,
+    },
+    userId,
+    syncMode,
+  })
 
   return {
-    settings: nextSettings,
-    ...(await persistSyncableChange({
-      actionType: 'upsertSettings',
-      entityId: nextSettings.id,
-      payload: nextSettings,
-      userId,
-      mode: syncMode,
-    })),
+    settings: result.settings,
+    pendingCount: result.pendingCount,
   }
 }

@@ -29,7 +29,10 @@ describe('updateWorkoutLog', () => {
       note: 'Completed despite a compressed evening.',
     })
     expect(queueItems).toHaveLength(1)
-    expect(queueItems[0].actionType).toBe('upsertSettings')
+    expect(queueItems[0]).toMatchObject({
+      actionType: 'patchSettings',
+      entityId: 'default:workoutLogs:2026-03-27',
+    })
   })
 
   it('keeps guest workout writes local-only when sync is disabled', async () => {

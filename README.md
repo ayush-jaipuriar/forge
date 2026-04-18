@@ -381,6 +381,7 @@ If you want deeper technical or delivery context, start here:
 - [UI Modernization Implementation Plan](docs/ui-modernization-implementation-plan.md)
 - [Auth Hardening Sprint Plan](docs/auth-hardening-sprint-plan.md)
 - [Cross-Device Sync Hydration Sprint Plan](docs/cross-device-sync-hydration-sprint-plan.md)
+- [Settings Sync Hardening Sprint Plan](docs/settings-sync-hardening-sprint-plan.md)
 - [Guest Workspace Implementation Notes](docs/guest-workspace-implementation-notes.md)
 - [Phase 4 Native Shell Workflow](docs/phase-4-native-shell-workflow.md)
 - [Phase 4 Launch Operations](docs/phase-4-launch-operations.md)

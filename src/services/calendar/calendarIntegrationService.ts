@@ -5,7 +5,6 @@ import {
   localDayInstanceRepository,
   localExternalCalendarEventRepository,
   localSettingsRepository,
-  localSyncQueueRepository,
 } from '@/data/local'
 import { buildCalendarCollisionSummary } from '@/domain/calendar/collisions'
 import { buildMirroredRoutineBlockPreview } from '@/domain/calendar/conventions'
@@ -36,7 +35,7 @@ import {
   requestGoogleCalendarSession,
   updateGoogleCalendarEvent,
 } from '@/services/calendar/googleCalendarClient'
-import { createSyncQueueItem } from '@/services/sync/syncQueue'
+import { persistSettingsPatch } from '@/services/settings/settingsSyncPersistence'
 import { flushSyncQueue } from '@/services/sync/syncOrchestrator'
 
 type CalendarDayWorkspace = {
@@ -669,26 +668,17 @@ async function persistCalendarConnection(connection: CalendarConnectionSnapshot,
     throw new Error('Forge could not load settings before updating Calendar connection.')
   }
 
-  const nextSettings = {
-    ...settings,
-    calendarIntegration: connection,
-    updatedAt: new Date().toISOString(),
-  }
+  const result = await persistSettingsPatch({
+    patch: {
+      type: 'setCalendarIntegration',
+      settingsId: settings.id,
+      value: connection,
+      updatedAt: new Date().toISOString(),
+    },
+    userId,
+  })
 
-  await localSettingsRepository.upsert(nextSettings)
-  const outstandingItems = await localSyncQueueRepository.listOutstanding()
-  const supersededSettingsItems = outstandingItems.filter(
-    (item) => item.actionType === 'upsertSettings' && item.entityId === nextSettings.id,
-  )
-
-  await Promise.all(supersededSettingsItems.map((item) => localSyncQueueRepository.remove(item.id)))
-  await localSyncQueueRepository.enqueue(createSyncQueueItem('upsertSettings', nextSettings.id, nextSettings))
-
-  if (userId && isOnline()) {
-    return flushSyncQueue(userId)
-  }
-
-  return localSyncQueueRepository.countOutstanding()
+  return result.pendingCount
 }
 
 function isOnline() {

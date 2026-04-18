@@ -44,6 +44,9 @@ async function replayQueueItem(userId: string, item: AnySyncQueueItem) {
     case 'upsertSettings':
       await settingsRepository.upsert(userId, item.payload)
       return
+    case 'patchSettings':
+      await settingsRepository.patch(userId, item.payload)
+      return
     default:
       throw new Error('Unsupported sync action.')
   }

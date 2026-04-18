@@ -1,6 +1,7 @@
 import { localDayInstanceRepository, localSettingsRepository, localSyncQueueRepository } from '@/data/local'
 import { FirestoreDayInstanceRepository } from '@/data/firebase/firestoreDayInstanceRepository'
 import { FirestoreSettingsRepository } from '@/data/firebase/firestoreSettingsRepository'
+import type { AnySyncQueueItem } from '@/domain/execution/sync'
 import type { DayInstance } from '@/domain/routine/types'
 import type { UserSettings } from '@/domain/settings/types'
 import { queryClient } from '@/lib/query/queryClient'
@@ -49,10 +50,7 @@ async function applyRemoteSettings(settings: UserSettings | null) {
   }
 
   await localSettingsRepository.upsert(settings)
-  await clearSupersededSyncQueueItems({
-    actionType: 'upsertSettings',
-    entityIds: [settings.id],
-  })
+  await clearSupersededSettingsQueueItems(settings)
 }
 
 async function applyRemoteDayInstances(instances: DayInstance[]) {
@@ -81,6 +79,25 @@ async function clearSupersededSyncQueueItems(input: {
   const staleItems = outstandingItems.filter((item) => item.actionType === input.actionType && entityIds.has(item.entityId))
 
   await Promise.all(staleItems.map((item) => localSyncQueueRepository.remove(item.id)))
+}
+
+async function clearSupersededSettingsQueueItems(settings: UserSettings) {
+  const outstandingItems = await localSyncQueueRepository.listOutstanding()
+  const staleItems = outstandingItems.filter((item) => isStaleSettingsSyncItem(item, settings.updatedAt, settings.id))
+
+  await Promise.all(staleItems.map((item) => localSyncQueueRepository.remove(item.id)))
+}
+
+function isStaleSettingsSyncItem(item: AnySyncQueueItem, remoteUpdatedAt: string, settingsId: UserSettings['id']) {
+  if (item.actionType === 'upsertSettings') {
+    return item.entityId === settingsId && item.payload.updatedAt <= remoteUpdatedAt
+  }
+
+  if (item.actionType === 'patchSettings') {
+    return item.payload.settingsId === settingsId && item.payload.updatedAt <= remoteUpdatedAt
+  }
+
+  return false
 }
 
 export async function invalidateSharedWorkspaceQueries() {

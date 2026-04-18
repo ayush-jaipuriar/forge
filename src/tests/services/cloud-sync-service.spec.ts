@@ -134,8 +134,14 @@ describe('cloudSyncService', () => {
     listOutstandingMock.mockResolvedValue([
       {
         id: 'queue-settings',
-        actionType: 'upsertSettings',
-        entityId: 'default',
+        actionType: 'patchSettings',
+        entityId: 'default:notificationsEnabled',
+        payload: {
+          type: 'setNotificationsEnabled',
+          settingsId: 'default',
+          value: true,
+          updatedAt: '2026-04-18T09:00:00.000Z',
+        },
       },
       {
         id: 'queue-day',

@@ -1,7 +1,8 @@
 import type { DayMode } from '@/domain/common/types'
-import { localSettingsRepository, localSyncQueueRepository } from '@/data/local'
+import { localSettingsRepository } from '@/data/local'
 import { markCalendarMirrorsStaleIfEnabled } from '@/services/calendar/calendarIntegrationService'
-import { persistSyncableChange, type SyncWriteMode } from '@/services/sync/persistSyncableChange'
+import type { SyncWriteMode } from '@/services/sync/persistSyncableChange'
+import { getOutstandingSyncCount, persistSettingsPatch } from '@/services/settings/settingsSyncPersistence'
 
 type UpdateDayModeOverrideInput = {
   date: string
@@ -24,26 +25,27 @@ export async function updateDayModeOverride({
 
   if (currentSettings.dayModeOverrides[date] === dayMode) {
     return {
-      pendingCount: await localSyncQueueRepository.countOutstanding(),
+      pendingCount: await getOutstandingSyncCount(),
     }
   }
 
-  const nextSettings = {
-    ...currentSettings,
-    dayModeOverrides: {
-      ...currentSettings.dayModeOverrides,
+  const patch = {
+    type: 'mergeDayModeOverrides' as const,
+    settingsId: currentSettings.id,
+    entries: {
       [date]: dayMode,
     },
     updatedAt: new Date().toISOString(),
   }
 
-  await localSettingsRepository.upsert(nextSettings)
-  await markCalendarMirrorsStaleIfEnabled()
-  return persistSyncableChange({
-    actionType: 'upsertSettings',
-    entityId: nextSettings.id,
-    payload: nextSettings,
+  const result = await persistSettingsPatch({
+    patch,
     userId,
-    mode: syncMode,
+    syncMode,
   })
+  await markCalendarMirrorsStaleIfEnabled()
+
+  return {
+    pendingCount: result.pendingCount,
+  }
 }

@@ -33,6 +33,19 @@ describe('sync queue helpers', () => {
     expect(item.payload.dayModeOverrides).toEqual({})
   })
 
+  it('creates a queue item for settings subtree patches', () => {
+    const item = createSyncQueueItem('patchSettings', 'default:notificationsEnabled', {
+      type: 'setNotificationsEnabled',
+      settingsId: 'default',
+      value: false,
+      updatedAt: '2026-04-18T10:00:00.000Z',
+    })
+
+    expect(item.actionType).toBe('patchSettings')
+    expect(item.entityId).toBe('default:notificationsEnabled')
+    expect(item.payload.type).toBe('setNotificationsEnabled')
+  })
+
   it('keeps failed items outstanding and replayable until they are removed', async () => {
     const settings = createDefaultUserSettings()
     const item = createSyncQueueItem('upsertSettings', settings.id, settings)

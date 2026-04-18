@@ -1,6 +1,7 @@
 import type { PrepTopicProgressSnapshot } from '@/domain/prep/types'
-import { localSettingsRepository, localSyncQueueRepository } from '@/data/local'
-import { persistSyncableChange, type SyncWriteMode } from '@/services/sync/persistSyncableChange'
+import { localSettingsRepository } from '@/data/local'
+import type { SyncWriteMode } from '@/services/sync/persistSyncableChange'
+import { getOutstandingSyncCount, persistSettingsPatch } from '@/services/settings/settingsSyncPersistence'
 
 type UpdatePrepTopicProgressInput = {
   topicId: string
@@ -37,25 +38,20 @@ export async function updatePrepTopicProgress({
 
   if (JSON.stringify(currentProgress) === JSON.stringify(nextProgress)) {
     return {
-      pendingCount: await localSyncQueueRepository.countOutstanding(),
+      pendingCount: await getOutstandingSyncCount(),
     }
   }
 
-  const nextSettings = {
-    ...currentSettings,
-    prepTopicProgress: {
-      ...currentSettings.prepTopicProgress,
-      [topicId]: nextProgress,
+  return persistSettingsPatch({
+    patch: {
+      type: 'mergePrepTopicProgress',
+      settingsId: currentSettings.id,
+      entries: {
+        [topicId]: nextProgress,
+      },
+      updatedAt: new Date().toISOString(),
     },
-    updatedAt: new Date().toISOString(),
-  }
-
-  await localSettingsRepository.upsert(nextSettings)
-  return persistSyncableChange({
-    actionType: 'upsertSettings',
-    entityId: nextSettings.id,
-    payload: nextSettings,
     userId,
-    mode: syncMode,
+    syncMode,
   })
 }

@@ -1,7 +1,8 @@
 import type { EnergyStatus, SleepStatus } from '@/domain/common/types'
-import { localSettingsRepository, localSyncQueueRepository } from '@/data/local'
+import { localSettingsRepository } from '@/data/local'
 import { deriveSleepStatusFromDuration } from '@/domain/physical/selectors'
-import { persistSyncableChange, type SyncWriteMode } from '@/services/sync/persistSyncableChange'
+import type { SyncWriteMode } from '@/services/sync/persistSyncableChange'
+import { getOutstandingSyncCount, persistSettingsPatch } from '@/services/settings/settingsSyncPersistence'
 
 type UpdateDailySignalsInput = {
   date: string
@@ -46,25 +47,22 @@ export async function updateDailySignals({
     currentSignals.sleepDurationHours === nextSignals.sleepDurationHours
   ) {
     return {
-      pendingCount: await localSyncQueueRepository.countOutstanding(),
+      pendingCount: await getOutstandingSyncCount(),
     }
   }
 
-  const nextSettings = {
-    ...currentSettings,
-    dailySignals: {
-      ...currentSettings.dailySignals,
+  const patch = {
+    type: 'mergeDailySignals' as const,
+    settingsId: currentSettings.id,
+    entries: {
       [date]: nextSignals,
     },
     updatedAt: new Date().toISOString(),
   }
 
-  await localSettingsRepository.upsert(nextSettings)
-  return persistSyncableChange({
-    actionType: 'upsertSettings',
-    entityId: nextSettings.id,
-    payload: nextSettings,
+  return persistSettingsPatch({
+    patch,
     userId,
-    mode: syncMode,
+    syncMode,
   })
 }

@@ -1,9 +1,10 @@
 import type { DayType } from '@/domain/common/types'
-import { localSettingsRepository, localSyncQueueRepository } from '@/data/local'
+import { localSettingsRepository } from '@/data/local'
 import { forgeRoutine } from '@/data/seeds'
 import { isDayTypeOverrideAllowed, getScheduledDayTypeForDate } from '@/domain/schedule/overrideRules'
 import { markCalendarMirrorsStaleIfEnabled } from '@/services/calendar/calendarIntegrationService'
-import { persistSyncableChange, type SyncWriteMode } from '@/services/sync/persistSyncableChange'
+import type { SyncWriteMode } from '@/services/sync/persistSyncableChange'
+import { getOutstandingSyncCount, persistSettingsPatch } from '@/services/settings/settingsSyncPersistence'
 
 type UpdateDayTypeOverrideInput = {
   date: string
@@ -32,31 +33,27 @@ export async function updateDayTypeOverride({
 
   if (currentDayType === dayType) {
     return {
-      pendingCount: await localSyncQueueRepository.countOutstanding(),
+      pendingCount: await getOutstandingSyncCount(),
     }
   }
 
-  const nextDayTypeOverrides = { ...currentSettings.dayTypeOverrides }
-
-  if (dayType === scheduledDayType) {
-    delete nextDayTypeOverrides[date]
-  } else {
-    nextDayTypeOverrides[date] = dayType
-  }
-
-  const nextSettings = {
-    ...currentSettings,
-    dayTypeOverrides: nextDayTypeOverrides,
+  const patch = {
+    type: 'mergeDayTypeOverrides' as const,
+    settingsId: currentSettings.id,
+    entries: {
+      [date]: dayType === scheduledDayType ? null : dayType,
+    },
     updatedAt: new Date().toISOString(),
   }
 
-  await localSettingsRepository.upsert(nextSettings)
-  await markCalendarMirrorsStaleIfEnabled()
-  return persistSyncableChange({
-    actionType: 'upsertSettings',
-    entityId: nextSettings.id,
-    payload: nextSettings,
+  const result = await persistSettingsPatch({
+    patch,
     userId,
-    mode: syncMode,
+    syncMode,
   })
+  await markCalendarMirrorsStaleIfEnabled()
+
+  return {
+    pendingCount: result.pendingCount,
+  }
 }

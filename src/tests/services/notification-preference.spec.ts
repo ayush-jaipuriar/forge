@@ -19,7 +19,10 @@ describe('notification preference service', () => {
     expect(result.pendingCount).toBe(1)
     expect(settings?.notificationsEnabled).toBe(false)
     expect(queueItems).toHaveLength(1)
-    expect(queueItems[0].actionType).toBe('upsertSettings')
+    expect(queueItems[0]).toMatchObject({
+      actionType: 'patchSettings',
+      entityId: 'default:notificationsEnabled',
+    })
   })
 
   it('keeps guest notification preference changes local-only when sync is disabled', async () => {

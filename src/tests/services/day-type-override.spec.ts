@@ -20,13 +20,19 @@ describe('updateDayTypeOverride', () => {
     expect(result.pendingCount).toBe(1)
     expect(settings?.dayTypeOverrides['2026-03-24']).toBe('lowEnergy')
     expect(queueItems).toHaveLength(1)
-    expect(queueItems[0].actionType).toBe('upsertSettings')
+    expect(queueItems[0].actionType).toBe('patchSettings')
 
-    if (queueItems[0].actionType !== 'upsertSettings') {
-      throw new Error('Expected a settings sync queue item.')
+    if (queueItems[0].actionType !== 'patchSettings') {
+      throw new Error('Expected a settings patch sync queue item.')
     }
 
-    expect(queueItems[0].payload.dayTypeOverrides['2026-03-24']).toBe('lowEnergy')
+    expect(queueItems[0].payload.type).toBe('mergeDayTypeOverrides')
+
+    if (queueItems[0].payload.type !== 'mergeDayTypeOverrides') {
+      throw new Error('Expected a day-type settings patch payload.')
+    }
+
+    expect(queueItems[0].payload.entries['2026-03-24']).toBe('lowEnergy')
   })
 
   it('clears the stored override when the user returns to the seeded day type', async () => {
@@ -46,11 +52,17 @@ describe('updateDayTypeOverride', () => {
     expect(settings?.dayTypeOverrides['2026-03-24']).toBeUndefined()
     expect(queueItems).toHaveLength(1)
 
-    if (queueItems[0].actionType !== 'upsertSettings') {
-      throw new Error('Expected a settings sync queue item.')
+    if (queueItems[0].actionType !== 'patchSettings') {
+      throw new Error('Expected a settings patch sync queue item.')
     }
 
-    expect(queueItems[0].payload.dayTypeOverrides['2026-03-24']).toBeUndefined()
+    expect(queueItems[0].payload.type).toBe('mergeDayTypeOverrides')
+
+    if (queueItems[0].payload.type !== 'mergeDayTypeOverrides') {
+      throw new Error('Expected a day-type settings patch payload.')
+    }
+
+    expect(queueItems[0].payload.entries['2026-03-24']).toBeNull()
   })
 
   it('rejects overrides that fall outside the weekday guardrails', async () => {
