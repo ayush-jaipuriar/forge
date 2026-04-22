@@ -33,7 +33,7 @@ describe('pwaStatus helpers', () => {
     expect(model.detail).toMatch(/replay attempt failed/i)
   })
 
-  it('shows the status surface when install, update, or offline states need user attention', () => {
+  it('shows the status surface only when update, offline, or sync states need user attention', () => {
     expect(
       shouldShowPwaStatusCard({
         isOnline: true,
@@ -62,10 +62,10 @@ describe('pwaStatus helpers', () => {
         needRefresh: false,
         offlineReady: false,
       }),
-    ).toBe(true)
+    ).toBe(false)
   })
 
-  it('shows only a compact shell prompt for healthy installability on Today and Settings', () => {
+  it('hides healthy installability and offline-ready prompts from normal app flow', () => {
     expect(
       getPwaSurfaceMode({
         pathname: '/',
@@ -75,7 +75,7 @@ describe('pwaStatus helpers', () => {
         needRefresh: false,
         offlineReady: false,
       }),
-    ).toBe('compact')
+    ).toBe('hidden')
 
     expect(
       getPwaSurfaceMode({
@@ -86,7 +86,7 @@ describe('pwaStatus helpers', () => {
         needRefresh: false,
         offlineReady: true,
       }),
-    ).toBe('compact')
+    ).toBe('hidden')
   })
 
   it('hides healthy installability prompts on non-core routes but keeps error states prominent everywhere', () => {

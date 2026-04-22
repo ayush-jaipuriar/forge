@@ -1,7 +1,4 @@
 import AccessTimeRoundedIcon from '@mui/icons-material/AccessTimeRounded'
-import AutoGraphRoundedIcon from '@mui/icons-material/AutoGraphRounded'
-import CalendarMonthRoundedIcon from '@mui/icons-material/CalendarMonthRounded'
-import FitnessCenterRoundedIcon from '@mui/icons-material/FitnessCenterRounded'
 import KeyboardDoubleArrowRightRoundedIcon from '@mui/icons-material/KeyboardDoubleArrowRightRounded'
 import { useEffect, useState } from 'react'
 import { alpha } from '@mui/material/styles'
@@ -11,9 +8,7 @@ import { SectionHeader } from '@/components/common/SectionHeader'
 import { OperationalSignalCard } from '@/components/common/OperationalSignalCard'
 import { SurfaceCard } from '@/components/common/SurfaceCard'
 import { StatusBadge } from '@/components/status/StatusBadge'
-import { SyncIndicator } from '@/components/status/SyncIndicator'
 import { useUiStore } from '@/app/store/uiStore'
-import { formatCalendarTimestamp, getCalendarStatusTone } from '@/domain/calendar/presentation'
 import { BlockNoteComposer } from '@/features/today/components/BlockNoteComposer'
 import { DayModeSelector } from '@/features/today/components/DayModeSelector'
 import { FallbackModeSuggestionCard } from '@/features/today/components/FallbackModeSuggestionCard'
@@ -23,28 +18,19 @@ import { useUpdateBlockNote } from '@/features/today/hooks/useUpdateBlockNote'
 import { useUpdateBlockStatus } from '@/features/today/hooks/useUpdateBlockStatus'
 import { useUpdateDailySignals } from '@/features/today/hooks/useUpdateDailySignals'
 import { useUpdateDayMode } from '@/features/today/hooks/useUpdateDayMode'
-import type { BlockStatus, DayMode, EnergyStatus, SleepStatus, SyncStatus } from '@/domain/common/types'
+import type { BlockStatus, DayMode, EnergyStatus, SleepStatus } from '@/domain/common/types'
 
 export function TodayPage() {
   const { data, isLoading } = useTodayWorkspace()
   const setDayMode = useUiStore((state) => state.setDayMode)
   const setWarState = useUiStore((state) => state.setWarState)
   const currentDayMode = useUiStore((state) => state.dayMode)
-  const syncStatus = useUiStore((state) => state.syncStatus)
   const updateDayModeMutation = useUpdateDayMode()
   const updateBlockNoteMutation = useUpdateBlockNote()
   const updateBlockStatusMutation = useUpdateBlockStatus()
   const updateDailySignalsMutation = useUpdateDailySignals()
   const [showRecommendation, setShowRecommendation] = useState(false)
   const [dismissedFallbackKey, setDismissedFallbackKey] = useState<string | null>(null)
-  const [recommendationHistory, setRecommendationHistory] = useState<
-    Array<{
-      timestamp: string
-      actionLabel: string
-      explanation: string
-      urgency: string
-    }>
-  >([])
 
   useEffect(() => {
     if (data) {
@@ -64,8 +50,6 @@ export function TodayPage() {
   }
 
   const {
-    calendarEvents,
-    calendarMirrors,
     calendarSummary,
     calendarSyncState,
     currentBlock,
@@ -83,41 +67,14 @@ export function TodayPage() {
     weekdayLabel,
     workoutState,
   } = data
-  const calendarTone = getCalendarStatusTone({
-    connectionStatus: calendarSyncState.connectionStatus,
-    externalSyncStatus: calendarSyncState.externalEventSyncStatus,
-    mirrorSyncStatus: calendarSyncState.mirrorSyncStatus,
-    collisionSeverity: calendarSummary.severity,
-  })
   const activeMode = dayModeDetails[currentDayMode]
   const fallbackKey = fallbackSuggestion
     ? getFallbackKey(dayInstance.date, fallbackSuggestion.suggestedDayMode, fallbackSuggestion.explanation)
     : null
   const showFallbackSuggestion = fallbackSuggestion && fallbackKey !== dismissedFallbackKey
-  const modeFeedback = getModeFeedback({
-    dayMode: currentDayMode,
-    syncStatus,
-    isPending: updateDayModeMutation.isPending,
-    isError: updateDayModeMutation.isError,
-    errorMessage: updateDayModeMutation.error instanceof Error ? updateDayModeMutation.error.message : null,
-  })
 
   function handleRevealRecommendation() {
     setShowRecommendation(true)
-    setRecommendationHistory((current) => {
-      const nextEntry = {
-        timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
-        actionLabel: recommendation.actionLabel,
-        explanation: recommendation.explanation,
-        urgency: recommendation.urgency,
-      }
-
-      if (current[0]?.actionLabel === nextEntry.actionLabel && current[0]?.explanation === nextEntry.explanation) {
-        return current
-      }
-
-      return [nextEntry, ...current].slice(0, 4)
-    })
   }
 
   return (
@@ -125,13 +82,13 @@ export function TodayPage() {
       <SurfaceCard
         contentSx={{
           background:
-            'radial-gradient(circle at top right, rgba(212, 111, 60, 0.14), transparent 34%), linear-gradient(180deg, rgba(21, 27, 38, 0.98) 0%, rgba(12, 16, 24, 0.98) 100%)',
+            'radial-gradient(circle at top right, rgba(212, 111, 60, 0.12), transparent 32%), linear-gradient(180deg, rgba(21, 27, 38, 0.98) 0%, rgba(12, 16, 24, 0.98) 100%)',
         }}
       >
         <SectionHeader
           eyebrow="Today"
-          title="Run the day with clarity."
-          description={`${weekdayLabel}, ${dateLabel}. ${dayInstance.label} focused on ${dayInstance.focusLabel.toLowerCase()}.`}
+          title={currentBlock?.title ?? dayInstance.focusLabel}
+          description={`${weekdayLabel}, ${dateLabel}. ${currentBlock?.detail ?? dayInstance.label}.`}
           action={
             <Stack direction={{ xs: 'column', sm: 'row' }} spacing={1}>
               <Button
@@ -165,10 +122,10 @@ export function TodayPage() {
       <Box
         sx={{
           display: 'grid',
-          gap: 2.5,
+          gap: { xs: 2, lg: 2.5 },
           gridTemplateColumns: {
             xs: '1fr',
-            lg: 'minmax(0, 1.38fr) 360px',
+            lg: 'minmax(0, 1.55fr) 340px',
           },
           alignItems: 'start',
         }}
@@ -176,181 +133,15 @@ export function TodayPage() {
         <Stack
           spacing={2.5}
           sx={{
-            order: { xs: 2, lg: 'unset' },
-            gridColumn: { xs: 1, lg: 2 },
-            gridRow: { xs: 'auto', lg: 1 },
-          }}
-        >
-          <SurfaceCard
-            eyebrow="Execution Context"
-            title={dayInstance.label}
-            description="Support signals for the current day."
-          >
-            <Stack spacing={1.5}>
-              <SupportDataRow label="Day Type" value={dayInstance.dayType} detail="Routine engine source" />
-              <SupportDataRow
-                label="Workout Posture"
-                value={workoutState.label}
-                detail={`Current state: ${workoutState.status}`}
-              />
-              <SupportDataRow
-                label="Target Pressure"
-                value={`${readinessSnapshot.daysRemaining} days`}
-                detail={readinessSnapshot.pressureLabel}
-              />
-              <SupportDataRow
-                label="Focused Domains"
-                value={
-                  focusedPrepDomains.length > 0
-                    ? focusedPrepDomains.map((domain) => domain.label).join(', ')
-                    : 'No focused domain yet'
-                }
-                detail="Current prep emphasis"
-              />
-            </Stack>
-          </SurfaceCard>
-
-          <SurfaceCard
-            eyebrow="Quick Signals"
-            title="Log sleep and energy fast."
-            description="These inputs directly influence recommendation and score pressure."
-          >
-            <Stack spacing={2}>
-              <SignalToggleGroup<SleepStatus>
-                label="Sleep"
-                value={sleepStatus}
-                disabled={updateDailySignalsMutation.isPending}
-                options={sleepStatusOptions}
-                onSelect={(value) =>
-                  updateDailySignalsMutation.mutate({
-                    date: dayInstance.date,
-                    sleepStatus: value,
-                  })
-                }
-              />
-              <SignalToggleGroup<EnergyStatus>
-                label="Energy"
-                value={energyStatus}
-                disabled={updateDailySignalsMutation.isPending}
-                options={energyStatusOptions}
-                onSelect={(value) =>
-                  updateDailySignalsMutation.mutate({
-                    date: dayInstance.date,
-                    energyStatus: value,
-                  })
-                }
-              />
-            </Stack>
-          </SurfaceCard>
-
-          <SurfaceCard
-            eyebrow="Mode Override"
-            title={activeMode.label}
-            description="Adjust posture without changing the seeded routine."
-            action={
-              <Stack direction="row" spacing={1} useFlexGap flexWrap="wrap">
-                <StatusBadge label={activeMode.label} tone={currentDayMode} />
-                <SyncIndicator status={syncStatus} />
-              </Stack>
-            }
-          >
-            <Stack spacing={1.5}>
-              <Typography variant="body2" color="text.secondary">
-                {activeMode.detail}
-              </Typography>
-              <Typography
-                variant="body2"
-                color={updateDayModeMutation.isError ? 'error.light' : 'text.secondary'}
-              >
-                {modeFeedback.title} {modeFeedback.detail}
-              </Typography>
-              <DayModeSelector
-                activeDayMode={currentDayMode}
-                disabled={updateDayModeMutation.isPending}
-                onSelect={(dayMode) => updateDayModeMutation.mutate({ date: dayInstance.date, dayMode })}
-              />
-            </Stack>
-          </SurfaceCard>
-
-          <SurfaceCard
-            eyebrow="Pressure Stack"
-            title="Projected score and readiness pressure"
-            description="Keep pressure visible without overwhelming the live execution surface."
-          >
-            <Stack spacing={1.5}>
-              <CompactMetric
-                label="War State"
-                value={scorePreview.label}
-                detail={`${topPriorities.length} live priority blocks remain in the current queue`}
-              />
-              <CompactMetric
-                label="Subscores"
-                value={`Prep ${scorePreview.subscores.interviewPrep} · Physical ${scorePreview.subscores.physical}`}
-                detail={`Discipline ${scorePreview.subscores.discipline} · Consistency ${scorePreview.subscores.consistency}`}
-              />
-              <Stack spacing={1}>
-                {scorePreview.breakdown.map((item) => (
-                  <Stack
-                    key={`${item.key}-${item.label}`}
-                    direction="row"
-                    justifyContent="space-between"
-                    spacing={2}
-                  >
-                    <Typography variant="body2" color="text.secondary">
-                      {item.label}
-                    </Typography>
-                    <Typography variant="body2" color="primary.light">
-                      {item.earned}/{item.projected}/{item.max}
-                    </Typography>
-                  </Stack>
-                ))}
-                <Typography variant="caption" color="text.secondary">
-                  earned / projected / max
-                </Typography>
-              </Stack>
-              {scorePreview.constraints.map((constraint) => (
-                <Typography key={constraint} variant="body2" color="warning.main">
-                  Constraint: {constraint}
-                </Typography>
-              ))}
-            </Stack>
-          </SurfaceCard>
-
-          {operationalSignals.length > 0 ? (
-            <SurfaceCard
-              eyebrow="Operational Alerts"
-              title="What deserves protection right now"
-              description="Signals that should bend the day, not just report it."
-            >
-              <Stack spacing={1.25}>
-                {operationalSignals.map((signal) => (
-                  <OperationalSignalCard
-                    key={signal.id}
-                    title={signal.title}
-                    detail={signal.detail}
-                    tone={signal.tone}
-                    badge={signal.badge}
-                  />
-                ))}
-              </Stack>
-            </SurfaceCard>
-          ) : null}
-        </Stack>
-
-        <Stack
-          spacing={2.5}
-          sx={{
-            order: { xs: 1, lg: 'unset' },
             gridColumn: { xs: 1, lg: 1 },
-            gridRow: { xs: 'auto', lg: 1 },
           }}
         >
           <SurfaceCard
-            eyebrow="Current Execution"
+            eyebrow="Current Mission"
             title={currentBlock?.title ?? 'No active block'}
             description={
               currentBlock?.detail ??
-              'No block matched the current time, so Forge is showing the strongest available execution context instead.'
+              'Use the day focus until the next planned block becomes active.'
             }
             contentSx={{
               background:
@@ -375,7 +166,7 @@ export function TodayPage() {
               >
                 <Stack spacing={0.5}>
                   <Typography variant="overline" color="primary.light">
-                    Current Mission
+                    Now
                   </Typography>
                   <Typography
                     variant="h1"
@@ -389,48 +180,22 @@ export function TodayPage() {
                 </Stack>
                 <Stack direction="row" spacing={1} useFlexGap flexWrap="wrap">
                   <StatusBadge label={scorePreview.label} tone={scorePreview.warState} />
-                  <Chip label={dayInstance.label} size="small" />
+                  <Chip label={`${scorePreview.projectedScore}/100`} size="small" variant="outlined" />
                 </Stack>
               </Stack>
 
               <Typography variant="body1" color="text.secondary" sx={{ maxWidth: 900 }}>
                 {currentBlock?.detail ??
-                  'Forge is between timed blocks right now, so the execution surface is biasing toward the day focus and the next recoverable action.'}
+                  'You are between timed blocks. Keep the day moving with the next recoverable action.'}
               </Typography>
 
-              <Box
-                sx={{
-                  display: 'grid',
-                  gap: 1.5,
-                  gridTemplateColumns: { xs: '1fr', sm: 'repeat(3, minmax(0, 1fr))' },
-                }}
-              >
-                <CompactMetric
-                  label="Projected Score"
-                  value={`${scorePreview.projectedScore}/100`}
-                  detail={`${scorePreview.earnedScore} earned so far`}
-                />
-                <CompactMetric
-                  label="Current Block"
-                  value={currentBlock?.startTime ?? 'Flexible'}
-                  detail={currentBlock?.endTime ? `Ends ${currentBlock.endTime}` : 'No timed block matched'}
-                />
-                <CompactMetric
-                  label="Top Pressure"
+              <Stack direction={{ xs: 'column', sm: 'row' }} spacing={1.25}>
+                <ActionSummary label="Block" value={currentBlock?.startTime ?? 'Flexible'} />
+                <ActionSummary
+                  label="Main risk"
                   value={topPriorities.length > 0 ? topPriorities[0].title : 'No live priority'}
-                  detail={`${topPriorities.length} live priority blocks remain`}
                 />
-              </Box>
-
-              <Stack direction={{ xs: 'column', sm: 'row' }} spacing={1} useFlexGap flexWrap="wrap">
-                {topPriorities.slice(0, 3).map((block) => (
-                  <Chip
-                    key={block.id}
-                    icon={<AutoGraphRoundedIcon fontSize="small" />}
-                    label={block.title}
-                    size="small"
-                  />
-                ))}
+                <ActionSummary label="Mode" value={activeMode.label.replace(' Mode', '')} />
               </Stack>
             </Stack>
           </SurfaceCard>
@@ -454,18 +219,12 @@ export function TodayPage() {
                 />
               }
             >
-              <Stack spacing={1}>
+              <Stack spacing={1.25}>
                 {recommendation.alternativePath ? (
                   <Typography variant="body2" color="text.secondary">
                     Alternative: {recommendation.alternativePath}
                   </Typography>
                 ) : null}
-                <Typography variant="body2" color="text.secondary">
-                  Why this rule fired: {recommendation.explanation}
-                </Typography>
-                <Typography variant="body2" color="primary.light">
-                  This rule is using score pressure, day mode, readiness pace, workout state, sleep, energy, fallback posture, and the current live block queue.
-                </Typography>
               </Stack>
             </SurfaceCard>
           ) : null}
@@ -485,9 +244,9 @@ export function TodayPage() {
           ) : null}
 
           <SurfaceCard
-            eyebrow="Execution Timeline"
+            eyebrow="Agenda"
             title="Agenda"
-            description="Read the day as an operational timeline instead of a wall of disconnected cards."
+            description="Work the next block, then keep moving."
           >
             <Stack spacing={1.5}>
               {dayInstance.blocks.map((block) => {
@@ -626,10 +385,10 @@ export function TodayPage() {
                         <Stack spacing={1.25}>
                           <Typography variant="body2" color="text.secondary">
                             {block.status === 'completed'
-                              ? 'Logged as complete and removed from the live execution queue.'
+                              ? 'Complete.'
                               : block.status === 'moved'
-                                ? 'Moved later so the day can keep moving without pretending this block is dead.'
-                                : 'Marked as skipped so the day can keep moving without hiding the deviation.'}
+                                ? 'Moved later.'
+                                : 'Skipped.'}
                           </Typography>
                           <Stack direction={{ xs: 'column', sm: 'row' }} spacing={1} useFlexGap flexWrap="wrap">
                             <Button
@@ -667,14 +426,110 @@ export function TodayPage() {
             </Stack>
           </SurfaceCard>
         </Stack>
+        <Stack spacing={2.5} sx={{ gridColumn: { xs: 1, lg: 2 } }}>
+          <SurfaceCard
+            eyebrow="Daily Context"
+            title="Signals"
+            description="Only the cues that can change today's plan."
+          >
+            <Stack spacing={2}>
+              <Box
+                sx={{
+                  display: 'grid',
+                  gap: 1.25,
+                  gridTemplateColumns: { xs: '1fr', sm: 'repeat(2, minmax(0, 1fr))', lg: '1fr' },
+                }}
+              >
+                <SupportDataRow label="Sleep" value={sleepLabel(sleepStatus)} detail="Affects fallback posture" />
+                <SupportDataRow label="Energy" value={energyLabel(energyStatus)} detail="Affects next-action pressure" />
+                <SupportDataRow label="Workout" value={workoutState.label} detail={`Status: ${workoutState.status}`} />
+                <SupportDataRow
+                  label="Target"
+                  value={`${readinessSnapshot.daysRemaining} days`}
+                  detail={readinessSnapshot.pressureLabel}
+                />
+              </Box>
+
+              <Stack spacing={1.5}>
+                <SignalToggleGroup<SleepStatus>
+                  label="Sleep"
+                  value={sleepStatus}
+                  disabled={updateDailySignalsMutation.isPending}
+                  options={sleepStatusOptions}
+                  onSelect={(value) =>
+                    updateDailySignalsMutation.mutate({
+                      date: dayInstance.date,
+                      sleepStatus: value,
+                    })
+                  }
+                />
+                <SignalToggleGroup<EnergyStatus>
+                  label="Energy"
+                  value={energyStatus}
+                  disabled={updateDailySignalsMutation.isPending}
+                  options={energyStatusOptions}
+                  onSelect={(value) =>
+                    updateDailySignalsMutation.mutate({
+                      date: dayInstance.date,
+                      energyStatus: value,
+                    })
+                  }
+                />
+              </Stack>
+            </Stack>
+          </SurfaceCard>
+
+          <SurfaceCard
+            eyebrow="Day Mode"
+            title={activeMode.label.replace(' Mode', '')}
+            description="Change posture only if today needs it."
+            action={<StatusBadge label={activeMode.label} tone={currentDayMode} />}
+          >
+            <Stack spacing={1.5}>
+              {updateDayModeMutation.isError ? (
+                <Typography variant="body2" color="error.light">
+                  Could not save the mode change. Try again.
+                </Typography>
+              ) : null}
+              <DayModeSelector
+                activeDayMode={currentDayMode}
+                disabled={updateDayModeMutation.isPending}
+                onSelect={(dayMode) => updateDayModeMutation.mutate({ date: dayInstance.date, dayMode })}
+              />
+            </Stack>
+          </SurfaceCard>
+
+          <SurfaceCard
+            eyebrow="Main Risk"
+            title={topPriorities.length > 0 ? topPriorities[0].title : 'No urgent constraint'}
+            description={`${scorePreview.label}. ${topPriorities.length} priority blocks remain.`}
+          >
+            <Stack spacing={1.25}>
+              {operationalSignals.length > 0 ? (
+                operationalSignals.slice(0, 2).map((signal) => (
+                  <OperationalSignalCard
+                    key={signal.id}
+                    title={signal.title}
+                    detail={signal.detail}
+                    tone={signal.tone}
+                    badge={signal.badge}
+                  />
+                ))
+              ) : (
+                <Typography variant="body2" color="text.secondary">
+                  No protection alert is active right now.
+                </Typography>
+              )}
+            </Stack>
+          </SurfaceCard>
+        </Stack>
+
         <Box
           sx={{
             display: 'grid',
-            gap: 2.5,
+            gap: 2,
             alignItems: 'start',
-            order: { xs: 3, lg: 'unset' },
             gridColumn: '1 / -1',
-            gridRow: { xs: 'auto', lg: 2 },
             gridTemplateColumns: {
               xs: '1fr',
               md: 'repeat(2, minmax(0, 1fr))',
@@ -682,29 +537,12 @@ export function TodayPage() {
           }}
         >
           <SurfaceCard
-            eyebrow="Calendar Pressure"
-            title="External commitments that constrain today"
-            description="Calendar pressure stays visible as a constraint, not a replacement for the routine."
-            action={
-              <Chip
-                icon={<CalendarMonthRoundedIcon />}
-                label={`${calendarSummary.severity} · read ${calendarSyncState.externalEventSyncStatus} · mirror ${calendarSyncState.mirrorSyncStatus}`}
-                size="small"
-                variant="outlined"
-                color={calendarTone}
-              />
-            }
+            eyebrow="Calendar"
+            title="Outside commitments"
+            description="Only matters when it changes today's plan."
+            action={<Chip label={calendarSummary.severity} size="small" variant="outlined" />}
           >
-            <Stack spacing={1}>
-              <Typography variant="body2" color="text.secondary">
-                Cached events today: {calendarEvents.length}. Mirrored major blocks: {calendarMirrors.length}.
-              </Typography>
-              <Typography variant="body2" color="text.secondary">
-                Last external sync: {formatCalendarTimestamp(calendarSyncState.lastExternalSyncAt)}.
-              </Typography>
-              <Typography variant="body2" color="text.secondary">
-                Last mirror sync: {formatCalendarTimestamp(calendarSyncState.lastMirrorSyncAt)}.
-              </Typography>
+            <Stack spacing={1.25}>
               {calendarSummary.constrainedWindows.length > 0 ? (
                 calendarSummary.constrainedWindows.slice(0, 3).map((window) => (
                   <Typography key={`${window.startsAt}-${window.endsAt}`} variant="body2" color="text.secondary">
@@ -713,7 +551,7 @@ export function TodayPage() {
                 ))
               ) : (
                 <Typography variant="body2" color="text.secondary">
-                  No external calendar collisions are constraining today&apos;s timed blocks.
+                  No external calendar collision is shaping today's plan.
                 </Typography>
               )}
               {calendarSyncState.lastMirrorSyncError ? (
@@ -725,82 +563,24 @@ export function TodayPage() {
           </SurfaceCard>
 
           <SurfaceCard
-            eyebrow="Support Layer"
-            title="Readiness and expectation summary"
-            description="Keep the physiological and expectation context visible without letting it dominate the page."
+            eyebrow="Prep"
+            title={
+              focusedPrepDomains.length > 0
+                ? focusedPrepDomains.map((domain) => domain.label).join(', ')
+                : 'No focused domain yet'
+            }
+            description="Current prep emphasis for today."
           >
             <Stack spacing={1.25}>
-              <SupportDataRow label="Sleep Signal" value={sleepLabel(sleepStatus)} detail="Current logged sleep posture" />
-              <SupportDataRow label="Energy Signal" value={energyLabel(energyStatus)} detail="Current logged energy posture" />
-              <SupportDataRow label="Workout State" value={workoutState.label} detail={`Status: ${workoutState.status}`} />
               {dayInstance.expectationSummary.map((expectation) => (
-                <Stack key={expectation} direction="row" spacing={1} alignItems="center">
-                  <FitnessCenterRoundedIcon color="primary" fontSize="small" />
-                  <Typography variant="body2" color="text.secondary">
-                    {expectation}
-                  </Typography>
-                </Stack>
+                <Typography key={expectation} variant="body2" color="text.secondary">
+                  {expectation}
+                </Typography>
               ))}
             </Stack>
           </SurfaceCard>
-
-          {recommendationHistory.length > 0 ? (
-            <Box sx={{ gridColumn: { xs: '1', md: '1 / span 2' } }}>
-              <SurfaceCard
-                eyebrow="Recommendation History"
-                title="Recent explanation shifts"
-                description="A compact memory of how the recommendation layer adapted through the day."
-              >
-                <Stack spacing={1.25}>
-                  {recommendationHistory.map((item) => (
-                    <Stack key={`${item.timestamp}-${item.actionLabel}`} spacing={0.35}>
-                      <Typography variant="subtitle2" color="primary.light">
-                        {item.timestamp} · {item.actionLabel}
-                      </Typography>
-                      <Typography variant="body2" color="text.secondary">
-                        {item.explanation}
-                      </Typography>
-                    </Stack>
-                  ))}
-                </Stack>
-              </SurfaceCard>
-            </Box>
-          ) : null}
         </Box>
       </Box>
-    </Stack>
-  )
-}
-
-function CompactMetric({
-  label,
-  value,
-  detail,
-}: {
-  label: string
-  value: string
-  detail: string
-}) {
-  return (
-    <Stack
-      spacing={0.45}
-      sx={{
-        border: '1px solid',
-        borderColor: 'divider',
-        borderRadius: 3,
-        p: 1.5,
-        backgroundColor: alpha(forgeTokens.palette.background.elevated, 0.4),
-      }}
-    >
-      <Typography variant="overline" color="primary.light">
-        {label}
-      </Typography>
-      <Typography variant="subtitle2" sx={{ fontSize: '0.96rem' }}>
-        {value}
-      </Typography>
-      <Typography variant="body2" color="text.secondary">
-        {detail}
-      </Typography>
     </Stack>
   )
 }
@@ -823,6 +603,29 @@ function SupportDataRow({
       <Typography variant="body2" color="text.secondary">
         {detail}
       </Typography>
+    </Stack>
+  )
+}
+
+function ActionSummary({ label, value }: { label: string; value: string }) {
+  return (
+    <Stack
+      spacing={0.35}
+      sx={{
+        flex: 1,
+        minWidth: { xs: '100%', sm: 0 },
+        border: '1px solid',
+        borderColor: 'divider',
+        borderRadius: 3,
+        px: 1.5,
+        py: 1.25,
+        backgroundColor: alpha(forgeTokens.palette.background.elevated, 0.36),
+      }}
+    >
+      <Typography variant="caption" color="primary.light">
+        {label}
+      </Typography>
+      <Typography variant="subtitle2">{value}</Typography>
     </Stack>
   )
 }
@@ -897,53 +700,6 @@ const dayModeDetails: Record<DayMode, { label: string; detail: string }> = {
     label: 'Survival Mode',
     detail: 'Protect continuity with the minimum viable execution standard for the day.',
   },
-}
-
-function getModeFeedback({
-  dayMode,
-  syncStatus,
-  isPending,
-  isError,
-  errorMessage,
-}: {
-  dayMode: DayMode
-  syncStatus: SyncStatus
-  isPending: boolean
-  isError: boolean
-  errorMessage: string | null
-}) {
-  if (isError) {
-    return {
-      title: 'Forge could not persist that override.',
-      detail: errorMessage ?? 'The app rolled back to the last persisted mode so the visible state stays truthful.',
-    }
-  }
-
-  if (isPending) {
-    return {
-      title: `Applying ${dayModeDetails[dayMode].label.toLowerCase()} locally now.`,
-      detail: 'The shell updates first, then Today and Schedule regenerate from the persisted settings snapshot.',
-    }
-  }
-
-  if (syncStatus === 'syncing') {
-    return {
-      title: 'Saved locally and syncing now.',
-      detail: 'The override is already active in Forge while the queue flushes to Firestore in the background.',
-    }
-  }
-
-  if (syncStatus === 'queued') {
-    return {
-      title: 'Saved locally and queued to sync.',
-      detail: 'Your selected mode is already active. Forge will retry cloud sync automatically when conditions allow.',
-    }
-  }
-
-  return {
-    title: 'Local workspace and sync state are aligned.',
-    detail: 'Today and Schedule are both reflecting the persisted mode with no outstanding sync work.',
-  }
 }
 
 function getFallbackKey(date: string, suggestedDayMode: DayMode, explanation: string) {

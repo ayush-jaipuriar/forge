@@ -14,7 +14,7 @@ import { PwaStatusCard } from '@/features/pwa/components/PwaStatusCard'
 import { getPwaSurfaceMode } from '@/features/pwa/pwaStatus'
 import { usePwaState } from '@/features/pwa/providers/usePwaState'
 
-const mobileQuickNavPaths = ['/', '/command-center', '/schedule', '/settings']
+const mobileQuickNavPaths = ['/', '/plan', '/insights', '/settings']
 
 export function AppShell() {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
@@ -35,9 +35,10 @@ export function AppShell() {
   })
 
   const activeItem = useMemo(
-    () => navigationItems.find((item) => isRouteActive(location.pathname, item.path)) ?? navigationItems[0],
+    () => navigationItems.find((item) => isRouteActive(location.pathname, item.path)) ?? null,
     [location.pathname],
   )
+  const activeRouteLabel = activeItem?.label ?? getSecondaryRouteLabel(location.pathname)
   const mobileQuickNavItems = navigationItems.filter((item) => mobileQuickNavPaths.includes(item.path))
 
   return (
@@ -169,6 +170,20 @@ export function AppShell() {
                 Guest
               </Typography>
             ) : null}
+            <Typography
+              component={NavLink}
+              to="/about"
+              color="text.secondary"
+              sx={{
+                fontSize: '0.68rem',
+                textDecoration: 'none',
+                '&:hover': {
+                  color: 'text.primary',
+                },
+              }}
+            >
+              About
+            </Typography>
           </Stack>
         </Box>
 
@@ -226,7 +241,7 @@ export function AppShell() {
                           whiteSpace: { xs: 'normal', sm: 'nowrap' },
                         }}
                       >
-                        {activeItem.label}
+                        {activeRouteLabel}
                       </Typography>
                     </Stack>
                   </Stack>
@@ -395,6 +410,17 @@ export function AppShell() {
           </Stack>
 
           <Button
+            component={NavLink}
+            to="/about"
+            variant="text"
+            color="inherit"
+            onClick={() => setMobileMenuOpen(false)}
+            sx={{ alignSelf: 'flex-start', px: 0 }}
+          >
+            About Forge
+          </Button>
+
+          <Button
             variant="outlined"
             color="inherit"
             startIcon={<LogoutRoundedIcon fontSize="small" />}
@@ -529,10 +555,11 @@ export function AppShell() {
 
 function getCompactNavigationLabel(label: string) {
   switch (label) {
-    case 'Command Center':
-      return 'Command'
+    case 'Insights':
     case 'Settings':
-      return 'Settings'
+    case 'Today':
+    case 'Plan':
+      return label
     default:
       return label
   }
@@ -540,13 +567,19 @@ function getCompactNavigationLabel(label: string) {
 
 function getCompactRailLabel(label: string) {
   switch (label) {
-    case 'Command Center':
-      return 'Command'
-    case 'Readiness':
-      return 'Ready'
+    case 'Insights':
+      return 'Insights'
     default:
       return label
   }
+}
+
+function getSecondaryRouteLabel(pathname: string) {
+  if (pathname.startsWith('/about')) {
+    return 'About'
+  }
+
+  return 'Forge'
 }
 
 function getUserInitials(value: string) {

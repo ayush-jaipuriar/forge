@@ -19,7 +19,11 @@ import { useUpdateBlockStatus } from '@/features/today/hooks/useUpdateBlockStatu
 import { useWeeklyWorkspace } from '@/features/schedule/hooks/useWeeklyWorkspace'
 import { useUpdateDayTypeOverride } from '@/features/schedule/hooks/useUpdateDayTypeOverride'
 
-export function SchedulePage() {
+type SchedulePageProps = {
+  embedded?: boolean
+}
+
+export function SchedulePage({ embedded = false }: SchedulePageProps) {
   const { data: weekWorkspace, isLoading } = useWeeklyWorkspace()
   const syncStatus = useUiStore((state) => state.syncStatus)
   const updateDayTypeOverrideMutation = useUpdateDayTypeOverride()
@@ -56,55 +60,57 @@ export function SchedulePage() {
 
   return (
     <Stack spacing={3}>
-      <SurfaceCard
-        contentSx={{
-          background:
-            'radial-gradient(circle at top right, rgba(212, 111, 60, 0.12), transparent 30%), linear-gradient(180deg, rgba(20, 25, 36, 0.98) 0%, rgba(11, 15, 23, 0.98) 100%)',
-        }}
-      >
-        <Stack spacing={2.25}>
-          <SectionHeader
-            eyebrow="Schedule"
-            title="Operate the week before drift compounds."
-            description="This surface keeps the seeded weekly routine intact while making pressure, overrides, and recoverable interventions visible in one planning board."
-            action={
-              <Stack direction={{ xs: 'column', sm: 'row' }} spacing={1}>
-                <SyncIndicator status={syncStatus} />
-                <Chip
-                  icon={<CalendarMonthRoundedIcon />}
-                  label={`${constrainedDayCount} constrained day${constrainedDayCount === 1 ? '' : 's'}`}
-                  size="small"
-                  color={calendarTone}
-                />
-              </Stack>
-            }
-          />
+      {!embedded ? (
+        <SurfaceCard
+          contentSx={{
+            background:
+              'radial-gradient(circle at top right, rgba(212, 111, 60, 0.12), transparent 30%), linear-gradient(180deg, rgba(20, 25, 36, 0.98) 0%, rgba(11, 15, 23, 0.98) 100%)',
+          }}
+        >
+          <Stack spacing={2.25}>
+            <SectionHeader
+              eyebrow="Schedule"
+              title="Operate the week before drift compounds."
+              description="This surface keeps the seeded weekly routine intact while making pressure, overrides, and recoverable interventions visible in one planning board."
+              action={
+                <Stack direction={{ xs: 'column', sm: 'row' }} spacing={1}>
+                  <SyncIndicator status={syncStatus} />
+                  <Chip
+                    icon={<CalendarMonthRoundedIcon />}
+                    label={`${constrainedDayCount} constrained day${constrainedDayCount === 1 ? '' : 's'}`}
+                    size="small"
+                    color={calendarTone}
+                  />
+                </Stack>
+              }
+            />
 
-          <Box
-            sx={{
-              display: 'grid',
-              gap: 1.5,
-              gridTemplateColumns: { xs: '1fr', sm: 'repeat(3, minmax(0, 1fr))' },
-            }}
-          >
-            <ScheduleHeroMetric
-              label="Week Pressure"
-              value={`${topWeekSignals.length} live signal${topWeekSignals.length === 1 ? '' : 's'}`}
-              detail={topWeekSignals[0]?.title ?? 'No schedule-level planning pressure right now'}
-            />
-            <ScheduleHeroMetric
-              label="Overrides"
-              value={`${overrideCount}`}
-              detail={`${pendingMajorBlocks} planned major block${pendingMajorBlocks === 1 ? '' : 's'} still open this week`}
-            />
-            <ScheduleHeroMetric
-              label="External Pressure"
-              value={`${constrainedDayCount}/7`}
-              detail={`Last external sync ${formatCalendarTimestamp(calendar.syncState?.lastExternalSyncAt, 'Not synced yet')}`}
-            />
-          </Box>
-        </Stack>
-      </SurfaceCard>
+            <Box
+              sx={{
+                display: 'grid',
+                gap: 1.5,
+                gridTemplateColumns: { xs: '1fr', sm: 'repeat(3, minmax(0, 1fr))' },
+              }}
+            >
+              <ScheduleHeroMetric
+                label="Week Pressure"
+                value={`${topWeekSignals.length} live signal${topWeekSignals.length === 1 ? '' : 's'}`}
+                detail={topWeekSignals[0]?.title ?? 'No schedule-level planning pressure right now'}
+              />
+              <ScheduleHeroMetric
+                label="Overrides"
+                value={`${overrideCount}`}
+                detail={`${pendingMajorBlocks} planned major block${pendingMajorBlocks === 1 ? '' : 's'} still open this week`}
+              />
+              <ScheduleHeroMetric
+                label="External Pressure"
+                value={`${constrainedDayCount}/7`}
+                detail={`Last external sync ${formatCalendarTimestamp(calendar.syncState?.lastExternalSyncAt, 'Not synced yet')}`}
+              />
+            </Box>
+          </Stack>
+        </SurfaceCard>
+      ) : null}
 
       <Box
         sx={{

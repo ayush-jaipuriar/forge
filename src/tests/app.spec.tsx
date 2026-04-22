@@ -268,9 +268,26 @@ describe('App', () => {
 
     expect(screen.getByText('Forge')).toBeInTheDocument()
     expect(screen.getAllByRole('link', { name: /^today$/i }).length).toBeGreaterThan(0)
-    expect(screen.getAllByRole('link', { name: /command center/i }).length).toBeGreaterThan(0)
-    expect(screen.getAllByRole('link', { name: /schedule/i }).length).toBeGreaterThan(0)
+    expect(screen.getAllByRole('link', { name: /^plan$/i }).length).toBeGreaterThan(0)
+    expect(screen.getAllByRole('link', { name: /insights/i }).length).toBeGreaterThan(0)
+    expect(screen.getAllByRole('link', { name: /settings/i }).length).toBeGreaterThan(0)
     expect(screen.getAllByRole('link', { name: /about/i }).length).toBeGreaterThan(0)
+  })
+
+  it('renders Today as an action-first surface without old support-dashboard clutter', async () => {
+    render(<App />)
+
+    expect(await screen.findByRole('button', { name: /what should i do now/i })).toBeInTheDocument()
+    expect(screen.getByRole('heading', { name: /^agenda$/i })).toBeInTheDocument()
+    expect(screen.getByRole('heading', { name: /^signals$/i })).toBeInTheDocument()
+
+    expect(screen.queryByText(/shell readiness/i)).not.toBeInTheDocument()
+    expect(screen.queryByText(/install forge/i)).not.toBeInTheDocument()
+    expect(screen.queryByText(/quick signals/i)).not.toBeInTheDocument()
+    expect(screen.queryByText(/mode override/i)).not.toBeInTheDocument()
+    expect(screen.queryByText(/pressure stack/i)).not.toBeInTheDocument()
+    expect(screen.queryByText(/support layer/i)).not.toBeInTheDocument()
+    expect(screen.queryByText(/recommendation history/i)).not.toBeInTheDocument()
   })
 
   it('routes unauthenticated users to the auth entry screen', () => {
@@ -292,27 +309,29 @@ describe('App', () => {
 
     render(<App />)
 
-    await user.click(screen.getAllByRole('link', { name: /schedule/i })[0])
+    await user.click(screen.getAllByRole('link', { name: /^plan$/i })[0])
 
-    expect(window.location.pathname).toBe('/schedule')
+    expect(window.location.pathname).toBe('/plan')
 
     screen.getAllByRole('link', { name: /^today$/i }).forEach((link) => {
       expect(link).not.toHaveAttribute('aria-current', 'page')
     })
   })
 
-  it('renders the Command Center route and its core empty-state warning surface', async () => {
-    window.history.pushState({}, '', '/command-center')
+  it('renders the Insights route and its core weekly empty-state warning surface', async () => {
+    window.history.pushState({}, '', '/insights')
 
     render(<App />)
 
-    expect(await screen.findByRole('heading', { name: /command center/i })).toBeInTheDocument()
+    expect(await screen.findByRole('heading', { name: /read the pattern before it becomes expensive/i })).toBeInTheDocument()
+    expect(screen.getByRole('tab', { name: /weekly/i })).toHaveAttribute('aria-selected', 'true')
+    expect(screen.getByRole('heading', { name: /weekly insights/i })).toBeInTheDocument()
     expect(screen.getByText(/history window is still empty/i)).toBeInTheDocument()
     expect(screen.getAllByText(/waiting for history/i).length).toBeGreaterThan(0)
   }, 30_000)
 
   it('shows an explicit error state when the command-center workspace query fails', async () => {
-    window.history.pushState({}, '', '/command-center')
+    window.history.pushState({}, '', '/insights')
     commandCenterMock.value = {
       ...commandCenterMock.value,
       isError: true,
@@ -322,8 +341,61 @@ describe('App', () => {
 
     render(<App />)
 
-    expect(await screen.findByRole('heading', { name: /command center could not load/i })).toBeInTheDocument()
+    expect(await screen.findByRole('heading', { name: /weekly insights failed/i })).toBeInTheDocument()
     expect(screen.getByText(/indexeddb could not be opened/i)).toBeInTheDocument()
+  })
+
+  it('renders the Plan route with week and prep sections under one destination', async () => {
+    window.history.pushState({}, '', '/plan')
+
+    render(<App />)
+
+    expect(await screen.findByRole('heading', { name: /shape the week/i })).toBeInTheDocument()
+    expect(screen.getByRole('heading', { name: /choose the day to tune/i })).toBeInTheDocument()
+    expect(screen.getByRole('heading', { name: /prep pressure/i })).toBeInTheDocument()
+    expect(screen.queryByRole('tab', { name: /^week$/i })).not.toBeInTheDocument()
+    expect(screen.queryByRole('tab', { name: /^prep$/i })).not.toBeInTheDocument()
+  })
+
+  it('redirects the legacy schedule route into the Plan destination', async () => {
+    window.history.pushState({}, '', '/schedule')
+
+    render(<App />)
+
+    expect(await screen.findByRole('heading', { name: /shape the week/i })).toBeInTheDocument()
+    expect(window.location.pathname).toBe('/plan')
+    expect(window.location.search).toBe('?view=week')
+  })
+
+  it('redirects the legacy prep route into the Plan destination', async () => {
+    window.history.pushState({}, '', '/prep')
+
+    render(<App />)
+
+    expect(await screen.findByRole('heading', { name: /shape the week/i })).toBeInTheDocument()
+    expect(window.location.pathname).toBe('/plan')
+    expect(window.location.search).toBe('?view=prep')
+  })
+
+  it('redirects the legacy command-center route into the Insights destination', async () => {
+    window.history.pushState({}, '', '/command-center')
+
+    render(<App />)
+
+    expect(await screen.findByRole('heading', { name: /read the pattern before it becomes expensive/i })).toBeInTheDocument()
+    expect(window.location.pathname).toBe('/insights')
+    expect(window.location.search).toBe('?view=weekly')
+  })
+
+  it('redirects the legacy readiness route into the Insights destination', async () => {
+    window.history.pushState({}, '', '/readiness')
+
+    render(<App />)
+
+    expect(await screen.findByRole('heading', { name: /read the pattern before it becomes expensive/i })).toBeInTheDocument()
+    expect(screen.getByRole('tab', { name: /readiness/i })).toHaveAttribute('aria-selected', 'true')
+    expect(window.location.pathname).toBe('/insights')
+    expect(window.location.search).toBe('?view=readiness')
   })
 
   it('renders the About route inside the protected shell', async () => {

@@ -125,16 +125,12 @@ export function getPwaSurfaceMode({
   needRefresh: boolean
   offlineReady: boolean
 }): PwaSurfaceMode {
+  void pathname
+  void canInstall
+  void offlineReady
+
   if (!isOnline || syncStatus !== 'stable' || needRefresh) {
     return 'card'
-  }
-
-  if (!canInstall && !offlineReady) {
-    return 'hidden'
-  }
-
-  if (pathname === '/' || pathname === '/settings') {
-    return 'compact'
   }
 
   return 'hidden'

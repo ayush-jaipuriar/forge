@@ -22,7 +22,11 @@ const confidenceOptions = [
   { value: 'high', label: 'High' },
 ] as const
 
-export function PrepPage() {
+type PrepPageProps = {
+  embedded?: boolean
+}
+
+export function PrepPage({ embedded = false }: PrepPageProps) {
   const { data, isLoading } = usePrepWorkspace()
   const updateTopicMutation = useUpdatePrepTopicProgress()
   const [selectedDomain, setSelectedDomain] = useState<PrepDomainKey | null>(null)
@@ -58,11 +62,13 @@ export function PrepPage() {
 
   return (
     <Stack spacing={3}>
-      <SectionHeader
-        eyebrow="Prep"
-        title="Prep health should read like progress, not admin."
-        description={`${data.dayLabel} focus stays visible with the active domain, weakest surface, and next topic adjustment.`}
-      />
+      {!embedded ? (
+        <SectionHeader
+          eyebrow="Prep"
+          title="Prep health should read like progress, not admin."
+          description={`${data.dayLabel} focus stays visible with the active domain, weakest surface, and next topic adjustment.`}
+        />
+      ) : null}
 
       <Grid container spacing={2}>
         <Grid size={{ xs: 12, sm: 6, xl: 3 }}>

@@ -7,7 +7,11 @@ import { SurfaceCard } from '@/components/common/SurfaceCard'
 import { usePlatformWorkspace } from '@/features/platform/hooks/usePlatformWorkspace'
 import { useReadinessWorkspace } from '@/features/readiness/hooks/useReadinessWorkspace'
 
-export function ReadinessPage() {
+type ReadinessPageProps = {
+  embedded?: boolean
+}
+
+export function ReadinessPage({ embedded = false }: ReadinessPageProps) {
   const { data, isLoading } = useReadinessWorkspace()
   const platformWorkspace = usePlatformWorkspace()
 
@@ -27,11 +31,13 @@ export function ReadinessPage() {
 
   return (
     <Stack spacing={3}>
-      <SectionHeader
-        eyebrow="Readiness"
-        title="Pressure should become readable early."
-        description="See whether the target date, topic coverage, and current pace still support the plan."
-      />
+      {!embedded ? (
+        <SectionHeader
+          eyebrow="Readiness"
+          title="Pressure should become readable early."
+          description="See whether the target date, topic coverage, and current pace still support the plan."
+        />
+      ) : null}
 
       <Grid container spacing={2} alignItems="stretch">
         <Grid size={{ xs: 12, xl: 8 }}>

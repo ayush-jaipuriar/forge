@@ -28,7 +28,11 @@ import { StreakSummaryList } from '@/features/command-center/components/StreakSu
 import { WarningCard } from '@/features/command-center/components/WarningCard'
 import { useCommandCenterWorkspace } from '@/features/command-center/hooks/useCommandCenterWorkspace'
 
-export function CommandCenterPage() {
+type CommandCenterPageProps = {
+  embedded?: boolean
+}
+
+export function CommandCenterPage({ embedded = false }: CommandCenterPageProps) {
   const [windowKey, setWindowKey] = useState<AnalyticsRollingWindowKey>('30d')
   const { data, error, isError, isLoading, isStale } = useCommandCenterWorkspace(windowKey)
 
@@ -53,8 +57,8 @@ export function CommandCenterPage() {
   if (isError) {
     return (
       <SurfaceCard
-        eyebrow="Command Center"
-        title="Analytics workspace failed"
+        eyebrow={embedded ? 'Insights' : 'Command Center'}
+        title={embedded ? 'Weekly insights failed' : 'Analytics workspace failed'}
         description="Forge could not assemble the current analytics view."
         action={<ErrorOutlineRoundedIcon color="error" />}
       >
@@ -75,8 +79,8 @@ export function CommandCenterPage() {
   if (isLoading || !data) {
     return (
       <SurfaceCard
-        eyebrow="Command Center"
-        title="Loading analytics surface"
+        eyebrow={embedded ? 'Insights' : 'Command Center'}
+        title={embedded ? 'Loading weekly insights' : 'Loading analytics surface'}
         description="Forge is assembling the current command window."
       >
         <EmptyState
@@ -100,9 +104,9 @@ export function CommandCenterPage() {
       >
         <Stack spacing={2.5}>
           <SectionHeader
-            eyebrow="Command Center"
-            title="Command Center"
-            description="See the pattern, not just the day."
+            eyebrow={embedded ? 'Insights' : 'Command Center'}
+            title={embedded ? 'Weekly insights' : 'Command Center'}
+            description={embedded ? 'See the weekly pattern, not just the day.' : 'See the pattern, not just the day.'}
             action={
               <Stack direction={{ xs: 'column', sm: 'row' }} spacing={1} alignItems={{ xs: 'flex-start', sm: 'center' }}>
                 {primaryStatusChip ? <Chip label={primaryStatusChip.label} color={primaryStatusChip.color} size="small" /> : null}

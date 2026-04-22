@@ -4,6 +4,8 @@ export type WarState = 'dominant' | 'onTrack' | 'slipping' | 'critical'
 
 export type RoutePath =
   | '/'
+  | '/plan'
+  | '/insights'
   | '/command-center'
   | '/schedule'
   | '/prep'
