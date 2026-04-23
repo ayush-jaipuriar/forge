@@ -185,6 +185,21 @@ Insights now answers:
 - chart reduction discipline
 - mobile readability of analytics and readiness content
 
+### Sprint plan
+
+- [Product Simplification Sprint 4 Plan](product-simplification-sprint-4-plan.md)
+
+### Status
+
+Implemented.
+
+Code-level and browser validation are green for the unified `Insights` route. `Insights` now merges analytics and readiness into one decision-oriented surface while preserving chart depth and legacy route compatibility.
+
+Remaining follow-up from Sprint 4 is lightweight:
+
+- consider extracting stable Insights subcomponents if the page grows further
+- continue copy compression in the dedicated copy simplification sprint
+
 ## Sprint 5: Settings Simplification
 
 ### Goal
@@ -211,6 +226,14 @@ Settings becomes:
 - shorter default view
 - advanced toggle/disclosure behavior
 - preservation of recovery and sync actions
+
+### Sprint plan
+
+- [Product Simplification Sprint 5 Plan](product-simplification-sprint-5-plan.md)
+
+### Status
+
+Planning draft ready for review.
 
 ## Sprint 6: Product Copy Compression And Framing Reset
 

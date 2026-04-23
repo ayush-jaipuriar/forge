@@ -3,7 +3,10 @@ import { render, screen } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import App from '@/App'
 import type { CommandCenterWorkspace } from '@/services/analytics/commandCenterWorkspaceService'
+import type { getReadinessWorkspace } from '@/services/readiness/readinessPersistenceService'
 import type { AuthSessionValue } from '@/features/auth/types/auth'
+
+type ReadinessWorkspace = Awaited<ReturnType<typeof getReadinessWorkspace>>
 
 const authMock = vi.hoisted(() => {
   const baseValue: AuthSessionValue = {
@@ -133,6 +136,113 @@ const commandCenterMock = vi.hoisted(() => ({
   },
 }))
 
+const readinessMock = vi.hoisted(() => {
+  const data = {
+    dateKey: '2026-03-28',
+    readinessSnapshot: {
+      targetDate: '2026-06-30',
+      daysRemaining: 94,
+      pressureLevel: 'behind',
+      pressureLabel: 'Behind target pace',
+      paceSnapshot: {
+        coveragePercent: 28,
+        touchedTopicCount: 14,
+        totalTopicCount: 50,
+        highConfidenceTopicCount: 5,
+        requiredTopicsPerWeek: 4,
+        paceLabel: 'Coverage needs steadier weekly progress.',
+        paceLevel: 'behind',
+      },
+      domainStates: [
+        {
+          domain: 'dsa',
+          label: 'DSA',
+          readinessLevel: 'building',
+          touchedTopicCount: 6,
+          totalTopicCount: 18,
+          highConfidenceCount: 2,
+          hoursSpent: 5.5,
+        },
+        {
+          domain: 'javaBackend',
+          label: 'Java / Backend',
+          readinessLevel: 'onTrack',
+          touchedTopicCount: 5,
+          totalTopicCount: 10,
+          highConfidenceCount: 3,
+          hoursSpent: 7,
+        },
+      ],
+      focusedDomains: [
+        {
+          domain: 'dsa',
+          label: 'DSA',
+          readinessLevel: 'building',
+        },
+      ],
+    },
+    domainSummaries: [],
+    focusedDomains: [
+      {
+        domain: 'dsa',
+        label: 'DSA',
+        topicCount: 18,
+        groupCount: 4,
+        primaryGroups: ['Arrays', 'Graphs'],
+        touchedTopicCount: 6,
+        highConfidenceCount: 2,
+        hoursSpent: 5.5,
+        readinessLevel: 'building',
+      },
+    ],
+    operationalSignals: [
+      {
+        id: 'pace-warning',
+        title: 'Coverage pace is slipping',
+        detail: 'Required weekly topic coverage is above the current pace.',
+        tone: 'warning',
+        badge: 'Pace',
+      },
+    ],
+    healthIntegration: {
+      connectionSummary: 'planned',
+      statusSummaryLabel: 'No health provider is connected yet.',
+      availableSignalCount: 0,
+      totalSignalCount: 5,
+      anyProviderConnected: false,
+      phaseNotice: 'Health provider integrations are planned but not connected.',
+      providers: [
+        {
+          provider: 'fitbit',
+          displayName: 'Fitbit',
+          status: 'planned',
+          unavailableReason: 'phaseNotStarted',
+          unavailableLabel: 'Planned',
+          platformAvailable: false,
+          supportedSignalCount: 1,
+        },
+      ],
+    },
+  } as ReadinessWorkspace
+
+  return {
+    data,
+    value: {
+      isLoading: false,
+      isError: false,
+      isStale: false,
+      error: null as Error | null,
+      data,
+    } as {
+      isLoading: boolean
+      isError: boolean
+      isStale: boolean
+      error: Error | null
+      data: ReadinessWorkspace | undefined
+    },
+  }
+})
+
 vi.mock('@/features/auth/providers/AuthSessionProvider', () => ({
   AuthSessionProvider: ({ children }: { children: ReactNode }) => children,
 }))
@@ -143,6 +253,10 @@ vi.mock('@/features/auth/providers/useAuthSession', () => ({
 
 vi.mock('@/features/command-center/hooks/useCommandCenterWorkspace', () => ({
   useCommandCenterWorkspace: () => commandCenterMock.value,
+}))
+
+vi.mock('@/features/readiness/hooks/useReadinessWorkspace', () => ({
+  useReadinessWorkspace: () => readinessMock.value,
 }))
 
 describe('App', () => {
@@ -261,6 +375,13 @@ describe('App', () => {
         },
       },
     }
+    readinessMock.value = {
+      isLoading: false,
+      isError: false,
+      isStale: false,
+      error: null,
+      data: readinessMock.data,
+    }
   })
 
   it('renders the Forge shell and primary navigation', () => {
@@ -318,19 +439,22 @@ describe('App', () => {
     })
   })
 
-  it('renders the Insights route and its core weekly empty-state warning surface', async () => {
+  it('renders the unified Insights route without the old internal tabs', async () => {
     window.history.pushState({}, '', '/insights')
 
     render(<App />)
 
-    expect(await screen.findByRole('heading', { name: /read the pattern before it becomes expensive/i })).toBeInTheDocument()
-    expect(screen.getByRole('tab', { name: /weekly/i })).toHaveAttribute('aria-selected', 'true')
-    expect(screen.getByRole('heading', { name: /weekly insights/i })).toBeInTheDocument()
-    expect(screen.getByText(/history window is still empty/i)).toBeInTheDocument()
-    expect(screen.getAllByText(/waiting for history/i).length).toBeGreaterThan(0)
+    expect(await screen.findByRole('heading', { name: /pattern detection is warming up/i })).toBeInTheDocument()
+    expect(screen.queryByRole('tab', { name: /weekly/i })).not.toBeInTheDocument()
+    expect(screen.queryByRole('tab', { name: /readiness/i })).not.toBeInTheDocument()
+    expect(screen.getByRole('heading', { name: /pace, score, and output/i })).toBeInTheDocument()
+    expect(screen.getAllByRole('heading', { name: /behind target pace/i }).length).toBeGreaterThan(0)
+    expect(screen.getAllByText(/history window is still empty/i).length).toBeGreaterThan(0)
+    expect(screen.getAllByText(/coverage pace is slipping/i).length).toBeGreaterThan(0)
+    expect(screen.queryByText(/Command Center/i)).not.toBeInTheDocument()
   }, 30_000)
 
-  it('shows an explicit error state when the command-center workspace query fails', async () => {
+  it('shows an explicit error state when the insights workspace query fails', async () => {
     window.history.pushState({}, '', '/insights')
     commandCenterMock.value = {
       ...commandCenterMock.value,
@@ -341,7 +465,7 @@ describe('App', () => {
 
     render(<App />)
 
-    expect(await screen.findByRole('heading', { name: /weekly insights failed/i })).toBeInTheDocument()
+    expect(await screen.findByRole('heading', { name: /insights could not load/i })).toBeInTheDocument()
     expect(screen.getByText(/indexeddb could not be opened/i)).toBeInTheDocument()
   })
 
@@ -382,7 +506,7 @@ describe('App', () => {
 
     render(<App />)
 
-    expect(await screen.findByRole('heading', { name: /read the pattern before it becomes expensive/i })).toBeInTheDocument()
+    expect(await screen.findByRole('heading', { name: /pattern detection is warming up/i })).toBeInTheDocument()
     expect(window.location.pathname).toBe('/insights')
     expect(window.location.search).toBe('?view=weekly')
   })
@@ -392,8 +516,9 @@ describe('App', () => {
 
     render(<App />)
 
-    expect(await screen.findByRole('heading', { name: /read the pattern before it becomes expensive/i })).toBeInTheDocument()
-    expect(screen.getByRole('tab', { name: /readiness/i })).toHaveAttribute('aria-selected', 'true')
+    expect(await screen.findByRole('heading', { name: /pattern detection is warming up/i })).toBeInTheDocument()
+    expect(screen.queryByRole('tab', { name: /readiness/i })).not.toBeInTheDocument()
+    expect(screen.getAllByRole('heading', { name: /behind target pace/i }).length).toBeGreaterThan(0)
     expect(window.location.pathname).toBe('/insights')
     expect(window.location.search).toBe('?view=readiness')
   })

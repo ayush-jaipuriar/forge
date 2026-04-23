@@ -55,49 +55,31 @@ It shows:
 - operational alerts
 - calendar pressure and support context
 
-### Command Center
+### Plan
 
-The strategic overview.
+The planning surface.
 
-It focuses on:
+It combines:
+
+- weekly structure
+- selected-day tuning
+- prep progress
+- topic pressure
+- calendar-aware constraints
+
+### Insights
+
+The pattern and readiness surface.
+
+It combines:
 
 - momentum
-- pressure
 - risk
 - projections
-- analytics and diagnostic summaries
-
-### Schedule
-
-The weekly planning board.
-
-It helps the user:
-
-- inspect the seeded weekly routine
-- review selected-day details
-- see constraints created by external calendar pressure
-- apply overrides without turning the app into a free-form planner
-
-### Prep
-
-A progress and readiness workspace for interview preparation.
-
-It tracks:
-
-- focused domains
-- topic progress
-- revision confidence
-- preparation pressure
-
-### Physical
-
-A physical execution support surface.
-
-It keeps workout and recovery context visible as part of the broader system rather than treating fitness as a disconnected tracker.
-
-### Readiness
-
-A readiness and pressure view derived from the prep model, daily signals, and execution pace.
+- analytics charts
+- readiness pace
+- domain readiness
+- continuity and missions
 
 ### About
 
@@ -105,7 +87,7 @@ A lightweight in-product page explaining the project and its developer.
 
 ### Settings
 
-The operator surface for runtime truth.
+The utility surface for runtime truth.
 
 It includes:
 
@@ -385,6 +367,8 @@ If you want deeper technical or delivery context, start here:
 - [Product Simplification Sprint 1 Plan](docs/product-simplification-sprint-1-plan.md)
 - [Product Simplification Sprint 2 Plan](docs/product-simplification-sprint-2-plan.md)
 - [Product Simplification Sprint 3 Plan](docs/product-simplification-sprint-3-plan.md)
+- [Product Simplification Sprint 4 Plan](docs/product-simplification-sprint-4-plan.md)
+- [Product Simplification Sprint 5 Plan](docs/product-simplification-sprint-5-plan.md)
 - [Auth Hardening Sprint Plan](docs/auth-hardening-sprint-plan.md)
 - [Cross-Device Sync Hydration Sprint Plan](docs/cross-device-sync-hydration-sprint-plan.md)
 - [Settings Sync Hardening Sprint Plan](docs/settings-sync-hardening-sprint-plan.md)
