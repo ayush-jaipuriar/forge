@@ -345,20 +345,48 @@ describe('SettingsPage', () => {
     }
   })
 
-  it('renders the grouped control surfaces with recovery, calendar, and system posture sections', () => {
+  it('renders simplified default settings surfaces with the primary utility actions visible', () => {
     render(<SettingsPage />)
 
-    expect(screen.getByRole('heading', { name: /control the runtime, recovery, and integrations/i })).toBeInTheDocument()
-    expect(screen.getByRole('heading', { name: /backup posture and controlled restore/i })).toBeInTheDocument()
-    expect(screen.getByRole('heading', { name: /read pressure and explicit write mirroring/i })).toBeInTheDocument()
-    expect(screen.getByRole('heading', { name: /what is healthy, degraded, or still limited/i })).toBeInTheDocument()
+    expect(screen.getByRole('heading', { name: /keep forge recoverable/i })).toBeInTheDocument()
+    expect(screen.getByRole('heading', { name: /backup & restore/i })).toBeInTheDocument()
+    expect(screen.getByRole('heading', { name: /calendar access/i })).toBeInTheDocument()
+    expect(screen.getByRole('heading', { name: /account & cloud/i })).toBeInTheDocument()
+    expect(screen.getByRole('heading', { name: /notification controls/i })).toBeInTheDocument()
+    expect(screen.getByRole('heading', { name: /provider status/i })).toBeInTheDocument()
+
+    expect(screen.getByRole('button', { name: /export backup json/i })).toBeInTheDocument()
+    expect(screen.getByRole('button', { name: /export notes markdown/i })).toBeInTheDocument()
+    expect(screen.getByRole('button', { name: /load restore file/i })).toBeInTheDocument()
+    expect(screen.getByRole('button', { name: /refresh from cloud/i })).toBeInTheDocument()
+    expect(screen.getByRole('button', { name: /request browser permission/i })).toBeInTheDocument()
+    expect(screen.getByRole('button', { name: /apply staged restore/i })).toBeDisabled()
   })
 
-  it('keeps staged restore and notification actions wired through the redesigned control surface', async () => {
+  it('keeps low-level implementation details collapsed until the user asks for them', async () => {
     const user = userEvent.setup()
 
     render(<SettingsPage />)
 
+    expect(screen.queryByText(/scheduled backups are healthy and recent/i)).not.toBeInTheDocument()
+    expect(screen.queryByText(/visual snapshot coverage is still manual/i)).not.toBeInTheDocument()
+
+    const diagnosticsDisclosure = screen.getByRole('button', { name: /diagnostics/i })
+    expect(diagnosticsDisclosure).toHaveAttribute('aria-expanded', 'false')
+
+    await user.click(diagnosticsDisclosure)
+
+    expect(diagnosticsDisclosure).toHaveAttribute('aria-expanded', 'true')
+    expect(screen.getByText(/scheduled backups are healthy and recent/i)).toBeInTheDocument()
+    expect(screen.getByText(/visual snapshot coverage is still manual/i)).toBeInTheDocument()
+  })
+
+  it('keeps staged restore and notification actions wired through the simplified control surface', async () => {
+    const user = userEvent.setup()
+
+    render(<SettingsPage />)
+
+    await user.click(screen.getByRole('button', { name: /backup details/i }))
     await user.click(screen.getByRole('button', { name: /stage restore/i }))
     expect(loadServerRestoreStageMock.mutate).toHaveBeenCalled()
     expect(screen.getByText(/staged remote restore/i)).toBeInTheDocument()

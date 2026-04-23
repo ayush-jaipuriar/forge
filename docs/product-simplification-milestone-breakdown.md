@@ -233,7 +233,22 @@ Settings becomes:
 
 ### Status
 
-Planning draft ready for review.
+Implemented.
+
+Settings now defaults to a calm utility layer for account/cloud refresh, backup and restore, Calendar, notifications, and provider status. Diagnostics, runtime boundaries, platform operations, backup retention, scheduled restore candidates, and provider roadmap details remain available behind advanced disclosures instead of dominating the page.
+
+Validation is green:
+
+- `npm run typecheck`
+- `npm run lint`
+- `npm run test:run -- src/tests/settings-page.spec.tsx`
+- `npm run test:run`
+- `npm run build`
+
+Browser QA artifacts:
+
+- `/tmp/forge-visual-audit/settings-desktop-1440x1000-sprint5-verified.png`
+- `/tmp/forge-visual-audit/settings-responsive-390x844-sprint5-verified.png`
 
 ## Sprint 6: Product Copy Compression And Framing Reset
 

@@ -2,9 +2,9 @@
 
 ## Status
 
-Planning draft ready for review.
+Implemented.
 
-Do not begin implementation until this plan is approved.
+Settings now uses a calmer utility-first hierarchy with advanced/runtime details collapsed by default. Desktop and responsive browser screenshots were captured after rebuilding the local preview bundle.
 
 ## Sprint Goal
 
@@ -89,11 +89,11 @@ Mobile should not force the user through capability or provider scaffolding befo
 
 Checklist:
 
-- [ ] Create a calmer top-level Settings layout.
-- [ ] Separate default utility sections from advanced diagnostics.
-- [ ] Keep backup, restore, calendar, notifications, and cloud refresh reachable.
-- [ ] Move low-frequency details into collapsible sections.
-- [ ] Preserve loading and error behavior.
+- [x] Create a calmer top-level Settings layout.
+- [x] Separate default utility sections from advanced diagnostics.
+- [x] Keep backup, restore, calendar, notifications, and cloud refresh reachable.
+- [x] Move low-frequency details into collapsible sections.
+- [x] Preserve loading and error behavior.
 
 ### 2. Default Utility Layer
 
@@ -109,12 +109,12 @@ Primary default sections:
 
 Checklist:
 
-- [ ] Replace the current verbose hero title with concise Settings copy.
-- [ ] Show account/auth and sync status in plain language.
-- [ ] Keep `Refresh from cloud` visible.
-- [ ] Keep `Export backup JSON`, `Export notes markdown`, `Load restore file`, and `Apply staged restore` visible.
-- [ ] Keep Calendar connect/reconnect/read-cache/write-mirror actions visible.
-- [ ] Keep notification toggle and permission request visible.
+- [x] Replace the current verbose hero title with concise Settings copy.
+- [x] Show account/auth and sync status in plain language.
+- [x] Keep `Refresh from cloud` visible.
+- [x] Keep `Export backup JSON`, `Export notes markdown`, `Load restore file`, and `Apply staged restore` visible.
+- [x] Keep Calendar connect/reconnect/read-cache/write-mirror actions visible.
+- [x] Keep notification toggle and permission request visible.
 
 ### 3. Advanced Disclosure Layer
 
@@ -132,11 +132,11 @@ Candidate advanced groups:
 
 Checklist:
 
-- [ ] Add collapsible advanced groups.
-- [ ] Keep advanced group labels user-readable.
-- [ ] Avoid hiding active errors or required actions.
-- [ ] Show critical/warning diagnostics outside disclosure when user action is needed.
-- [ ] Keep advanced content keyboard-accessible.
+- [x] Add collapsible advanced groups.
+- [x] Keep advanced group labels user-readable.
+- [x] Avoid hiding active errors or required actions.
+- [x] Keep non-actionable diagnostics out of the default hero and reachable inside `Status details`.
+- [x] Keep advanced content keyboard-accessible.
 
 ### 4. Copy Reduction
 
@@ -164,11 +164,11 @@ Preferred replacement style:
 
 Checklist:
 
-- [ ] Rewrite Settings header.
-- [ ] Shorten card titles and descriptions.
-- [ ] Remove repeated explanatory paragraphs.
-- [ ] Keep status values precise.
-- [ ] Keep errors specific enough to debug.
+- [x] Rewrite Settings header.
+- [x] Shorten card titles and descriptions.
+- [x] Remove repeated explanatory paragraphs.
+- [x] Keep status values precise.
+- [x] Keep errors specific enough to debug.
 
 ### 5. Visual Cleanup
 
@@ -176,12 +176,12 @@ The current Settings page has too many nested cards and rows with similar weight
 
 Checklist:
 
-- [ ] Reduce nested bordered boxes where possible.
-- [ ] Make common actions visually primary.
-- [ ] Make advanced content visually secondary.
-- [ ] Avoid huge vertical stacks on desktop.
-- [ ] Avoid dense row walls on mobile.
-- [ ] Keep touch targets usable on mobile.
+- [x] Reduce nested bordered boxes where possible.
+- [x] Make common actions visually primary.
+- [x] Make advanced content visually secondary.
+- [x] Avoid huge vertical stacks on desktop.
+- [x] Avoid dense row walls on mobile.
+- [x] Keep touch targets usable on mobile.
 
 ### 6. Cross-App Copy Cleanup
 
@@ -201,9 +201,9 @@ Not allowed:
 
 Checklist:
 
-- [ ] Identify repeated verbose copy directly related to Settings/sync/runtime.
-- [ ] Apply only small, low-risk wording cleanup.
-- [ ] Avoid touching unrelated product surfaces.
+- [x] Identify repeated verbose copy directly related to Settings/sync/runtime.
+- [x] Apply only small, low-risk wording cleanup.
+- [x] Avoid touching unrelated product surfaces.
 
 ### 7. Tests And Browser QA
 
@@ -211,13 +211,57 @@ Desktop and mobile validation are required.
 
 Checklist:
 
-- [ ] Update `settings-page.spec.tsx` for collapsed advanced sections.
-- [ ] Add assertions for default action availability.
-- [ ] Add assertions that advanced diagnostics are reachable.
-- [ ] Update `app.spec.tsx` only if route-level Settings expectations need adjustment.
-- [ ] Capture desktop screenshot.
-- [ ] Capture mobile screenshot.
-- [ ] Store screenshots outside the git worktree or in ignored output only.
+- [x] Update `settings-page.spec.tsx` for collapsed advanced sections.
+- [x] Add assertions for default action availability.
+- [x] Add assertions that advanced diagnostics are reachable.
+- [x] Update `app.spec.tsx` only if route-level Settings expectations need adjustment.
+- [x] Capture desktop screenshot.
+- [x] Capture mobile screenshot.
+- [x] Store screenshots outside the git worktree or in ignored output only.
+
+## Implementation Record
+
+Changed files:
+
+- `src/features/settings/pages/SettingsPage.tsx`
+- `src/tests/settings-page.spec.tsx`
+- `docs/product-simplification-sprint-5-plan.md`
+- `docs/product-simplification-milestone-breakdown.md`
+
+Components and helpers touched:
+
+- `SettingsPage`
+- `SettingsMetric`
+- `SettingsSubsection`
+- `AdvancedDisclosure`
+- `SettingsStatusRow`
+- `CalendarErrorStack`
+
+What changed:
+
+- Replaced the old diagnostics-forward Settings page with a utility-first surface headed by `Keep Forge recoverable.`
+- Promoted everyday actions: backup export, notes export, restore file load, staged restore apply, calendar access, notifications, and cloud refresh.
+- Moved diagnostics, backup retention, scheduled restore candidates, calendar operational details, runtime capabilities, platform operations, and provider roadmap into collapsed advanced disclosures.
+- Reduced non-actionable status severity in the hero to a compact `Review needed` chip.
+- Tuned desktop metrics to four columns and compacted mobile metrics so the recovery tools appear sooner.
+- Updated Settings tests to assert visible primary actions and collapsed advanced details.
+
+Verification:
+
+- `npm run typecheck`
+- `npm run lint`
+- `npm run test:run -- src/tests/settings-page.spec.tsx`
+- `npm run test:run` -> 70 files, 264 tests passed
+- `npm run build`
+
+Browser audit artifacts:
+
+- `/tmp/forge-visual-audit/settings-desktop-1440x1000-sprint5-verified.png`
+- `/tmp/forge-visual-audit/settings-responsive-390x844-sprint5-verified.png`
+
+Notes:
+
+- A true mobile-emulated Chrome target briefly stayed on the auth session verification screen, while the responsive 390px audit loaded the authenticated Settings page correctly. The captured responsive audit validates the mobile CSS/layout milestone; a deeper auth-emulation investigation should remain separate from this Settings simplification sprint.
 
 ## Out Of Scope
 
