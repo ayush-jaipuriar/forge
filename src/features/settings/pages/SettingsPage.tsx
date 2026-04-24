@@ -434,7 +434,7 @@ export function SettingsPage() {
           <SurfaceCard
             eyebrow="Calendar"
             title="Calendar access"
-            description="Read pressure and mirror major blocks."
+            description="Read events and mirror major blocks."
             action={
               <Chip
                 label={`${calendarSyncState.externalEventSyncStatus} read`}
@@ -608,7 +608,7 @@ export function SettingsPage() {
                   onChange={(_, checked) => updateNotificationPreference.mutate(checked)}
                   disabled={updateNotificationPreference.isPending}
                   inputProps={{
-                    'aria-label': 'Enable operational notifications',
+                    'aria-label': 'Enable notifications',
                   }}
                 />
               </Stack>
@@ -656,10 +656,10 @@ export function SettingsPage() {
       <SurfaceCard
         eyebrow="Advanced"
         title="Status details"
-        description="Diagnostics and implementation boundaries stay available when needed."
+        description="Details stay available when needed."
       >
         <Stack spacing={1.5}>
-          <AdvancedDisclosure title="Diagnostics" summary={operationalDiagnostics.headline}>
+          <AdvancedDisclosure title="Health details" summary={operationalDiagnostics.headline}>
             <Stack spacing={1}>
               {operationalDiagnostics.items.map((item) => (
                 <SettingsStatusRow
@@ -805,7 +805,7 @@ export function SettingsPage() {
             </Stack>
           </AdvancedDisclosure>
 
-          <AdvancedDisclosure title="Platform operations" summary={`${platformServices.functionsOwned.length} Functions-owned`}>
+          <AdvancedDisclosure title="Background jobs" summary={`${platformServices.functionsOwned.length} managed job${platformServices.functionsOwned.length === 1 ? '' : 's'}`}>
             <Stack spacing={1}>
               {platformServices.boundaries.map((boundary) => (
                 <SettingsStatusRow
@@ -816,7 +816,7 @@ export function SettingsPage() {
                   trailing={
                     <Stack direction={{ xs: 'column', sm: 'row' }} spacing={0.75} alignItems={{ xs: 'flex-start', sm: 'center' }}>
                       <Chip
-                        label={boundary.owner}
+                        label={boundary.owner === 'firebaseFunctions' ? 'Firebase' : boundary.owner}
                         size="small"
                         variant="outlined"
                         color={boundary.owner === 'firebaseFunctions' ? 'primary' : 'default'}

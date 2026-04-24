@@ -41,7 +41,7 @@ export function TodayPage() {
 
   if (isLoading || !data) {
     return (
-      <SurfaceCard title="Loading today's operating plan" description="Forge is restoring the locally cached day instance.">
+      <SurfaceCard title="Loading today" description="Restoring your day plan.">
         <Stack alignItems="center" py={2}>
           <CircularProgress color="primary" />
         </Stack>
@@ -137,11 +137,11 @@ export function TodayPage() {
           }}
         >
           <SurfaceCard
-            eyebrow="Current Mission"
+            eyebrow="Now"
             title={currentBlock?.title ?? 'No active block'}
             description={
               currentBlock?.detail ??
-              'Use the day focus until the next planned block becomes active.'
+              'Use the day focus until the next block starts.'
             }
             contentSx={{
               background:
@@ -202,7 +202,7 @@ export function TodayPage() {
 
           {showRecommendation ? (
             <SurfaceCard
-              eyebrow="Recommendation"
+            eyebrow="Next"
               title={recommendation.actionLabel}
               description={recommendation.rationale}
               action={
@@ -246,7 +246,7 @@ export function TodayPage() {
           <SurfaceCard
             eyebrow="Agenda"
             title="Agenda"
-            description="Work the next block, then keep moving."
+            description="Finish one block at a time."
           >
             <Stack spacing={1.5}>
               {dayInstance.blocks.map((block) => {
@@ -428,9 +428,9 @@ export function TodayPage() {
         </Stack>
         <Stack spacing={2.5} sx={{ gridColumn: { xs: 1, lg: 2 } }}>
           <SurfaceCard
-            eyebrow="Daily Context"
+            eyebrow="Context"
             title="Signals"
-            description="Only the cues that can change today's plan."
+            description="Only what can change today."
           >
             <Stack spacing={2}>
               <Box
@@ -440,8 +440,8 @@ export function TodayPage() {
                   gridTemplateColumns: { xs: '1fr', sm: 'repeat(2, minmax(0, 1fr))', lg: '1fr' },
                 }}
               >
-                <SupportDataRow label="Sleep" value={sleepLabel(sleepStatus)} detail="Affects fallback posture" />
-                <SupportDataRow label="Energy" value={energyLabel(energyStatus)} detail="Affects next-action pressure" />
+                <SupportDataRow label="Sleep" value={sleepLabel(sleepStatus)} detail="Guides fallback mode" />
+                <SupportDataRow label="Energy" value={energyLabel(energyStatus)} detail="Guides next action" />
                 <SupportDataRow label="Workout" value={workoutState.label} detail={`Status: ${workoutState.status}`} />
                 <SupportDataRow
                   label="Target"
@@ -482,7 +482,7 @@ export function TodayPage() {
           <SurfaceCard
             eyebrow="Day Mode"
             title={activeMode.label.replace(' Mode', '')}
-            description="Change posture only if today needs it."
+            description="Adjust only if today needs it."
             action={<StatusBadge label={activeMode.label} tone={currentDayMode} />}
           >
             <Stack spacing={1.5}>
@@ -501,8 +501,8 @@ export function TodayPage() {
 
           <SurfaceCard
             eyebrow="Main Risk"
-            title={topPriorities.length > 0 ? topPriorities[0].title : 'No urgent constraint'}
-            description={`${scorePreview.label}. ${topPriorities.length} priority blocks remain.`}
+            title={topPriorities.length > 0 ? topPriorities[0].title : 'No urgent risk'}
+            description={`${topPriorities.length} priority blocks remain.`}
           >
             <Stack spacing={1.25}>
               {operationalSignals.length > 0 ? (
@@ -539,7 +539,7 @@ export function TodayPage() {
           <SurfaceCard
             eyebrow="Calendar"
             title="Outside commitments"
-            description="Only matters when it changes today's plan."
+            description="Shown only when it changes the plan."
             action={<Chip label={calendarSummary.severity} size="small" variant="outlined" />}
           >
             <Stack spacing={1.25}>

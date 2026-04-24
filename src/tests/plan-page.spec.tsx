@@ -248,7 +248,7 @@ describe('PlanPage', () => {
     }
   })
 
-  it('renders week, selected day, prep pressure, and calendar as one Plan surface', async () => {
+  it('renders week, selected day, prep focus, and calendar as one Plan surface', async () => {
     const user = userEvent.setup()
 
     render(
@@ -260,9 +260,9 @@ describe('PlanPage', () => {
     expect(screen.getByRole('heading', { name: /shape the week/i })).toBeInTheDocument()
     expect(screen.queryByRole('tab', { name: /^week$/i })).not.toBeInTheDocument()
     expect(screen.queryByRole('tab', { name: /^prep$/i })).not.toBeInTheDocument()
-    expect(screen.getByRole('heading', { name: /choose the day to tune/i })).toBeInTheDocument()
+    expect(screen.getByRole('heading', { name: /choose a day/i })).toBeInTheDocument()
     expect(screen.getByRole('heading', { name: /mon · deep work day/i })).toBeInTheDocument()
-    expect(screen.getByRole('heading', { name: /prep pressure/i })).toBeInTheDocument()
+    expect(screen.getByRole('heading', { name: /prep focus/i })).toBeInTheDocument()
     expect(screen.getByRole('heading', { name: /outside commitments/i })).toBeInTheDocument()
 
     await user.click(screen.getByRole('button', { name: /execution day/i }))

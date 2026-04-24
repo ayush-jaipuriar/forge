@@ -1,21 +1,21 @@
 # Forge
 
-Forge is a personal execution system built for disciplined daily planning, interview preparation, physical training, and recovery-aware decision making.
+Forge is a focused daily execution app for planning the week, running the day, reviewing patterns, and keeping recovery inputs visible.
 
 It is designed to answer a simple question well:
 
 **What should I do next, and how do I stay honest about whether the day is actually working?**
 
-Unlike a generic productivity dashboard, Forge treats routine, prep, training, readiness, and calendar pressure as parts of the same operating surface.
+Unlike a generic productivity dashboard, Forge keeps routine, prep, training, readiness, and calendar load in one practical workflow.
 
 ## Why This Project Stands Out
 
 Forge is not just a UI demo. It is a complete product-style build with:
 
-- a multi-surface React application
+- a multi-route React application
 - local-first persistence with IndexedDB
 - typed domain modeling for routines, scoring, prep, readiness, sync, and backup flows
-- Firebase-backed auth, hosting, storage, and server-side operational functions
+- Firebase-backed auth, hosting, storage, and server-side jobs
 - installable PWA behavior with offline shell support
 - guest-mode onboarding with seeded demo data
 - structured product documentation, implementation planning, and test coverage
@@ -37,39 +37,39 @@ Core product goals:
 - keep the day plan visible and actionable
 - make prep progress measurable
 - treat physical training and recovery as execution inputs, not separate apps
-- show when calendar pressure is starting to distort the routine
+- show when calendar load is starting to distort the routine
 - make the next best action clearer
 
 ## Main Product Surfaces
 
 ### Today
 
-The live execution surface.
+The daily workspace.
 
 It shows:
 
-- current execution context
+- current day context
 - the current block
 - quick sleep and energy updates
 - day-mode posture
-- operational alerts
-- calendar pressure and support context
+- alerts
+- calendar and support context
 
 ### Plan
 
-The planning surface.
+The planning workspace.
 
 It combines:
 
 - weekly structure
 - selected-day tuning
 - prep progress
-- topic pressure
+- topic focus
 - calendar-aware constraints
 
 ### Insights
 
-The pattern and readiness surface.
+The pattern review workspace.
 
 It combines:
 
@@ -81,22 +81,18 @@ It combines:
 - domain readiness
 - continuity and missions
 
-### About
-
-A lightweight in-product page explaining the project and its developer.
-
 ### Settings
 
-The utility surface for runtime truth.
+The utility workspace.
 
 It includes:
 
-- auth/runtime posture
+- account and app status
 - backup and restore status
 - notification state
 - calendar integration state
-- platform capability boundaries
-- future-provider scaffolding
+- advanced status details
+- planned provider integrations
 
 ## Key Features
 
@@ -105,12 +101,12 @@ It includes:
 - Google sign-in
 - Guest workspace with temporary demo data
 - Daily scoring and recommendation system
-- Day-mode overrides for real-world pressure
+- Day-mode overrides for real-world changes
 - Prep progress tracking
 - Workout and signal logging
-- Calendar pressure awareness
-- Backup and restore scaffolding
-- Firebase Functions for operational jobs
+- Calendar load awareness
+- Backup and restore tools
+- Firebase Functions for background jobs
 
 ## Tech Stack
 
@@ -154,7 +150,7 @@ Forge is built around a few clear layers:
   Local repositories and IndexedDB storage access.
 
 - `src/features`
-  Product surfaces and their hooks, pages, and feature-level components.
+  Product routes and their hooks, pages, and feature-level components.
 
 - `functions/`
   Firebase Functions for scheduled or operator-driven background work.
@@ -312,12 +308,11 @@ https://forge-510f3.web.app
 If you are new to Forge, this is the fastest useful walkthrough:
 
 1. Open the app and sign in, or enter guest mode.
-2. Go to `Today` to understand the live execution model.
-3. Open `Command Center` to see the analytics and pressure layer.
-4. Open `Schedule` to see the weekly routine board.
-5. Open `Prep`, `Physical`, and `Readiness` to understand how execution, training, and recovery connect.
-6. Open `Settings` to inspect runtime truth and platform boundaries.
-7. Open `About` for project context and developer links.
+2. Go to `Today` to see what to do now.
+3. Open `Plan` to adjust the week and prep focus.
+4. Open `Insights` to review patterns, risks, and readiness pace.
+5. Open `Settings` to manage backup, restore, Calendar, notifications, and account status.
+6. Open `About` only if you want project and developer context.
 
 ## Current Product Boundaries
 
@@ -333,12 +328,12 @@ The current product philosophy is:
 - routines are seeded and structured
 - overrides are allowed when reality changes
 - metrics should support honest execution, not vanity tracking
-- integrations should exist only when they add real operational value
+- integrations should exist only when they add real value
 
 ## Current Limitations
 
 - browser and installed-PWA notifications are supported more directly than native mobile push
-- health integrations are scaffolded, not fully live provider sync
+- health integrations are planned, not fully live provider sync
 - native shell foundations exist, but full native capability parity is still incomplete
 - calendar support is intentionally bounded and not a complete long-lived server-managed integration system yet
 - offline support is strongest at the shell and local workspace level, not full cloud-state parity across every screen
@@ -369,6 +364,7 @@ If you want deeper technical or delivery context, start here:
 - [Product Simplification Sprint 3 Plan](docs/product-simplification-sprint-3-plan.md)
 - [Product Simplification Sprint 4 Plan](docs/product-simplification-sprint-4-plan.md)
 - [Product Simplification Sprint 5 Plan](docs/product-simplification-sprint-5-plan.md)
+- [Product Simplification Sprint 6 Plan](docs/product-simplification-sprint-6-plan.md)
 - [Auth Hardening Sprint Plan](docs/auth-hardening-sprint-plan.md)
 - [Cross-Device Sync Hydration Sprint Plan](docs/cross-device-sync-hydration-sprint-plan.md)
 - [Settings Sync Hardening Sprint Plan](docs/settings-sync-hardening-sprint-plan.md)
@@ -378,6 +374,6 @@ If you want deeper technical or delivery context, start here:
 
 ## Final Note
 
-Forge is a serious product project: part planner, part execution console, part operating surface.
+Forge is a serious product project: part planner, part daily execution tool, part pattern review.
 
 It was built to show that productivity software can be structured, opinionated, and honest without becoming noisy or generic.

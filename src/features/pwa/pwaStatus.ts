@@ -18,8 +18,8 @@ export function getConnectivityStatusModel({
 }): ConnectivityModel {
   if (!isOnline && syncStatus === 'queued') {
     return {
-      eyebrow: 'Offline Queue',
-      title: 'Working offline with queued writes',
+      eyebrow: 'Offline',
+      title: 'Changes will sync later',
       detail: 'Recent local changes are preserved and will replay when connectivity returns.',
       tone: 'warning',
     }
@@ -27,45 +27,45 @@ export function getConnectivityStatusModel({
 
   if (!isOnline) {
     return {
-      eyebrow: 'Offline Shell',
+      eyebrow: 'Offline',
       title: 'Cached shell active',
-      detail: 'The app is offline, but the local execution surface can still load from cached assets and IndexedDB state.',
+      detail: 'Forge can still open recent local data on this device.',
       tone: 'warning',
     }
   }
 
   if (syncStatus === 'queued') {
     return {
-      eyebrow: 'Sync Queue',
-      title: 'Changes are waiting to replay',
-      detail: 'The browser is back online, but queued writes are still waiting for the next successful authenticated sync pass.',
+      eyebrow: 'Sync',
+      title: 'Changes are waiting',
+      detail: 'Queued local changes will sync on the next clean pass.',
       tone: 'neutral',
     }
   }
 
   if (syncStatus === 'stale') {
     return {
-      eyebrow: 'Sync Stale',
-      title: 'Queued changes have been waiting too long',
-      detail: 'Forge still has unsynced local work, and the queue age now suggests the current browser state may be drifting from the cloud baseline.',
+      eyebrow: 'Sync',
+      title: 'Sync needs attention',
+      detail: 'Some local changes have waited longer than expected.',
       tone: 'warning',
     }
   }
 
   if (syncStatus === 'conflicted') {
     return {
-      eyebrow: 'Sync Conflict',
-      title: 'Manual review is needed before sync can be trusted',
-      detail: 'Forge detected a conflict state that should stay visible instead of silently overwriting data.',
+      eyebrow: 'Sync',
+      title: 'Review needed',
+      detail: 'Forge found a conflict and paused automatic overwrite.',
       tone: 'warning',
     }
   }
 
   if (syncStatus === 'degraded') {
     return {
-      eyebrow: 'Sync Degraded',
-      title: 'Replay failures are blocking a clean sync pass',
-      detail: 'Local changes are still preserved, but at least one replay attempt failed and needs recovery attention.',
+      eyebrow: 'Sync',
+      title: 'Sync is blocked',
+      detail: 'Local changes are preserved, but replay needs recovery.',
       tone: 'warning',
     }
   }
@@ -73,16 +73,16 @@ export function getConnectivityStatusModel({
   if (syncStatus === 'syncing') {
     return {
       eyebrow: 'Sync',
-      title: 'Replaying local changes now',
-      detail: 'Forge is flushing queued local updates to the remote backend.',
+      title: 'Syncing changes',
+      detail: 'Local updates are being sent now.',
       tone: 'neutral',
     }
   }
 
   return {
-    eyebrow: 'Shell Status',
-    title: 'Installable and connected',
-    detail: 'The cached shell is healthy and the current browser session is online.',
+    eyebrow: 'App',
+    title: 'Online',
+    detail: 'Forge is connected on this device.',
     tone: 'success',
   }
 }

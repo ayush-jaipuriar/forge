@@ -220,7 +220,7 @@ export function AppShell() {
 
                   <Stack spacing={0.25} sx={{ minWidth: 0 }}>
                     <Typography variant="overline" color="primary.light">
-                      Personal Execution OS
+                      Daily execution
                     </Typography>
                     <Stack
                       direction={{ xs: 'column', sm: 'row' }}
@@ -287,7 +287,7 @@ export function AppShell() {
                     color="text.secondary"
                     sx={{ display: { xs: 'none', lg: 'block' } }}
                   >
-                    {user?.isGuest ? 'Temporary local guest session' : user?.displayName ?? user?.email ?? 'Authenticated Operator'}
+                    {user?.isGuest ? 'Guest session' : user?.displayName ?? user?.email ?? 'Signed in'}
                   </Typography>
                 </Stack>
 
@@ -308,13 +308,13 @@ export function AppShell() {
                   >
                     <Stack spacing={0.35} sx={{ minWidth: 0 }}>
                       <Typography variant="overline" color="primary.light">
-                        Guest Workspace
+                        Guest mode
                       </Typography>
                       <Typography variant="body1" sx={{ fontWeight: 700 }}>
-                        This session is temporary and stays local to this browser.
+                        This session stays on this browser.
                       </Typography>
                       <Typography color="text.secondary" sx={{ maxWidth: 760 }}>
-                        Explore the seeded demo data freely. Sign in with Google if you want Forge to save progress to a real account.
+                        Explore the demo freely. Sign in to keep progress.
                       </Typography>
                     </Stack>
 
@@ -373,11 +373,11 @@ export function AppShell() {
         <Stack spacing={3} sx={{ width: 320, p: 3 }}>
           <Stack spacing={0.75}>
             <Typography variant="overline" color="primary.light">
-              Forge Navigation
+              Forge
             </Typography>
-            <Typography variant="h3">Execution surfaces</Typography>
+            <Typography variant="h3">Navigation</Typography>
             <Typography color="text.secondary">
-              Quick routes stay in the bar. The full map stays in this drawer.
+              Move between the main workspaces.
             </Typography>
           </Stack>
 

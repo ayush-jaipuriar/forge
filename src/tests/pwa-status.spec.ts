@@ -8,18 +8,18 @@ describe('pwaStatus helpers', () => {
       syncStatus: 'queued',
     })
 
-    expect(model.eyebrow).toBe('Offline Queue')
+    expect(model.eyebrow).toBe('Offline')
     expect(model.tone).toBe('warning')
     expect(model.detail).toMatch(/replay/i)
   })
 
-  it('treats a healthy connected shell as success', () => {
+  it('treats a healthy connected app as success', () => {
     const model = getConnectivityStatusModel({
       isOnline: true,
       syncStatus: 'stable',
     })
 
-    expect(model.title).toBe('Installable and connected')
+    expect(model.title).toBe('Online')
     expect(model.tone).toBe('success')
   })
 
@@ -29,8 +29,8 @@ describe('pwaStatus helpers', () => {
       syncStatus: 'degraded',
     })
 
-    expect(model.eyebrow).toBe('Sync Degraded')
-    expect(model.detail).toMatch(/replay attempt failed/i)
+    expect(model.eyebrow).toBe('Sync')
+    expect(model.detail).toMatch(/replay needs recovery/i)
   })
 
   it('shows the status surface only when update, offline, or sync states need user attention', () => {

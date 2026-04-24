@@ -274,6 +274,35 @@ Forge feels more direct, clearer, and less self-explanatory in a bad way.
 - consistency of product framing
 - fewer competing concepts
 
+### Sprint plan
+
+- [Product Simplification Sprint 6 Plan](product-simplification-sprint-6-plan.md)
+
+### Status
+
+Implemented.
+
+Sprint 6 compressed the app's user-facing language across shell/auth states, `Today`, `Plan`, `Insights`, `Settings`, PWA/sync status, and README framing. Forge now presents itself more directly as a daily execution tool instead of exposing older internal system language by default.
+
+Validation is green:
+
+- `npm run typecheck`
+- `npm run lint`
+- `npm run test:run -- src/tests/app.spec.tsx src/tests/plan-page.spec.tsx src/tests/settings-page.spec.tsx`
+- `npm run test:run`
+- `npm run build`
+
+Browser QA artifacts:
+
+- `/tmp/forge-visual-audit/sprint6-verified2-today-desktop-1440x1000.png`
+- `/tmp/forge-visual-audit/sprint6-verified2-plan-desktop-1440x1000.png`
+- `/tmp/forge-visual-audit/sprint6-verified2-insights-desktop-1440x1000.png`
+- `/tmp/forge-visual-audit/sprint6-verified2-settings-desktop-1440x1000.png`
+- `/tmp/forge-visual-audit/sprint6-verified2-today-mobile-390x844.png`
+- `/tmp/forge-visual-audit/sprint6-verified2-plan-mobile-390x844.png`
+- `/tmp/forge-visual-audit/sprint6-verified2-insights-mobile-390x844.png`
+- `/tmp/forge-visual-audit/sprint6-verified2-settings-mobile-390x844.png`
+
 ## Sprint 7: Final Simplification Hardening
 
 ### Goal

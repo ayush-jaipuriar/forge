@@ -48,7 +48,7 @@ export function PlanPage() {
 
   if (isWeekLoading || isPrepLoading || !weekWorkspace || !prepWorkspace) {
     return (
-      <SurfaceCard title="Loading plan" description="Restoring the week, selected-day state, and prep pressure.">
+      <SurfaceCard title="Loading plan" description="Restoring your week.">
         <Stack alignItems="center" py={2}>
           <CircularProgress color="primary" />
         </Stack>
@@ -92,13 +92,13 @@ export function PlanPage() {
           <SectionHeader
             eyebrow="Plan"
             title="Shape the week."
-            description="Pick the day, protect the blocks, and keep prep pressure visible."
+            description="Choose a day, adjust blocks, and keep prep focused."
             action={
               <Stack direction="row" spacing={1} useFlexGap flexWrap="wrap">
                 <SyncIndicator status={syncStatus} />
                 <Chip
                   icon={<CalendarMonthRoundedIcon />}
-                  label={`${calendar.constrainedDayCount} constrained`}
+              label={`${calendar.constrainedDayCount} constrained`}
                   size="small"
                   color={calendarTone}
                   variant="outlined"
@@ -120,13 +120,13 @@ export function PlanPage() {
             <PlanMetric
               label="Calendar"
               value={calendar.connectionStatus === 'connected' ? 'Connected' : 'Not connected'}
-              detail={`${calendar.constrainedDayCount} day${calendar.constrainedDayCount === 1 ? '' : 's'} under pressure`}
+              detail={`${calendar.constrainedDayCount} constrained day${calendar.constrainedDayCount === 1 ? '' : 's'}`}
             />
           </Box>
         </Stack>
       </SurfaceCard>
 
-      <SurfaceCard eyebrow="Week" title="Choose the day to tune." description="The board stays high-level so planning remains fast.">
+      <SurfaceCard eyebrow="Week" title="Choose a day." description="Keep the week easy to scan.">
         <Box
           sx={{
             display: 'grid',
@@ -385,7 +385,7 @@ function SelectedDayPanel({
                 ? `${day.calendarSummary.overlappingEventCount} overlap${day.calendarSummary.overlappingEventCount === 1 ? '' : 's'}`
                 : 'Clear'
             }
-            detail="Planning constraint"
+            detail="Calendar load"
           />
           <PlanMetric label="Mode" value={scheduleModeLabels[day.dayMode]} detail="Fallback posture" />
         </Box>
@@ -525,8 +525,8 @@ function PrepPressurePanel({
 }) {
   return (
     <SurfaceCard
-      eyebrow="Prep pressure"
-      title="Prep pressure"
+      eyebrow="Prep"
+      title="Prep focus"
       description={`${activeSummary?.label ?? prepDomainLabels[activeDomain]} · ${activeSummary?.readinessLevel ?? 'building'} · weakest: ${weakestDomainLabel}`}
     >
       <Stack spacing={2}>
@@ -645,7 +645,7 @@ function PlanPressurePanel({
   const signals = [...globalSignals.slice(0, 2), ...day.operationalSignals.slice(0, 1)]
 
   return (
-    <SurfaceCard eyebrow="Signals" title="Planning pressure">
+    <SurfaceCard eyebrow="Signals" title="Planning signals">
       <Stack spacing={1}>
         {signals.length > 0 ? (
           signals.map((signal) => (

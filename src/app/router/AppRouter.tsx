@@ -43,14 +43,14 @@ function ProtectedLayout() {
             ? 'Completing Google sign-in'
             : flowPhase === 'guesting'
               ? 'Preparing guest workspace'
-              : 'Verifying your command surface'
+              : 'Checking your session'
         }
         description={
           flowPhase === 'returning'
             ? 'Restoring your workspace.'
             : flowPhase === 'guesting'
-              ? 'Seeding demo data for a local guest session.'
-            : 'Checking your session.'
+              ? 'Loading demo data.'
+            : 'This should only take a moment.'
         }
         loading
       />
@@ -79,12 +79,12 @@ function PublicOnlyRoute() {
         }
         description={
           flowPhase === 'redirecting'
-            ? 'Leaving Forge for sign-in.'
+            ? 'Opening Google sign-in.'
             : flowPhase === 'guesting'
-              ? 'Building a temporary local demo session.'
+              ? 'Loading demo data.'
             : flowPhase === 'returning'
-              ? 'Google returned. Restoring Forge.'
-              : 'Checking Firebase Auth.'
+              ? 'Restoring your workspace.'
+              : 'Checking your session.'
         }
         loading
       />

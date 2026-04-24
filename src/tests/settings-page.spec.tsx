@@ -371,7 +371,7 @@ describe('SettingsPage', () => {
     expect(screen.queryByText(/scheduled backups are healthy and recent/i)).not.toBeInTheDocument()
     expect(screen.queryByText(/visual snapshot coverage is still manual/i)).not.toBeInTheDocument()
 
-    const diagnosticsDisclosure = screen.getByRole('button', { name: /diagnostics/i })
+    const diagnosticsDisclosure = screen.getByRole('button', { name: /health details/i })
     expect(diagnosticsDisclosure).toHaveAttribute('aria-expanded', 'false')
 
     await user.click(diagnosticsDisclosure)

@@ -60,7 +60,7 @@ export function InsightsPage() {
           description={
             error instanceof Error
               ? error.message
-              : 'The analytics and readiness workspaces could not be assembled from local history and settings.'
+              : 'Forge could not read recent history and prep progress.'
           }
           icon={<ErrorOutlineRoundedIcon />}
           tone="error"
@@ -71,10 +71,10 @@ export function InsightsPage() {
 
   if (analyticsQuery.isLoading || readinessQuery.isLoading || !analyticsQuery.data || !readinessQuery.data) {
     return (
-      <SurfaceCard eyebrow="Insights" title="Loading insights" description="Forge is assembling recent history, readiness pace, and risk signals.">
+      <SurfaceCard eyebrow="Insights" title="Loading insights" description="Reading recent history and prep progress.">
         <EmptyState
-          title="Building the pattern view"
-          description="Reading recent day history and prep progress."
+          title="Building insights"
+          description="This should only take a moment."
           tone="warning"
           loading
           align="center"
@@ -148,10 +148,10 @@ function UnifiedInsightsSurface({
                   maxWidth: 760,
                   fontSize: { xs: '2.25rem', sm: '2.7rem', md: '3rem' },
                   lineHeight: 0.96,
-                  letterSpacing: '-0.05em',
+                  letterSpacing: 0,
                 }}
               >
-                {analytics.coachSummary.title}
+                {cleanCopy(analytics.coachSummary.title)}
               </Typography>
               <Typography color="text.secondary" sx={{ maxWidth: 720 }}>
                 {cleanCopy(analytics.coachSummary.summary)}
@@ -184,7 +184,7 @@ function UnifiedInsightsSurface({
               <InsightMetric
                 eyebrow="Momentum"
                 value={`${analytics.momentum.score}/100`}
-                detail={analytics.momentum.label}
+                detail={cleanCopy(analytics.momentum.label)}
                 tone={analytics.momentum.score >= 70 ? 'success' : analytics.momentum.score > 0 ? 'neutral' : 'warning'}
               />
               <InsightMetric
@@ -234,7 +234,7 @@ function UnifiedInsightsSurface({
                 ))}
               </Stack>
               <Typography variant="body2" color="text.secondary">
-                Change the history window without switching pages.
+                Change the history window.
               </Typography>
             </Stack>
           </Box>
@@ -258,7 +258,7 @@ function UnifiedInsightsSurface({
           <SurfaceCard
             eyebrow="Primary signals"
             title="Pace, score, and output"
-            description="The top charts answer whether the plan is actually moving."
+            description="The fastest read on whether the plan is moving."
           >
             <Stack spacing={2}>
               <Box
@@ -330,7 +330,7 @@ function UnifiedInsightsSurface({
           <SurfaceCard
             eyebrow="Explanations"
             title="What may be driving the pattern"
-            description="Supporting comparisons stay available, but below the primary signal layer."
+            description="Context for the main trend."
           >
             <Box
               sx={{
@@ -427,7 +427,7 @@ function UnifiedInsightsSurface({
           <SurfaceCard
             eyebrow="Readiness map"
             title="Coverage and confidence"
-            description="The prep map shows what is solid, thin, or still untouched."
+            description="Where prep is strong or thin."
           >
             <DomainReadinessGrid readiness={readiness} />
           </SurfaceCard>
@@ -435,7 +435,7 @@ function UnifiedInsightsSurface({
           <SurfaceCard
             eyebrow="Continuity"
             title="Streaks and missions"
-            description="Consistency and active missions remain visible without taking over the page."
+            description="Consistency and active focus areas."
           >
             <Box
               sx={{
@@ -558,8 +558,8 @@ function ReadinessPaceCard({
   return (
     <SurfaceCard
       eyebrow="Readiness pace"
-      title={snapshot.pressureLabel}
-      description={snapshot.paceSnapshot.paceLabel}
+      title={cleanCopy(snapshot.pressureLabel)}
+      description={cleanCopy(snapshot.paceSnapshot.paceLabel)}
       action={<TimelineRoundedIcon color={paceTone} />}
     >
       <Stack spacing={1.6}>
@@ -595,8 +595,8 @@ function MomentumCard({ analytics }: { analytics: CommandCenterWorkspace }) {
   return (
     <SurfaceCard
       eyebrow="Momentum"
-      title={analytics.operatingTier.label}
-      description={analytics.operatingTier.detail}
+      title={analytics.momentum.label}
+      description={cleanCopy(analytics.momentum.explanation)}
       action={<AutoGraphRoundedIcon color="primary" />}
     >
       <Stack spacing={1.5}>
@@ -614,9 +614,6 @@ function MomentumCard({ analytics }: { analytics: CommandCenterWorkspace }) {
           color={analytics.momentum.score >= 70 ? 'success' : analytics.momentum.score > 0 ? 'primary' : 'warning'}
           sx={{ height: 9, borderRadius: 999, backgroundColor: 'rgba(255,255,255,0.08)' }}
         />
-        <Typography variant="body2" color="text.secondary">
-          {analytics.momentum.explanation}
-        </Typography>
       </Stack>
     </SurfaceCard>
   )
@@ -642,7 +639,7 @@ function RiskPanel({
     <SurfaceCard
       eyebrow="Risks"
       title={hasSignals ? 'Needs attention' : 'No acute flags'}
-      description="Only actionable signals belong here."
+      description="The few items worth reviewing."
       action={<WarningAmberRoundedIcon color={hasSignals ? 'warning' : 'success'} />}
     >
       <Stack spacing={1.25}>
@@ -669,7 +666,7 @@ function RiskPanel({
         ) : (
           <EmptyState
             title="Nothing urgent"
-            description="The current window has no warning-level analytics or readiness signals."
+            description="No warning-level signals in this window."
             tone="success"
             compact
           />
@@ -714,7 +711,7 @@ function PatternPanel({ insights }: { insights: CommandCenterInsight[] }) {
     <SurfaceCard
       eyebrow="Patterns"
       title={insights.length > 0 ? 'Emerging reads' : 'Need more history'}
-      description="Rule-backed interpretations, not another dashboard layer."
+      description="Plain reads from recent history."
     >
       <Stack spacing={1.25}>
         {insights.length > 0 ? (
@@ -806,7 +803,7 @@ function RecoveryBoundary({ readiness }: { readiness: ReadinessWorkspace }) {
   return (
     <SurfaceCard
       eyebrow="Recovery data"
-      title="Provider boundary"
+      title="Provider status"
       description={readiness.healthIntegration.statusSummaryLabel}
     >
       <Stack spacing={1}>
@@ -850,5 +847,14 @@ function getStatusChip(data: CommandCenterWorkspace): { label: string; color: 'd
 }
 
 function cleanCopy(copy: string) {
-  return copy.replaceAll('Command Center', 'Insights').replaceAll('command center', 'insights')
+  return copy
+    .replaceAll('Command Center', 'Insights')
+    .replaceAll('command center', 'insights')
+    .replaceAll('operating tier', 'momentum read')
+    .replaceAll('Operating tier', 'Momentum read')
+    .replaceAll('Intervention', 'Review')
+    .replaceAll('intervention', 'review')
+    .replaceAll('Pressure', 'Load')
+    .replaceAll('pressure', 'load')
+    .replaceAll('Immediate review is warranted', 'Review needed now')
 }

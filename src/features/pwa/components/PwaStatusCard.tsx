@@ -56,7 +56,7 @@ export function PwaStatusCard({
           <Stack spacing={0.35} sx={{ minWidth: 0 }}>
             <Stack direction="row" spacing={1} alignItems="center" useFlexGap flexWrap="wrap">
               <Typography variant="overline" color="primary.light">
-                Shell Readiness
+                App status
               </Typography>
               <Chip
                 label={connectivity.eyebrow}
@@ -67,7 +67,7 @@ export function PwaStatusCard({
             <Typography variant="body2" color="text.secondary">
               {canInstall
                 ? 'Install Forge for one-tap entry.'
-                : 'Shell cached and acknowledged.'}
+                : 'Ready on this device.'}
             </Typography>
           </Stack>
 
@@ -90,7 +90,7 @@ export function PwaStatusCard({
 
   return (
     <SurfaceCard
-      eyebrow="Platform Status"
+      eyebrow="App status"
       title={connectivity.title}
       description={connectivity.detail}
       action={<Chip label={connectivity.eyebrow} color={connectivity.tone === 'warning' ? 'warning' : connectivity.tone === 'success' ? 'success' : 'default'} size="small" />}
@@ -111,7 +111,7 @@ export function PwaStatusCard({
               Install Forge
             </Button>
             <Typography variant="body2" color="text.secondary">
-              Install for one-tap entry and a stronger app-like launch surface.
+              Install for one-tap entry.
             </Typography>
           </Stack>
         ) : null}
@@ -122,7 +122,7 @@ export function PwaStatusCard({
               Apply update
             </Button>
             <Typography variant="body2" color="text.secondary">
-              A newer shell is ready to activate.
+              A newer version is ready.
             </Typography>
           </Stack>
         ) : null}
@@ -133,7 +133,7 @@ export function PwaStatusCard({
               Dismiss
             </Button>
             <Typography variant="body2" color="text.secondary">
-              The shell is cached for offline recovery.
+              Forge is cached for offline use.
             </Typography>
           </Stack>
         ) : null}
