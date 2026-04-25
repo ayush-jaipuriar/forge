@@ -107,7 +107,7 @@ export async function applyRestoreStage(stage: RestoreStage): Promise<RestoreJob
     }
 
     if (stage.payload.integrations.syncDiagnostics) {
-      warnings.push('Sync diagnostics are operational telemetry and were intentionally not restored.')
+      warnings.push('Sync health details were intentionally not restored.')
     }
 
     if (outstandingSyncItems.length > 0) {

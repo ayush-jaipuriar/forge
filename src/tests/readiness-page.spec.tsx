@@ -82,12 +82,12 @@ vi.mock('@/features/platform/hooks/usePlatformWorkspace', () => ({
 }))
 
 describe('ReadinessPage', () => {
-  it('renders the readiness intelligence layout with target posture and intervention layer', () => {
+  it('renders the readiness intelligence layout with target posture and review section', () => {
     render(<ReadinessPage />)
 
-    expect(screen.getByRole('heading', { name: /pressure should become readable early/i })).toBeInTheDocument()
+    expect(screen.getByRole('heading', { name: /risk should become readable early/i })).toBeInTheDocument()
     expect(screen.getByText(/target posture/i)).toBeInTheDocument()
-    expect(screen.getByRole('heading', { name: /where readiness is actually under pressure/i })).toBeInTheDocument()
+    expect(screen.getByRole('heading', { name: /where readiness needs attention/i })).toBeInTheDocument()
     expect(screen.getByRole('heading', { name: /coverage and confidence across the prep map/i })).toBeInTheDocument()
     expect(screen.getByRole('heading', { name: /future provider contribution points/i })).toBeInTheDocument()
     expect(screen.getByText(/coverage pace is slipping/i)).toBeInTheDocument()

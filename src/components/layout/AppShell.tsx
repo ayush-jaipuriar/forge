@@ -395,8 +395,8 @@ export function AppShell() {
                   startIcon={<Icon fontSize="small" />}
                   color={isActive ? 'primary' : 'inherit'}
                   variant={isActive ? 'contained' : 'outlined'}
-                sx={{ justifyContent: 'flex-start' }}
-              >
+                  sx={{ justifyContent: 'flex-start' }}
+                >
                   {label}
                 </Button>
               )

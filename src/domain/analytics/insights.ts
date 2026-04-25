@@ -253,7 +253,7 @@ function evaluateWeekendUtilizationRule(
       severity: 'warning',
       confidence: getBucketConfidence(weekendFacts.length),
       title: 'Weekend utilization is softer than the target requires',
-      summary: 'The weekend pattern is not adding enough meaningful execution pressure, which matters because the target pace assumes weekends stay useful.',
+      summary: 'The weekend pattern is not adding enough useful work, which matters because the target pace assumes weekends stay useful.',
       supportingEvidence: [
         evidence('Weekend score', `${weekendScore}/100`, 'negative'),
         evidence('Weekend completion', `${weekendCompletion}%`, 'negative'),
@@ -283,7 +283,7 @@ function evaluateMissedTimeWindowRule(
     ruleKey: 'most-missed-time-window',
     severity: 'warning',
     confidence: getBucketConfidence(worstBand.sampleSize),
-    title: `${worstBand.label} is the main skip-pressure zone`,
+    title: `${worstBand.label} is the main skip-risk zone`,
     summary: `${worstBand.label} is absorbing the highest skip rate in the current window, so it is the clearest schedule-friction candidate right now.`,
     supportingEvidence: [
       evidence('Skipped share', `${worstBand.secondaryValue ?? 0}%`, 'negative'),
@@ -541,7 +541,7 @@ function buildCoachSummary(
   const critical = insights.find((insight) => insight.severity === 'critical')
   if (critical) {
     return {
-      title: 'Immediate intervention is warranted',
+      title: 'Review needed now',
       summary: `${critical.title}. ${critical.summary}`,
       severity: 'critical',
     }
@@ -550,7 +550,7 @@ function buildCoachSummary(
   const warning = insights.find((insight) => insight.severity === 'warning')
   if (warning) {
     return {
-      title: 'The current window has a clear pressure point',
+      title: 'The current window has a clear risk',
       summary: `${warning.title}. ${warning.summary}`,
       severity: 'warning',
     }
@@ -569,7 +569,7 @@ function buildCoachSummary(
 
   return {
     title: 'Pattern detection is warming up',
-    summary: `Forge is reading the ${windowKey.toUpperCase()} window, but the current mix of data is still too flat to surface a stronger coaching summary.`,
+    summary: `Forge is reading the ${windowKey.toUpperCase()} window, but the current data is still too thin for a stronger summary.`,
     severity: 'info',
   }
 }

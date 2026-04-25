@@ -46,7 +46,7 @@ export function PhysicalPage() {
         : activeWorkout.status === 'rescheduled'
           ? {
               title: 'Training moved but still counts as live.',
-              detail: 'Keep the note short and operational so the movement is easy to read later.',
+              detail: 'Keep the note short so the change is easy to read later.',
             }
           : {
               title: 'Physical execution is still open today.',
@@ -196,7 +196,7 @@ export function PhysicalPage() {
                 minRows={3}
                 value={activeWorkoutNoteDraft}
                 onChange={(event) => setWorkoutNoteDraft(event.target.value)}
-                helperText="Keep this operational: what changed, what slipped, or what was adjusted."
+                helperText="Keep this short: what changed, what slipped, or what was adjusted."
               />
             </Stack>
           </SurfaceCard>
@@ -204,10 +204,10 @@ export function PhysicalPage() {
 
         <Grid size={{ xs: 12, xl: 5 }}>
           <Stack spacing={2} height="100%">
-          <SurfaceCard
-            eyebrow="Sleep Support"
-            title="Manual sleep signal"
-            description="Sleep stays fast to log because the goal is support quality, not tracker detail."
+            <SurfaceCard
+              eyebrow="Sleep Support"
+              title="Manual sleep signal"
+              description="Sleep stays fast to log because the goal is support quality, not tracker detail."
             >
               <Stack spacing={2}>
                 <Stack direction="row" spacing={1} useFlexGap flexWrap="wrap">
@@ -252,10 +252,10 @@ export function PhysicalPage() {
               </Stack>
             </SurfaceCard>
 
-              <SurfaceCard
-                eyebrow="Weekly Training Shape"
-                title={`${data.weeklyWorkoutSummary.scheduledCount} scheduled sessions + ${data.weeklyWorkoutSummary.optionalCount} optional windows`}
-                description="A quick read on whether physical execution is supporting the larger routine."
+            <SurfaceCard
+              eyebrow="Weekly Training Shape"
+              title={`${data.weeklyWorkoutSummary.scheduledCount} scheduled sessions + ${data.weeklyWorkoutSummary.optionalCount} optional windows`}
+              description="A quick read on whether physical execution is supporting the larger routine."
             >
               <Stack spacing={1.1} divider={<Divider flexItem />}>
                 {data.weeklyWorkoutSummary.labels.map((label) => (
@@ -269,10 +269,10 @@ export function PhysicalPage() {
         </Grid>
       </Grid>
 
-          <SurfaceCard
-            eyebrow="Health Provider Integration"
-            title="Recovery and sleep provider seam"
-            description="Provider work stays scaffolded and future-facing."
+      <SurfaceCard
+        eyebrow="Health Provider Integration"
+        title="Recovery and sleep provider path"
+        description="Provider work is planned and future-facing."
       >
         <Grid container spacing={2}>
           <Grid size={{ xs: 12, lg: 7 }}>
@@ -291,7 +291,7 @@ export function PhysicalPage() {
             <Alert severity="info" variant="outlined">
               {platformWorkspace.runtime === 'nativeShell'
                 ? 'The native shell exists, but automated sleep and recovery ingestion still needs real provider bridges and native permission work. Sleep duration remains manual until those bridges land.'
-                : 'Sleep duration stays manual in the current phase. When Apple Health or Google Health Connect lands later, the normalized signal seam will let those signals appear here without pretending they already exist today.'}
+                : 'Sleep duration stays manual in the current phase. When Apple Health or Google Health Connect lands later, those signals can appear here without pretending they already exist today.'}
             </Alert>
           </Grid>
         </Grid>

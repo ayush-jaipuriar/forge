@@ -87,7 +87,7 @@ export function buildTodayOperationalSignals({
       id: 'today-behind-target',
       title: 'You are behind the current pace',
       detail: primaryMission
-        ? `${summary.projection.statusLabel} The highest-value weekly pressure right now is: ${primaryMission.title.toLowerCase()}.`
+        ? `${summary.projection.statusLabel} The highest-value weekly focus right now is: ${primaryMission.title.toLowerCase()}.`
         : summary.projection.summary,
       tone: summary.projection.status === 'critical' ? 'critical' : 'warning',
       badge: summary.projection.status === 'critical' ? 'Target Risk' : 'Pace Slip',
@@ -146,7 +146,7 @@ export function buildReadinessOperationalSignals({
   if (summary.projection.status !== 'onTrack' || ['critical', 'behind'].includes(readinessSnapshot.pressureLevel)) {
     signals.push({
       id: 'readiness-pace-risk',
-      title: 'Readiness pace needs intervention',
+      title: 'Readiness pace needs review',
       detail: `${summary.projection.summary} ${readinessSnapshot.paceSnapshot.paceLabel}`,
       tone: summary.projection.status === 'critical' ? 'critical' : 'warning',
       badge: summary.projection.status === 'critical' ? 'Critical Pace' : 'Pace Risk',
@@ -173,7 +173,7 @@ export function buildReadinessOperationalSignals({
         : summary.momentum.level === 'fragile'
           ? 'warning'
           : 'info',
-    badge: 'Operating Posture',
+    badge: 'Momentum',
   })
 
   if (summary.missions[0]) {
@@ -182,7 +182,7 @@ export function buildReadinessOperationalSignals({
       title: summary.missions[0].title,
       detail: summary.missions[0].rationale,
       tone: summary.missions[0].priority === 'high' ? 'warning' : 'info',
-      badge: 'Weekly Pressure',
+      badge: 'Weekly Focus',
     })
   }
 
@@ -206,10 +206,10 @@ export function buildScheduleOperationalSignals({
   if (summary.projection.status === 'critical' || summary.projection.status === 'slipping') {
     globalSignals.push({
       id: 'schedule-pace-risk',
-      title: 'This week has real planning pressure',
+      title: 'This week needs a tighter plan',
       detail: `${summary.projection.summary} Use the week view to protect the high-leverage days instead of spreading effort evenly.`,
       tone: summary.projection.status === 'critical' ? 'critical' : 'warning',
-      badge: 'Pace Pressure',
+      badge: 'Pace Risk',
     })
   }
 
@@ -219,7 +219,7 @@ export function buildScheduleOperationalSignals({
       title: 'Weekend leverage matters this week',
       detail: 'The current mission stack is counting on the weekend to do real readiness work, not just catch-up admin.',
       tone: 'warning',
-      badge: 'Weekend Pressure',
+      badge: 'Weekend Focus',
     })
   }
 
@@ -242,15 +242,15 @@ export function buildScheduleOperationalSignals({
         title: 'Continuity test day',
         detail: 'WFH strength is not enough this week unless WFO continuity also holds.',
         tone: 'warning',
-        badge: 'WFO Pressure',
+        badge: 'WFO Focus',
       })
     }
 
     if (missionKinds.has('weekend-utilization') && ['saturday', 'sunday'].includes(day.weekday)) {
       signals.push({
         id: `${day.date}-weekend`,
-        title: 'Weekend must stay operational',
-        detail: 'This day is carrying explicit weekend-utilization pressure in the current mission stack.',
+        title: 'Weekend needs useful work',
+        detail: 'This day is part of the current weekend focus, so keep it useful without overloading it.',
         tone: 'warning',
         badge: 'Weekend',
       })

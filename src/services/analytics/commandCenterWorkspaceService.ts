@@ -134,7 +134,7 @@ export async function getCommandCenterWorkspace(
     id: 'history-empty',
     title: 'History window is still empty',
     detail:
-      'Command Center can render the shell now, but the analytics engine needs persisted day instances before it can produce trustworthy patterns.',
+      'Insights can open now, but Forge needs persisted day history before it can show trustworthy patterns.',
     severity: 'warning',
     confidence: 'low',
   }
@@ -225,8 +225,8 @@ function buildMetricCards({
       value: `${trackedDays}`,
       detail:
         dataState === 'empty'
-          ? 'No persisted day instances yet. Command Center is waiting for historical execution records.'
-          : 'Historical day instances available for charting and projection.',
+          ? 'No persisted day history yet. Insights will fill in after tracked days exist.'
+          : 'Tracked day history is available for charts and projection.',
       tone: dataState === 'ready' ? 'success' : 'warning',
     },
     {

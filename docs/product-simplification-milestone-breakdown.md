@@ -327,6 +327,45 @@ The simplified product feels intentional and complete, not mid-transition.
 - regression coverage
 - final route and state correctness
 
+### Sprint plan
+
+- [Product Simplification Sprint 7 Plan](product-simplification-sprint-7-plan.md)
+
+### Status
+
+Implemented.
+
+Sprint 7 closes the simplification stream with release-candidate hardening across primary routes, legacy route compatibility, service-generated copy, auth/demo states, metadata, JSX consistency, and browser screenshot QA.
+
+Validation is green:
+
+- `npm run typecheck`
+- `npm run lint`
+- `npm run test:run` -> 70 files, 264 tests passed
+- `npm run build`
+- `git diff --check`
+
+Browser QA artifacts:
+
+- `/Users/ayushjaipuriar/Documents/GitHub/forge/output/playwright/sprint7-rc/auth-desktop-1440x1000.png`
+- `/Users/ayushjaipuriar/Documents/GitHub/forge/output/playwright/sprint7-rc/auth-mobile-390x844.png`
+- `/Users/ayushjaipuriar/Documents/GitHub/forge/output/playwright/sprint7-rc/today-desktop-1440x1000.png`
+- `/Users/ayushjaipuriar/Documents/GitHub/forge/output/playwright/sprint7-rc/today-mobile-390x844.png`
+- `/Users/ayushjaipuriar/Documents/GitHub/forge/output/playwright/sprint7-rc/plan-desktop-1440x1000.png`
+- `/Users/ayushjaipuriar/Documents/GitHub/forge/output/playwright/sprint7-rc/plan-mobile-390x844.png`
+- `/Users/ayushjaipuriar/Documents/GitHub/forge/output/playwright/sprint7-rc/insights-desktop-1440x1000.png`
+- `/Users/ayushjaipuriar/Documents/GitHub/forge/output/playwright/sprint7-rc/insights-mobile-390x844.png`
+- `/Users/ayushjaipuriar/Documents/GitHub/forge/output/playwright/sprint7-rc/settings-desktop-1440x1000.png`
+- `/Users/ayushjaipuriar/Documents/GitHub/forge/output/playwright/sprint7-rc/settings-mobile-390x844.png`
+- `/Users/ayushjaipuriar/Documents/GitHub/forge/output/playwright/sprint7-rc/about-desktop-1440x1000.png`
+- `/Users/ayushjaipuriar/Documents/GitHub/forge/output/playwright/sprint7-rc/about-mobile-390x844.png`
+- `/Users/ayushjaipuriar/Documents/GitHub/forge/output/playwright/sprint7-rc/sprint7-browser-qa-report.json`
+
+Residual follow-up:
+
+- Keep a future technical-debt refactor available for internal identifiers that still use older domain vocabulary.
+- Treat physical-device/native-shell QA as a separate validation track; Sprint 7 covered web/PWA browser viewports.
+
 ## Why This Breakdown
 
 This sequence is deliberate.

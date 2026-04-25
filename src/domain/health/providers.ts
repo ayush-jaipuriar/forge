@@ -157,7 +157,7 @@ export function deriveHealthConnectionSummary(
 
 /**
  * Derives an honest phase notice for the Settings card.
- * This reflects the current Phase 3 posture: scaffolding only, no live providers.
+ * This reflects the current Phase 3 posture: planned only, no live providers.
  */
 export function deriveHealthPhaseNotice(providers: HealthProviderState[]): string {
   const anyConnectable = providers.some((p) => isProviderConnectable(p))
@@ -165,7 +165,7 @@ export function deriveHealthPhaseNotice(providers: HealthProviderState[]): strin
 
   if (allPlanned) {
     return (
-      'Health integration is scaffolded but no providers are connected in Phase 3. ' +
+      'Health integrations are planned, but no providers are connected in Phase 3. ' +
       'Apple Health and Google Health Connect require a native mobile shell. ' +
       'Google Fit and Fitbit API integration is planned for a future phase.'
     )

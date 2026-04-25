@@ -23,12 +23,12 @@ const platformWorkspaceMock = vi.hoisted(() => ({
   value: {
     runtime: 'browser',
     shellLabel: 'Browser Tab',
-    shellSupportLabel: 'Primary runtime',
-    summary: 'Browser remains the most complete and best-understood Forge runtime today, including auth, Calendar, backup export, and restore import flows.',
+    shellSupportLabel: 'Primary app path',
+    summary: 'Browser remains the most complete and best-understood Forge path today, including auth, Calendar, backup export, and restore import flows.',
     installSurfaceLabel: 'Browser install prompt available',
     needRefresh: false,
     offlineReady: true,
-    supportNotes: ['Browser is the reference runtime for launch, support, and troubleshooting today.'],
+    supportNotes: ['Browser is the reference path for launch, support, and troubleshooting today.'],
     capabilities: [
       {
         key: 'auth',
@@ -39,8 +39,8 @@ const platformWorkspaceMock = vi.hoisted(() => ({
       { key: 'notifications', label: 'Notifications', status: 'supported', summary: 'Browser notifications are supported once permission is granted.' },
       { key: 'backupExport', label: 'Backup Export', status: 'supported', summary: 'Backup export uses browser downloads.' },
       { key: 'restoreImport', label: 'Restore Import', status: 'supported', summary: 'Restore import uses the browser file picker.' },
-      { key: 'calendar', label: 'Google Calendar', status: 'supported', summary: 'Calendar integration is currently strongest in the browser runtime.' },
-      { key: 'health', label: 'Health Providers', status: 'planned', summary: 'Health providers are not yet connected in the browser runtime.' },
+      { key: 'calendar', label: 'Google Calendar', status: 'supported', summary: 'Calendar integration is currently strongest in the browser app.' },
+      { key: 'health', label: 'Health Providers', status: 'planned', summary: 'Health providers are not yet connected in the browser app.' },
     ],
   } as const,
 }))

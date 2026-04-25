@@ -121,7 +121,7 @@ describe('analytics insights engine', () => {
     })
 
     expect(result.coachSummary.severity).toBe('critical')
-    expect(result.coachSummary.title).toMatch(/immediate intervention/i)
+    expect(result.coachSummary.title).toMatch(/review needed now/i)
   })
 })
 

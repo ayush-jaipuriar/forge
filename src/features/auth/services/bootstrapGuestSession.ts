@@ -216,7 +216,7 @@ function getGuestWorkoutLog(dayInstance: DayInstance, dayMode: DayMode, offset: 
     label: scheduledWorkout.label,
     status,
     note: status === 'done' ? 'Guest session sample: training landed as planned.' : undefined,
-    missReason: status === 'skipped' ? 'Recovery pressure was too high in this sample day.' : undefined,
+    missReason: status === 'skipped' ? 'Recovery load was too high in this sample day.' : undefined,
   }
 }
 

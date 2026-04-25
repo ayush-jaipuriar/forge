@@ -154,7 +154,7 @@ describe('SchedulePage', () => {
 
     render(<SchedulePage />)
 
-    expect(screen.getByRole('heading', { name: /operate the week before drift compounds/i })).toBeInTheDocument()
+    expect(screen.getByRole('heading', { name: /shape the week before drift compounds/i })).toBeInTheDocument()
     expect(screen.getByRole('heading', { name: /mon · deep work day/i })).toBeInTheDocument()
     expect(screen.getAllByText(/deep work day/i).length).toBeGreaterThan(0)
 

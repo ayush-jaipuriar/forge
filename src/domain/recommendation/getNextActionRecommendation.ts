@@ -60,11 +60,11 @@ export function getNextActionRecommendation({
           ruleKey: 'protect-conflict-boundary',
           actionLabel: `Protect ${currentBlock.title} against outside drift`,
           rationale:
-            'The schedule is constrained by outside commitments, so the best move is to preserve the active block boundary instead of improvising new work.',
+            'Outside commitments are crowding the schedule, so preserve the active block instead of improvising new work.',
           urgency: 'high',
           alternativePath: planningBlock ? `If the block is no longer realistic, switch to ${planningBlock.title} and re-close the day.` : undefined,
           explanation:
-            'Calendar conflict state takes top precedence because fragmented attention destroys the rest of the rule stack before score math can recover it.',
+            'Calendar conflicts come first because fragmented attention can break the rest of the day.',
         }
       }
 
@@ -134,7 +134,7 @@ export function getNextActionRecommendation({
           rationale: 'The workout window is closing and physical execution is part of the score, not an optional side quest.',
           urgency: scorePreview.warState === 'slipping' || schedulePressureLevel === 'critical' ? 'high' : 'medium',
           alternativePath: planningBlock ? `If training is impossible tonight, move straight to ${planningBlock.title} and protect tomorrow.` : undefined,
-          explanation: 'Late-day workout expectation and slipping score pressure can elevate physical execution above more passive options.',
+          explanation: 'Late-day workout expectation and slipping score risk can elevate physical execution above more passive options.',
         }
       }
 
@@ -201,7 +201,7 @@ export function getNextActionRecommendation({
         return {
           ruleKey: 'advance-top-priority',
           actionLabel: `Advance ${topPriorities[0].title}`,
-          rationale: `${readinessSnapshot.paceSnapshot.paceLabel} The strongest remaining block should absorb the next clean unit of attention.`,
+          rationale: `${readinessSnapshot.paceSnapshot.paceLabel} Put the next clean unit of attention into the strongest remaining block.`,
           urgency: schedulePressureLevel === 'critical' ? 'high' : 'medium',
           alternativePath: planningBlock ? `If focus is gone, close with ${planningBlock.title} instead of drifting.` : undefined,
           explanation: 'With no stronger interrupt, the engine falls back to the highest-priority remaining block.',

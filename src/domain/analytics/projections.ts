@@ -208,10 +208,10 @@ function getProjectionSummary({
   requiredWeeklyVelocity: number
 }) {
   if (targetSlipDays > 0) {
-    return `At the current pace, readiness slips by roughly ${targetSlipDays} day(s). Weekly readiness velocity is ${weeklyReadinessVelocity}, while the target requires ${requiredWeeklyVelocity}.`
+    return `At the current pace, readiness slips by roughly ${targetSlipDays} day(s). Weekly prep pace is ${weeklyReadinessVelocity}, while the target needs ${requiredWeeklyVelocity}.`
   }
 
-  return `Projected readiness reaches ${projectedReadinessPercent}% by the target window. Weekly readiness velocity is ${weeklyReadinessVelocity} against a required pace of ${requiredWeeklyVelocity}.`
+  return `Projected readiness reaches ${projectedReadinessPercent}% by the target window. Weekly prep pace is ${weeklyReadinessVelocity} against a required pace of ${requiredWeeklyVelocity}.`
 }
 
 function getProjectionRisks({
@@ -232,7 +232,7 @@ function getProjectionRisks({
   }
 
   if (weeklyReadinessVelocity < requiredWeeklyVelocity) {
-    risks.push('Weekly readiness velocity is below the current target requirement.')
+    risks.push('Weekly prep pace is below the current target requirement.')
   }
 
   const missedPrimeRate = facts.filter((fact) => fact.missedPrimeBlock).length / Math.max(1, facts.length)

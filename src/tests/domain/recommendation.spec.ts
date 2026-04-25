@@ -11,7 +11,7 @@ import { updateBlockStatus } from '@/domain/routine/mutations'
 const readinessSnapshot: ReadinessSnapshot = {
   targetDate: '2026-05-31',
   daysRemaining: 50,
-  pressureLabel: 'Target pressure is rising.',
+  pressureLabel: 'Target risk is rising.',
   pressureLevel: 'behind',
   paceSnapshot: {
     touchedTopicCount: 0,
@@ -68,7 +68,7 @@ describe('getNextActionRecommendation', () => {
     const criticalReadiness = {
       ...readinessSnapshot,
       pressureLevel: 'critical' as const,
-      pressureLabel: 'Target pressure is critical.',
+      pressureLabel: 'Target risk is critical.',
     }
     const scorePreview = {
       earnedScore: 18,
@@ -265,6 +265,6 @@ describe('getNextActionRecommendation', () => {
     })
 
     expect(recommendation.ruleKey).toBe('protect-conflict-boundary')
-    expect(recommendation.explanation).toMatch(/calendar conflict state/i)
+    expect(recommendation.explanation).toMatch(/calendar conflicts come first/i)
   })
 })

@@ -70,8 +70,8 @@ export function SchedulePage({ embedded = false }: SchedulePageProps) {
           <Stack spacing={2.25}>
             <SectionHeader
               eyebrow="Schedule"
-              title="Operate the week before drift compounds."
-              description="This surface keeps the seeded weekly routine intact while making pressure, overrides, and recoverable interventions visible in one planning board."
+              title="Shape the week before drift compounds."
+              description="This view keeps the seeded weekly routine intact while making load, overrides, and recoverable changes visible in one board."
               action={
                 <Stack direction={{ xs: 'column', sm: 'row' }} spacing={1}>
                   <SyncIndicator status={syncStatus} />
@@ -93,9 +93,9 @@ export function SchedulePage({ embedded = false }: SchedulePageProps) {
               }}
             >
               <ScheduleHeroMetric
-                label="Week Pressure"
+                label="Week Load"
                 value={`${topWeekSignals.length} live signal${topWeekSignals.length === 1 ? '' : 's'}`}
-                detail={topWeekSignals[0]?.title ?? 'No schedule-level planning pressure right now'}
+                detail={topWeekSignals[0]?.title ?? 'No schedule-level planning risk right now'}
               />
               <ScheduleHeroMetric
                 label="Overrides"
@@ -103,7 +103,7 @@ export function SchedulePage({ embedded = false }: SchedulePageProps) {
                 detail={`${pendingMajorBlocks} planned major block${pendingMajorBlocks === 1 ? '' : 's'} still open this week`}
               />
               <ScheduleHeroMetric
-                label="External Pressure"
+                label="External Load"
                 value={`${constrainedDayCount}/7`}
                 detail={`Last external sync ${formatCalendarTimestamp(calendar.syncState?.lastExternalSyncAt, 'Not synced yet')}`}
               />
@@ -125,7 +125,7 @@ export function SchedulePage({ embedded = false }: SchedulePageProps) {
       >
         <SurfaceCard
           eyebrow="Weekly Board"
-          title="See the routine as a system, not a list."
+          title="See the routine as a week, not a list."
           description="Choose a day first. The board stays high-level so the week remains scannable."
         >
           <Box
@@ -256,13 +256,13 @@ export function SchedulePage({ embedded = false }: SchedulePageProps) {
               <ScheduleDataRow label="Base day type" value={dayTypeLabels[selectedDay.baseDayType]} detail="Seeded routine source" />
               <ScheduleDataRow label="Active day type" value={dayTypeLabels[selectedDay.dayType]} detail="Current planning classification" />
               <ScheduleDataRow
-                label="Calendar pressure"
+                label="Calendar load"
                 value={
                   selectedDay.calendarSummary?.severity && selectedDay.calendarSummary.severity !== 'none'
                     ? `${selectedDay.calendarSummary.overlappingEventCount} overlap${selectedDay.calendarSummary.overlappingEventCount === 1 ? '' : 's'}`
                     : 'No live overlap'
                 }
-                detail="Outside commitments shape pressure, not the routine source of truth"
+                detail="Outside commitments shape load, not the routine source"
               />
               <ScheduleDataRow
                 label="Major blocks"
@@ -409,7 +409,7 @@ export function SchedulePage({ embedded = false }: SchedulePageProps) {
         <SurfaceCard
           eyebrow="Calendar Context"
           title="Outside commitments shaping the week"
-          description="Calendar pressure stays visible as a planning constraint."
+          description="Calendar load stays visible as a planning constraint."
           action={
             <Chip
               icon={<EventBusyRoundedIcon />}

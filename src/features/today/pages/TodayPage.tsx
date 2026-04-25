@@ -202,7 +202,7 @@ export function TodayPage() {
 
           {showRecommendation ? (
             <SurfaceCard
-            eyebrow="Next"
+              eyebrow="Next"
               title={recommendation.actionLabel}
               description={recommendation.rationale}
               action={

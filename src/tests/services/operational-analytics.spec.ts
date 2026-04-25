@@ -107,12 +107,12 @@ function summary(overrides?: Partial<{
     momentum: {
       score: 58,
       level: 'building' as const,
-      label: 'Rebuild pressure',
+      label: 'Rebuild momentum',
       explanation: 'The floor is rebuilding, but it still needs more repeatable deep work and recovery wins.',
       trailingWindow: '14d' as const,
     },
     posture: {
-      label: 'Rebuild Pressure',
+      label: 'Rebuild Momentum',
       detail: 'The floor is stabilizing, but deficits still outrank confidence.',
       level: 'building' as const,
     },
@@ -243,7 +243,7 @@ function readinessSnapshot(): ReadinessSnapshot {
   return {
     targetDate: '2026-05-31',
     daysRemaining: 64,
-    pressureLabel: 'Target pressure is rising.',
+    pressureLabel: 'Target risk is rising.',
     pressureLevel: 'behind',
     paceSnapshot: {
       touchedTopicCount: 10,

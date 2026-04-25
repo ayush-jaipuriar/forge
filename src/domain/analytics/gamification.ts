@@ -194,11 +194,11 @@ function deriveMomentumSnapshot({
   const trailingFacts = facts.slice(-14)
 
   if (trailingFacts.length < 4) {
-    return {
-      score: 0,
-      level: 'insufficientData',
-      label: 'Observation window only',
-      explanation: 'Momentum needs a wider recent sample before it becomes a trustworthy pressure signal.',
+      return {
+        score: 0,
+        level: 'insufficientData',
+        label: 'Observation window only',
+        explanation: 'Momentum needs a wider recent sample before it becomes trustworthy.',
       trailingWindow,
     }
   }
@@ -310,7 +310,7 @@ function deriveWeeklyMissions({
         description: 'Land four deep-work days this week without a prime miss so the target pace stops bleeding.',
         rationale:
           projection.status === 'critical' || projection.status === 'slipping'
-            ? 'Projection pressure is real, so deep-work continuity has to carry the recovery.'
+            ? 'Projection risk is real, so deep-work continuity has to carry the recovery.'
             : 'The execution floor is too soft unless deep-work days start chaining together again.',
         unit: 'days',
         target: 4,
@@ -349,7 +349,7 @@ function deriveWeeklyMissions({
         dueDate,
         kind: 'workout-consistency',
         title: 'Hold workout continuity on expected days',
-        description: 'Complete the scheduled training sessions instead of letting physical consistency drift when prep pressure rises.',
+        description: 'Complete the scheduled training sessions instead of letting physical consistency drift when prep load rises.',
         rationale: 'Workout completion is already separating stronger prep days from weaker ones in the current evidence window.',
         unit: 'sessions',
         target: Math.max(2, Math.min(3, expectedThisWeek || 3)),
@@ -389,7 +389,7 @@ function deriveWeeklyMissions({
         kind: 'weekend-utilization',
         title: 'Make both weekend days count',
         description: 'Use the weekend as real readiness leverage, not just vague catch-up time.',
-        rationale: 'The target pace assumes weekends remain operational, so soft weekends quietly create target slip.',
+        rationale: 'The target pace assumes weekends stay useful, so soft weekends quietly create target slip.',
         unit: 'days',
         target: 2,
         progress: currentWeekFacts.filter((fact) => isWeekendFact(fact) && isUsefulWeekendDay(fact)).length,
@@ -596,9 +596,9 @@ function getMomentumLabel(level: MomentumLevel) {
     case 'surging':
       return 'Attack ready'
     case 'steady':
-      return 'Pressure holding'
+      return 'Momentum holding'
     case 'building':
-      return 'Rebuild pressure'
+      return 'Rebuild momentum'
     case 'fragile':
       return 'Fragile continuity'
     case 'insufficientData':
@@ -621,12 +621,12 @@ function getMomentumExplanation({
   if (level === 'surging') {
     return projection.status === 'onTrack'
       ? 'Recent execution, recovery, and output quality are reinforcing each other.'
-      : 'Recent execution is strong, but the target still needs that pressure protected.'
+      : 'Recent execution is strong, but the target still needs that focus protected.'
   }
 
   if (level === 'steady') {
     return primeMissRate >= 0.2
-      ? 'The floor is solid, but prime misses are preventing stronger upward pressure.'
+      ? 'The floor is solid, but prime misses are limiting stronger momentum.'
       : 'Recent behavior is holding together without obvious collapse.'
   }
 
@@ -655,16 +655,16 @@ function getDisciplinePosture(
       }
     case 'steady':
       return {
-        label: 'Pressure Holding',
+        label: 'Momentum Holding',
         detail:
           projection.status === 'critical' || projection.status === 'slipping'
-            ? 'The floor is holding, but projection pressure says the system still needs a harder push.'
-            : 'Execution quality is stable enough to sustain disciplined pressure.',
+            ? 'The floor is holding, but the target still needs a harder push.'
+            : 'Execution quality is stable enough to sustain disciplined effort.',
         level: momentum.level,
       }
     case 'building':
       return {
-        label: 'Rebuild Pressure',
+        label: 'Rebuild Momentum',
         detail: 'The floor is stabilizing, but deficits still outrank confidence.',
         level: momentum.level,
       }

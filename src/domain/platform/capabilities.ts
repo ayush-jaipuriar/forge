@@ -77,14 +77,14 @@ function getShellLabel(runtime: PlatformRuntimeShell, hostLabel: string) {
 
 function getShellSupportLabel(runtime: PlatformRuntimeShell) {
   if (runtime === 'nativeShell') {
-    return 'Foundation runtime'
+    return 'Native foundation'
   }
 
   if (runtime === 'installedPwa') {
-    return 'Installed web runtime'
+    return 'Installed web app'
   }
 
-  return 'Primary runtime'
+  return 'Primary app path'
 }
 
 function getRuntimeSummary(runtime: PlatformRuntimeShell) {
@@ -96,7 +96,7 @@ function getRuntimeSummary(runtime: PlatformRuntimeShell) {
     return 'The installed PWA keeps the strongest current Forge behavior: browser-owned auth, browser-owned notifications, and the offline-capable web shell.'
   }
 
-  return 'Browser remains the most complete and best-understood Forge runtime today, including auth, Calendar, backup export, and restore import flows.'
+  return 'Browser remains the most complete and best-understood Forge path today, including auth, Calendar, backup export, and restore import flows.'
 }
 
 function getInstallSurfaceLabel(runtime: PlatformRuntimeShell, snapshot: PlatformDetectionSnapshot) {
@@ -114,7 +114,7 @@ function getInstallSurfaceLabel(runtime: PlatformRuntimeShell, snapshot: Platfor
 function getSupportNotes(runtime: PlatformRuntimeShell) {
   if (runtime === 'nativeShell') {
     return [
-      'Notifications still use browser-style permission and delivery from the bundled web runtime. Native push is not implemented.',
+      'Notifications still use browser-style permission and delivery from the bundled web app. Native push is not implemented.',
       'Backup export and restore import still rely on webview download and file-selection behavior rather than native share or document-picker flows.',
       'Firebase auth and Google Calendar still depend on browser-oriented auth and callback assumptions.',
       'The shell exists, but health-provider bridges are still deferred and should not be described as connected.',
@@ -124,12 +124,12 @@ function getSupportNotes(runtime: PlatformRuntimeShell) {
   if (runtime === 'installedPwa') {
     return [
       'Installed PWA behavior is still owned by browser permission, download, and Google session semantics.',
-      'This is currently the most trustworthy mobile-friendly runtime for notification and auth behavior.',
+      'This is currently the most trustworthy mobile-friendly path for notification and auth behavior.',
     ]
   }
 
   return [
-    'Browser is the reference runtime for launch, support, and troubleshooting today.',
+    'Browser is the reference app path for launch, support, and troubleshooting today.',
   ]
 }
 
@@ -146,7 +146,7 @@ function buildCapabilityDescriptors(runtime: PlatformRuntimeShell): PlatformCapa
         'notifications',
         'Notifications',
         'limited',
-        'Notification delivery still follows browser and installed-PWA rules from the bundled web runtime; native push is deferred.',
+        'Notification delivery still follows browser and installed-PWA rules from the bundled web app; native push is deferred.',
       ),
       capability(
         'backupExport',
@@ -164,7 +164,7 @@ function buildCapabilityDescriptors(runtime: PlatformRuntimeShell): PlatformCapa
         'calendar',
         'Google Calendar',
         'limited',
-        'Calendar reconnect and write-mirror flows still depend on browser-owned Google auth ergonomics and should be treated as foundation-level support inside the shell.',
+        'Calendar reconnect and write-mirror flows still depend on browser-owned Google auth behavior and should be treated as foundation-level support inside the shell.',
       ),
       capability(
         'health',
@@ -201,8 +201,8 @@ function buildCapabilityDescriptors(runtime: PlatformRuntimeShell): PlatformCapa
     capability('notifications', 'Notifications', 'supported', 'Browser notifications are supported once permission is granted.'),
     capability('backupExport', 'Backup Export', 'supported', 'Backup export uses browser downloads.'),
     capability('restoreImport', 'Restore Import', 'supported', 'Restore import uses the browser file picker.'),
-    capability('calendar', 'Google Calendar', 'supported', 'Calendar integration is currently strongest in the browser runtime.'),
-    capability('health', 'Health Providers', 'planned', 'Health providers are not yet connected in the browser runtime.'),
+    capability('calendar', 'Google Calendar', 'supported', 'Calendar integration is currently strongest in the browser path.'),
+    capability('health', 'Health Providers', 'planned', 'Health providers are not yet connected in the browser path.'),
   ]
 }
 

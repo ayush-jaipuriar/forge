@@ -89,6 +89,6 @@ describe('PhysicalPage', () => {
     expect(screen.getAllByText(/daily training console/i).length).toBeGreaterThan(0)
     expect(screen.getAllByText(/sleep support/i).length).toBeGreaterThan(0)
     expect(screen.getAllByText(/weekly training shape/i).length).toBeGreaterThan(0)
-    expect(screen.getByRole('heading', { name: /recovery and sleep provider seam/i })).toBeInTheDocument()
+    expect(screen.getByRole('heading', { name: /recovery and sleep provider path/i })).toBeInTheDocument()
   })
 })

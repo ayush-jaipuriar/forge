@@ -52,7 +52,7 @@ describe('AuthPage', () => {
 
     render(<AuthPage />)
 
-    await user.click(screen.getByRole('button', { name: /try guest workspace/i }))
+    await user.click(screen.getByRole('button', { name: /try demo workspace/i }))
 
     expect(authMock.value.signInAsGuest).toHaveBeenCalledTimes(1)
   })

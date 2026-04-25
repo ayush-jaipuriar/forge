@@ -99,7 +99,7 @@ const commandCenterMock = vi.hoisted(() => ({
         {
           id: 'history-empty',
           title: 'History window is still empty',
-          detail: 'Command Center can render the shell now, but it still needs persisted day instances.',
+          detail: 'Insights can open now, but Forge needs persisted day history before it can show trustworthy patterns.',
           severity: 'warning',
           confidence: 'low',
         },
@@ -346,7 +346,7 @@ describe('App', () => {
           {
             id: 'history-empty',
             title: 'History window is still empty',
-            detail: 'Command Center can render the shell now, but it still needs persisted day instances.',
+            detail: 'Insights can open now, but Forge needs persisted day history before it can show trustworthy patterns.',
             severity: 'warning',
             confidence: 'low',
           },

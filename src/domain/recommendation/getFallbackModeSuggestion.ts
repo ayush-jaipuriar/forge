@@ -23,7 +23,7 @@ export function getFallbackModeSuggestion({
       rationale: 'The day is degraded beyond a low-energy trim. Reduce the standard, preserve continuity, and stop pretending the fuller plan is still alive.',
       explanation:
         scorePreview.warState === 'critical'
-          ? 'Critical score pressure in an already reduced mode means the next honest move is to protect continuity.'
+          ? 'Critical score risk in an already reduced mode means the next honest move is to protect continuity.'
           : 'Low sleep or low energy while already in low-energy mode means the execution target still needs to shrink.',
       urgency: scorePreview.warState === 'critical' ? 'critical' : 'high',
     }
@@ -44,7 +44,7 @@ export function getFallbackModeSuggestion({
       suggestedDayMode: 'survival',
       title: 'Switch to Survival mode and salvage the close',
       rationale: 'The day has already fallen below a clean recovery pace. Protect what still matters and stop carrying the fiction of the original load.',
-      explanation: 'Critical war-state under a full-load posture means execution expectations should compress immediately.',
+      explanation: 'A critical day state under a full-load posture means execution expectations should compress immediately.',
       urgency: 'critical',
     }
   }

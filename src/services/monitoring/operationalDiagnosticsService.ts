@@ -80,7 +80,7 @@ function getBackupDiagnosticItem(operations: BackupOperationsSnapshot): Operatio
       statusLabel: operations.healthState,
       summary:
         operations.latestFailureMessage ??
-        'Scheduled backup protection is degraded and needs operator review before launch confidence is restored.',
+        'Scheduled backup protection is degraded and needs review before launch confidence is restored.',
       owner: 'Firebase Functions + Storage',
       lastObservedAt: operations.latestFailureAt ?? operations.updatedAt,
     }
@@ -174,7 +174,7 @@ function getNotificationDiagnosticItem(
     label: 'Notification delivery',
     severity: 'healthy',
     statusLabel: 'granted',
-    summary: 'Browser notification permission is granted and Forge can attempt sparse operational delivery.',
+    summary: 'Browser notification permission is granted and Forge can send sparse reminders.',
     owner: 'Browser permission + notification orchestration',
     lastObservedAt: state.lastDeliveredAt ?? state.lastEvaluatedAt ?? state.updatedAt,
   }
@@ -192,7 +192,7 @@ function getCalendarDiagnosticItem(params: {
       label: 'Calendar integration',
       severity: 'healthy',
       statusLabel: 'disconnected',
-      summary: 'Google Calendar is intentionally disconnected or not yet authorized, so Forge is running without external schedule pressure.',
+      summary: 'Google Calendar is intentionally disconnected or not yet authorized, so Forge is running without external calendar load.',
       owner: 'Browser OAuth + Google Calendar API',
       lastObservedAt: connection.lastConnectionCheckAt,
     }
@@ -212,7 +212,7 @@ function getCalendarDiagnosticItem(params: {
       summary:
         syncState.lastMirrorSyncError ??
         syncState.lastSyncError ??
-        'Calendar read or mirror synchronization is failing and needs operator review.',
+        'Calendar read or mirror sync is failing and needs review.',
       owner: 'Browser OAuth + Google Calendar API',
       lastObservedAt: syncState.lastMirrorSyncAt ?? syncState.lastExternalSyncAt ?? connection.lastConnectionCheckAt,
     }
@@ -224,7 +224,7 @@ function getCalendarDiagnosticItem(params: {
       label: 'Calendar integration',
       severity: 'warning',
       statusLabel: 'stale',
-      summary: 'Calendar state is connected but one or more sync surfaces are stale, so collision or mirror accuracy may be drifting.',
+      summary: 'Calendar is connected, but one or more sync paths are stale, so collision or mirror accuracy may be drifting.',
       owner: 'Browser OAuth + Google Calendar API',
       lastObservedAt: syncState.lastMirrorSyncAt ?? syncState.lastExternalSyncAt ?? connection.lastConnectionCheckAt,
     }
@@ -235,7 +235,7 @@ function getCalendarDiagnosticItem(params: {
     label: 'Calendar integration',
     severity: 'healthy',
     statusLabel: 'healthy',
-    summary: 'Calendar read pressure and optional major-block mirroring are connected without visible degradation.',
+    summary: 'Calendar read access and optional major-block mirroring are connected without visible issues.',
     owner: 'Browser OAuth + Google Calendar API',
     lastObservedAt: syncState.lastMirrorSyncAt ?? syncState.lastExternalSyncAt ?? connection.lastConnectionCheckAt,
   }
@@ -330,22 +330,22 @@ export function buildOperationalDiagnosticsWorkspace(input: {
     overallSeverity,
     headline:
       overallSeverity === 'critical'
-        ? 'Critical launch issues need operator review'
+        ? 'Critical launch issues need review'
         : overallSeverity === 'warning'
           ? 'Launch posture is usable but needs attention'
-          : 'Core launch surfaces look healthy',
+          : 'Core launch paths look healthy',
     summary:
       overallSeverity === 'critical'
         ? `${criticalCount} critical subsystem issue(s) are currently visible in Forge.`
         : overallSeverity === 'warning'
           ? `${warningCount} subsystem warning(s) are currently visible in Forge.`
-          : 'No critical or warning-level operational diagnostics are currently visible in Forge.',
+          : 'No critical or warning-level health details are currently visible in Forge.',
     criticalCount,
     warningCount,
     healthyCount,
     items,
     blindSpots: [
-      'Firebase Functions runtime logs still require Firebase Console or CLI inspection; Forge only surfaces downstream symptoms in-app.',
+      'Firebase Functions logs still require Firebase Console or CLI inspection; Forge only shows downstream symptoms in-app.',
       'Browser notification delivery cannot confirm whether the operating system actually displayed a notification after the browser accepted it.',
     ],
   }

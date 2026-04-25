@@ -66,13 +66,13 @@ export function PrepPage({ embedded = false }: PrepPageProps) {
         <SectionHeader
           eyebrow="Prep"
           title="Prep health should read like progress, not admin."
-          description={`${data.dayLabel} focus stays visible with the active domain, weakest surface, and next topic adjustment.`}
+          description={`${data.dayLabel} focus stays visible with the active domain, weakest area, and next topic adjustment.`}
         />
       ) : null}
 
       <Grid container spacing={2}>
         <Grid size={{ xs: 12, sm: 6, xl: 3 }}>
-          <MetricTile eyebrow="Focus Domains" value={`${data.focusedDomains.length}`} detail={focusedDomainLabels.length > 0 ? focusedDomainLabels.join(', ') : 'No high-priority domain pressure is inferred today.'} />
+          <MetricTile eyebrow="Focus Domains" value={`${data.focusedDomains.length}`} detail={focusedDomainLabels.length > 0 ? focusedDomainLabels.join(', ') : 'No high-priority domain focus is inferred today.'} />
         </Grid>
         <Grid size={{ xs: 12, sm: 6, xl: 3 }}>
           <MetricTile eyebrow="Coverage" value={`${touchedTopicCount}/${data.totalTopicCount}`} detail="Topics touched with real exposure, notes, or logged reps." />
@@ -88,7 +88,7 @@ export function PrepPage({ embedded = false }: PrepPageProps) {
       <Grid container spacing={2} alignItems="stretch">
         <Grid size={{ xs: 12, lg: 3 }}>
           <SurfaceCard
-            eyebrow="Domain Pressure"
+            eyebrow="Domain Focus"
             title="Prep map"
             description="Move between domains without losing the readiness balance."
           >

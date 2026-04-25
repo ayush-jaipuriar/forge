@@ -48,11 +48,11 @@ export function createPlatformServiceBoundaries(): PlatformServiceBoundary[] {
     },
     {
       key: 'pwaShell',
-      label: 'PWA install and offline shell',
+      label: 'PWA install and offline app',
       owner: 'pwaRuntime',
       status: 'active',
-      description: 'Installability, cached shell startup, and update/offline messaging remain owned by the PWA runtime and service worker.',
-      rationale: 'Shell install and cache behavior are runtime concerns, not business-domain concerns.',
+      description: 'Installability, cached startup, and update/offline messaging remain owned by the PWA layer and service worker.',
+      rationale: 'Install and cache behavior are app delivery concerns, not business-domain concerns.',
     },
     {
       key: 'calendarSession',
@@ -60,7 +60,7 @@ export function createPlatformServiceBoundaries(): PlatformServiceBoundary[] {
       owner: 'browser',
       status: 'active',
       description: 'Calendar connect, reconnect, read refresh, and explicit mirror reconciliation are still user-driven browser actions.',
-      rationale: 'Current Calendar behavior still depends on user-interactive OAuth and explicit intent, so browser ownership is still the honest boundary.',
+      rationale: 'Current Calendar behavior still depends on user-interactive OAuth and explicit intent, so browser ownership is still the honest limit.',
     },
     {
       key: 'scheduledBackups',
@@ -97,16 +97,16 @@ export function createPlatformServiceBoundaries(): PlatformServiceBoundary[] {
       label: 'Long-lived integration token handling',
       owner: 'firebaseFunctions',
       status: 'planned',
-      description: 'Server-owned token lifecycle and integration state management are intentionally deferred but now identified as a Functions-owned future boundary.',
+      description: 'Server-owned token lifecycle and integration state management are intentionally deferred but identified as future Functions work.',
       rationale: 'Long-lived provider tokens and privileged integration refresh should not remain browser-only once that work begins.',
     },
     {
       key: 'diagnosticsAggregation',
-      label: 'Cross-platform diagnostics aggregation',
+      label: 'Cross-platform health summary',
       owner: 'firebaseFunctions',
       status: 'planned',
-      description: 'A richer remote diagnostics summary may later move into Functions once browser, native shell, and server signals need one shared operational view.',
-      rationale: 'Cross-runtime diagnostics become more truthful when they can aggregate server facts instead of only browser-observed state, but that extraction is not justified yet.',
+      description: 'A richer remote health summary may later move into Functions once browser, native shell, and server signals need one shared view.',
+      rationale: 'Cross-platform health details become more useful when they can include server facts instead of only browser-observed state, but that extraction is not justified yet.',
     },
   ]
 }

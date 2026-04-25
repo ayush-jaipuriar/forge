@@ -21,7 +21,7 @@ describe('platform capability interpretation', () => {
 
     expect(derivePlatformRuntime(makeSnapshot())).toBe('browser')
     expect(workspace.shellLabel).toBe('Browser Tab')
-    expect(workspace.shellSupportLabel).toBe('Primary runtime')
+    expect(workspace.shellSupportLabel).toBe('Primary app path')
   })
 
   it('treats standalone install without Capacitor as an installed PWA runtime', () => {

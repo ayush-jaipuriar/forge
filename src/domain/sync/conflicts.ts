@@ -10,22 +10,22 @@ export const syncConflictPolicies: Record<SyncEntityKind, SyncConflictPolicy> = 
   settings: {
     entityKind: 'settings',
     strategy: 'replace-snapshot',
-    rationale: 'Settings currently persist as one coalesced snapshot, so replacement is more truthful than pretending field-level merges already exist.',
+    rationale: 'Settings are saved as one snapshot today, so replacement is safer than pretending field-level merges already exist.',
   },
   dayInstance: {
     entityKind: 'dayInstance',
     strategy: 'replace-snapshot',
-    rationale: 'Execution state is currently modeled as a date-scoped operational record, so whole-record replacement remains the explicit Phase 3 baseline.',
+    rationale: 'Daily execution state is saved as one date-scoped record, so whole-record replacement is the current safe baseline.',
   },
   notificationState: {
     entityKind: 'notificationState',
     strategy: 'latest-write-wins',
-    rationale: 'Notification counters and permission posture are singleton state where the freshest evaluated view should take precedence.',
+    rationale: 'Notification counters and permission status are singleton state where the freshest evaluated view should take precedence.',
   },
   backup: {
     entityKind: 'backup',
     strategy: 'latest-write-wins',
-    rationale: 'Backup metadata is append-heavy and operational; duplicate records should resolve toward the most recent known job status.',
+    rationale: 'Backup metadata is append-heavy, so duplicate records should resolve toward the most recent known job status.',
   },
   calendar: {
     entityKind: 'calendar',
@@ -35,7 +35,7 @@ export const syncConflictPolicies: Record<SyncEntityKind, SyncConflictPolicy> = 
   health: {
     entityKind: 'health',
     strategy: 'merge-safe-map',
-    rationale: 'Future provider-linked health state is naturally provider-scoped, so safe map merges are the intended long-term posture.',
+    rationale: 'Future provider-linked health state is naturally provider-scoped, so safe map merges are the intended long-term approach.',
   },
 }
 

@@ -17,7 +17,7 @@ export function ReadinessPage({ embedded = false }: ReadinessPageProps) {
 
   if (isLoading || !data) {
     return (
-      <SurfaceCard title="Loading readiness snapshot" description="Forge is deriving pressure, pace, and domain readiness from the persisted prep model.">
+      <SurfaceCard title="Loading readiness snapshot" description="Forge is reading pace and domain readiness from saved prep progress.">
         <Stack alignItems="center" py={2}>
           <CircularProgress color="primary" />
         </Stack>
@@ -34,7 +34,7 @@ export function ReadinessPage({ embedded = false }: ReadinessPageProps) {
       {!embedded ? (
         <SectionHeader
           eyebrow="Readiness"
-          title="Pressure should become readable early."
+          title="Risk should become readable early."
           description="See whether the target date, topic coverage, and current pace still support the plan."
         />
       ) : null}
@@ -63,7 +63,7 @@ export function ReadinessPage({ embedded = false }: ReadinessPageProps) {
                 {strongestFocusedDomain ? (
                   <Stack spacing={0.6} sx={{ minWidth: { md: 220 } }}>
                     <Typography variant="overline" color="primary.light">
-                      Current focus pressure
+                      Current focus
                     </Typography>
                     <Typography variant="body2" color="text.secondary">
                       {strongestFocusedDomain.label}
@@ -80,7 +80,7 @@ export function ReadinessPage({ embedded = false }: ReadinessPageProps) {
                   <MetricTile eyebrow="Target Date" value={readinessSnapshot.targetDate} detail={`${readinessSnapshot.daysRemaining} days remaining`} />
                 </Grid>
                 <Grid size={{ xs: 12, sm: 6, xl: 3 }}>
-                  <MetricTile eyebrow="Pressure" value={readinessSnapshot.pressureLevel} detail={readinessSnapshot.pressureLabel} tone={['critical', 'behind'].includes(readinessSnapshot.pressureLevel) ? 'warning' : 'neutral'} />
+                  <MetricTile eyebrow="Target Risk" value={readinessSnapshot.pressureLevel} detail={readinessSnapshot.pressureLabel} tone={['critical', 'behind'].includes(readinessSnapshot.pressureLevel) ? 'warning' : 'neutral'} />
                 </Grid>
                 <Grid size={{ xs: 12, sm: 6, xl: 3 }}>
                   <MetricTile eyebrow="Coverage" value={`${readinessSnapshot.paceSnapshot.coveragePercent}%`} detail={`${readinessSnapshot.paceSnapshot.touchedTopicCount}/${readinessSnapshot.paceSnapshot.totalTopicCount} topics touched`} />
@@ -113,20 +113,20 @@ export function ReadinessPage({ embedded = false }: ReadinessPageProps) {
                 </Stack>
               ) : (
                 <Typography variant="body2" color="text.secondary">
-                  The current generated plan is not concentrating pressure into one prep domain right now.
+                  The current generated plan is not concentrating focus into one prep domain right now.
                 </Typography>
               )}
             </SurfaceCard>
 
             <SurfaceCard
-              eyebrow="Intervention Count"
-              title={operationalSignals.length > 0 ? `${operationalSignals.length} signals need attention` : 'No acute intervention signal'}
+              eyebrow="Review Count"
+              title={operationalSignals.length > 0 ? `${operationalSignals.length} signals need attention` : 'No acute review signal'}
               description="This count stays small on purpose."
             >
               <Typography variant="body2" color="text.secondary">
                 {operationalSignals.length > 0
-                  ? 'Use the intervention layer below to decide where the target or coverage model is slipping.'
-                  : 'The current pace and domain mix do not show an acute readiness intervention signal.'}
+                  ? 'Use the review section below to decide where the target or coverage model is slipping.'
+                  : 'The current pace and domain mix do not show an acute readiness review signal.'}
               </Typography>
             </SurfaceCard>
           </Stack>
@@ -135,9 +135,9 @@ export function ReadinessPage({ embedded = false }: ReadinessPageProps) {
 
       {operationalSignals.length > 0 ? (
         <SurfaceCard
-          eyebrow="Intervention Layer"
-          title="Where readiness is actually under pressure"
-          description="Signals that show where the target model is becoming operationally expensive."
+          eyebrow="Review"
+          title="Where readiness needs attention"
+          description="Signals that show where the target model is becoming harder to sustain."
         >
           <Grid container spacing={1.5}>
             {operationalSignals.map((signal) => (

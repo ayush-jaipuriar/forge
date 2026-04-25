@@ -68,9 +68,9 @@ function getPressureLevel(daysRemaining: number): ReadinessLevel {
 function getPressureLabel(level: ReadinessLevel) {
   switch (level) {
     case 'critical':
-      return 'Target pressure is critical.'
+      return 'Target risk is critical.'
     case 'behind':
-      return 'Target pressure is rising.'
+      return 'Target risk is rising.'
     case 'building':
       return 'Readiness window is active.'
     case 'onTrack':
@@ -108,9 +108,9 @@ function getPaceSnapshot(
 function getPaceLabel(level: ReadinessLevel, requiredTopicsPerWeek: number) {
   switch (level) {
     case 'critical':
-      return `Coverage pace is critical. You still need roughly ${requiredTopicsPerWeek} untouched topics per week.`
+      return `Coverage pace is critical. Roughly ${requiredTopicsPerWeek} untouched topics per week remain.`
     case 'behind':
-      return `Coverage pace is behind. You still need roughly ${requiredTopicsPerWeek} untouched topics per week.`
+      return `Coverage pace is behind. Roughly ${requiredTopicsPerWeek} untouched topics per week remain.`
     case 'building':
       return `Coverage pace is building, but the remaining load is still around ${requiredTopicsPerWeek} topics per week.`
     case 'onTrack':

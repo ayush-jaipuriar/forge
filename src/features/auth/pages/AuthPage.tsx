@@ -232,7 +232,7 @@ export function AuthPage() {
                     maxWidth: { xs: '19ch', sm: '20.5ch' },
                   }}
                 >
-                  Continue with Google or start a temporary guest workspace.
+                  Continue with Google or try a temporary demo workspace.
                 </Typography>
               </Stack>
               {status === 'missing_config' ? (
@@ -289,8 +289,8 @@ export function AuthPage() {
                 }}
               >
                 {status === 'checking' && flowPhase === 'guesting'
-                  ? 'Preparing guest workspace...'
-                  : 'Try guest workspace'}
+                  ? 'Preparing demo workspace...'
+                  : 'Try demo workspace'}
               </Button>
               <Typography
                 variant="caption"
@@ -302,7 +302,7 @@ export function AuthPage() {
                   maxWidth: '33ch',
                 }}
               >
-                Guest mode uses local demo data and clears when you exit the session.
+                Demo mode uses local data and clears when you exit.
               </Typography>
             </Stack>
           </CardContent>

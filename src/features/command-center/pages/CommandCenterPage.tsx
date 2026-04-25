@@ -57,13 +57,13 @@ export function CommandCenterPage({ embedded = false }: CommandCenterPageProps) 
   if (isError) {
     return (
       <SurfaceCard
-        eyebrow={embedded ? 'Insights' : 'Command Center'}
+        eyebrow="Insights"
         title={embedded ? 'Weekly insights failed' : 'Analytics workspace failed'}
         description="Forge could not assemble the current analytics view."
         action={<ErrorOutlineRoundedIcon color="error" />}
       >
         <EmptyState
-          title="Command Center could not load"
+          title="Insights could not load"
           description={
             error instanceof Error
               ? error.message
@@ -79,12 +79,12 @@ export function CommandCenterPage({ embedded = false }: CommandCenterPageProps) 
   if (isLoading || !data) {
     return (
       <SurfaceCard
-        eyebrow={embedded ? 'Insights' : 'Command Center'}
-        title={embedded ? 'Loading weekly insights' : 'Loading analytics surface'}
-        description="Forge is assembling the current command window."
+        eyebrow="Insights"
+        title={embedded ? 'Loading weekly insights' : 'Loading analytics'}
+        description="Forge is assembling the current pattern view."
       >
         <EmptyState
-          title="Building Command Center"
+          title="Building insights"
           description="Reading recent history and shaping chart-ready signals."
           tone="warning"
           loading
@@ -104,8 +104,8 @@ export function CommandCenterPage({ embedded = false }: CommandCenterPageProps) 
       >
         <Stack spacing={2.5}>
           <SectionHeader
-            eyebrow={embedded ? 'Insights' : 'Command Center'}
-            title={embedded ? 'Weekly insights' : 'Command Center'}
+            eyebrow="Insights"
+            title={embedded ? 'Weekly insights' : 'Insights'}
             description={embedded ? 'See the weekly pattern, not just the day.' : 'See the pattern, not just the day.'}
             action={
               <Stack direction={{ xs: 'column', sm: 'row' }} spacing={1} alignItems={{ xs: 'flex-start', sm: 'center' }}>
@@ -385,7 +385,7 @@ export function CommandCenterPage({ embedded = false }: CommandCenterPageProps) 
           <SurfaceCard
             eyebrow="Continuity & Missions"
             title="What momentum is really built on"
-            description="These surfaces explain whether consistency is compounding and whether the current missions are tied to real deficits instead of vanity goals."
+            description="These sections explain whether consistency is compounding and whether the current missions are tied to real deficits instead of vanity goals."
           >
             <Stack spacing={2}>
               <Box
@@ -423,11 +423,11 @@ export function CommandCenterPage({ embedded = false }: CommandCenterPageProps) 
 
                 <ChartCard
                   eyebrow="Missions"
-                  title="Weekly pressure missions"
+                  title="Weekly focus missions"
                   description="These missions are selected from deficits, not vanity goals."
                   tone="critical"
                   state={data.missions.length === 0 ? 'insufficientData' : isStale ? 'stale' : 'ready'}
-                  emptyTitle="Need more pressure signals before missions lock in"
+                  emptyTitle="Need more focus signals before missions lock in"
                   emptyDescription="Forge avoids inventing missions until there is enough history to tie them to a real deficit or continuity risk."
                 >
                   <Stack spacing={1.5}>
@@ -448,15 +448,15 @@ export function CommandCenterPage({ embedded = false }: CommandCenterPageProps) 
 
           <SurfaceCard
             eyebrow="Risk Stack"
-            title="What needs intervention now"
-            description="Warnings belong beside projections because an analytics cockpit is only useful if it points back toward action."
+            title="What needs review now"
+            description="Warnings belong beside projections because insights are only useful if they point back toward action."
             action={<TrackChangesRoundedIcon color="warning" />}
           >
             <Stack spacing={1.5}>
               {data.warnings.length === 0 ? (
                 <AnalyticsStateNotice
                   title="No active warning cards"
-                  description="Either the window is still young or the current risk rules are not seeing a clear intervention target."
+                  description="Either the window is still young or the current risk rules are not seeing a clear review target."
                   tone="success"
                   kind="insufficientData"
                 />

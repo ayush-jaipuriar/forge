@@ -13,15 +13,15 @@ export function AboutPage() {
       <SectionHeader
         eyebrow="About"
         title="Forge exists to make disciplined execution easier to sustain."
-        description="A personal execution OS built to keep planning, prep, training, and recovery visible in one honest operating surface."
+        description="A focused daily execution app for planning, prep, training, and recovery-aware decisions."
       />
 
       <Grid container spacing={2}>
         <Grid size={{ xs: 12, md: 4 }}>
           <MetricTile
             eyebrow="Project posture"
-            value="Personal OS"
-            detail="Forge is designed as an execution system, not a generic productivity dashboard."
+            value="Execution app"
+            detail="Forge is designed for daily action, not generic productivity tracking."
           />
         </Grid>
         <Grid size={{ xs: 12, md: 4 }}>
@@ -46,12 +46,11 @@ export function AboutPage() {
           <SurfaceCard
             eyebrow="Why Forge Exists"
             title="The project started as a way to make real execution easier to trust."
-            description="Forge keeps the system honest enough that the next action, current pressure, and real progress stay visible without turning into noise."
+            description="Forge keeps the next action, current risk, and real progress visible without turning into noise."
           >
             <Typography color="text.secondary">
               It exists to reduce drift between planning and actual execution. Instead of scattering schedule,
-              prep, training, and recovery across separate tools, Forge treats them as one operating system for
-              disciplined work.
+              prep, training, and recovery across separate tools, Forge keeps them in one practical workflow.
             </Typography>
           </SurfaceCard>
         </Grid>
@@ -64,7 +63,7 @@ export function AboutPage() {
           >
             <Stack spacing={2}>
               <Typography color="text.secondary">
-                Forge was built by Ayush Jaipuriar as a personal execution system that values structure, clarity,
+                Forge was built by Ayush Jaipuriar as a focused execution app that values structure, clarity,
                 and honest feedback over generic productivity theater.
               </Typography>
 
@@ -99,7 +98,7 @@ export function AboutPage() {
       <SurfaceCard
         eyebrow="Project Note"
         title="Built with care"
-        description="A small page, but still part of the same execution system."
+        description="A small page, but still part of the same focused product."
       >
         <Typography
           color="text.secondary"

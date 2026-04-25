@@ -98,7 +98,7 @@ export function PlanPage() {
                 <SyncIndicator status={syncStatus} />
                 <Chip
                   icon={<CalendarMonthRoundedIcon />}
-              label={`${calendar.constrainedDayCount} constrained`}
+                  label={`${calendar.constrainedDayCount} constrained`}
                   size="small"
                   color={calendarTone}
                   variant="outlined"

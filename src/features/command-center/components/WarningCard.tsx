@@ -35,7 +35,7 @@ export function WarningCard({ warning }: WarningCardProps) {
           <Chip label={`Confidence ${warning.confidence}`} size="small" sx={{ borderColor: palette.border }} />
         </Stack>
         <Typography variant="body2" color="text.secondary">
-          Command Center warnings are meant to create behavior change, not just explain what already went wrong.
+          Insight warnings are meant to create behavior change, not just explain what already went wrong.
         </Typography>
       </Stack>
     </SurfaceCard>
