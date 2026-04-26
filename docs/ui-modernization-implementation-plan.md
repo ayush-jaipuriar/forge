@@ -24,6 +24,25 @@ to:
 - visually disciplined
 - structurally consistent
 
+## 2026 Visual Direction Update
+
+After the product simplification stream and production user feedback, the next visual track is no longer trying to push Forge further into an operational cockpit aesthetic.
+
+The follow-up direction is documented in:
+
+- [Calm Premium Planner Visual Redesign Plan](calm-premium-planner-visual-redesign-plan.md)
+
+That plan supersedes the earlier cockpit-heavy parts of this modernization direction for future UI work.
+
+The updated target is:
+
+- calm premium planner
+- first-class light mode
+- warmer, softer dark mode
+- aggressive card and chrome reduction
+- `Today` as the flagship visual reset
+- desktop and mobile screenshot QA in every sprint
+
 ## Inputs
 
 This plan is based on the Stitch design exploration in:

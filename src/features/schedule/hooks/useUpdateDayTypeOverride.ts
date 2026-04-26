@@ -3,6 +3,8 @@ import { useUiStore } from '@/app/store/uiStore'
 import { useAuthSession } from '@/features/auth/providers/useAuthSession'
 import type { DayType } from '@/domain/common/types'
 import { updateDayTypeOverride } from '@/services/settings/dayTypeOverrideService'
+import { getMutationSyncStatus } from '@/services/sync/sourceOfTruth'
+import { useOnlineStatus } from '@/services/sync/useOnlineStatus'
 
 type UpdateDayTypeOverrideVariables = {
   date: string
@@ -13,8 +15,9 @@ export function useUpdateDayTypeOverride() {
   const queryClient = useQueryClient()
   const { status: authStatus, user } = useAuthSession()
   const setSyncStatus = useUiStore((state) => state.setSyncStatus)
+  const isOnline = useOnlineStatus()
 
-  return useMutation({
+  const mutation = useMutation({
     mutationFn: async ({ date, dayType }: UpdateDayTypeOverrideVariables) =>
       updateDayTypeOverride({
         date,
@@ -24,7 +27,7 @@ export function useUpdateDayTypeOverride() {
       }),
     onMutate: async () => {
       const previousState = useUiStore.getState()
-      setSyncStatus('queued')
+      setSyncStatus(getMutationSyncStatus({ isAuthenticated: authStatus === 'authenticated' }))
 
       return {
         previousSyncStatus: previousState.syncStatus,
@@ -45,4 +48,9 @@ export function useUpdateDayTypeOverride() {
       ])
     },
   })
+
+  return {
+    ...mutation,
+    isCloudWriteUnavailable: authStatus === 'authenticated' && !isOnline,
+  }
 }

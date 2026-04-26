@@ -3,6 +3,7 @@ import { getFirebaseFirestore } from '@/lib/firebase/client'
 import type { UserSettings } from '@/domain/settings/types'
 import { applySettingsSyncPatch, type SettingsSyncPatch } from '@/domain/settings/sync'
 import { createDefaultUserSettings } from '@/domain/settings/types'
+import { withFirestoreReadTimeout } from '@/data/firebase/firestoreReadTimeout'
 
 export class FirestoreSettingsRepository {
   async upsert(userId: string, settings: UserSettings) {
@@ -44,7 +45,10 @@ export class FirestoreSettingsRepository {
       return null
     }
 
-    const snapshot = await getDoc(doc(db, 'users', userId, 'settings', 'default'))
+    const snapshot = await withFirestoreReadTimeout(
+      getDoc(doc(db, 'users', userId, 'settings', 'default')),
+      'Loading settings from Firestore',
+    )
 
     return snapshot.exists() ? (snapshot.data() as UserSettings) : null
   }

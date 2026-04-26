@@ -21,6 +21,7 @@ export async function hydrateCloudSharedState(userId: string): Promise<Hydration
   ])
 
   await Promise.all([applyRemoteSettings(settings), applyRemoteDayInstances(dayInstances)])
+  await discardLegacyAuthenticatedSyncQueue()
   await invalidateSharedWorkspaceQueries()
 
   return {
@@ -42,6 +43,10 @@ export function subscribeToCloudSharedState(userId: string) {
     unsubscribeSettings()
     unsubscribeDayInstances()
   }
+}
+
+export async function discardLegacyAuthenticatedSyncQueue() {
+  await localSyncQueueRepository.clearAll()
 }
 
 async function applyRemoteSettings(settings: UserSettings | null) {

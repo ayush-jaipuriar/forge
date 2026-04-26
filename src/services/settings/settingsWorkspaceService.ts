@@ -1,4 +1,5 @@
 import { localRestoreJobRepository, localSettingsRepository, localSyncDiagnosticsRepository } from '@/data/local'
+import { FirestoreSettingsRepository } from '@/data/firebase/firestoreSettingsRepository'
 import { isServerRestoreEligible } from '@/services/backup/backupPayloadStorage'
 import { getBackupOperationsWorkspace } from '@/services/backup/backupOperationsService'
 import { googleCalendarIntegrationService } from '@/services/calendar/calendarIntegrationService'
@@ -6,10 +7,14 @@ import { healthIntegrationService } from '@/services/health/healthIntegrationSer
 import { buildOperationalDiagnosticsWorkspace } from '@/services/monitoring/operationalDiagnosticsService'
 import { getNotificationStateWorkspace } from '@/services/notifications/notificationStateService'
 import { getPlatformServiceWorkspace } from '@/services/platform/platformOwnershipService'
+import { createDefaultUserSettings } from '@/domain/settings/types'
+
+const firestoreSettingsRepository = new FirestoreSettingsRepository()
 
 export async function getSettingsWorkspace(userId?: string | null) {
+  const settingsPromise = userId ? getCloudSettingsOrCreateDefault(userId) : localSettingsRepository.getDefault()
   const [settings, notificationWorkspace, backupWorkspace, recentRestoreJobs, syncDiagnostics] = await Promise.all([
-    localSettingsRepository.getDefault(),
+    settingsPromise,
     getNotificationStateWorkspace(),
     getBackupOperationsWorkspace(userId),
     localRestoreJobRepository.listRecent(3),
@@ -78,4 +83,20 @@ export async function getSettingsWorkspace(userId?: string | null) {
     healthIntegration: healthWorkspace,
     operationalDiagnostics,
   }
+}
+
+async function getCloudSettingsOrCreateDefault(userId: string) {
+  const settings = await firestoreSettingsRepository.getDefault(userId)
+
+  if (settings) {
+    return {
+      ...createDefaultUserSettings(),
+      ...settings,
+    }
+  }
+
+  const defaultSettings = createDefaultUserSettings()
+  await firestoreSettingsRepository.upsert(userId, defaultSettings)
+
+  return defaultSettings
 }

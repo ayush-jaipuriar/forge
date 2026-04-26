@@ -3,6 +3,8 @@ import { useUiStore } from '@/app/store/uiStore'
 import { useAuthSession } from '@/features/auth/providers/useAuthSession'
 import type { PrepTopicProgressSnapshot } from '@/domain/prep/types'
 import { updatePrepTopicProgress } from '@/services/settings/prepProgressService'
+import { getMutationSyncStatus } from '@/services/sync/sourceOfTruth'
+import { useOnlineStatus } from '@/services/sync/useOnlineStatus'
 
 type UpdatePrepTopicProgressVariables = {
   topicId: string
@@ -13,8 +15,9 @@ export function useUpdatePrepTopicProgress() {
   const queryClient = useQueryClient()
   const { status: authStatus, user } = useAuthSession()
   const setSyncStatus = useUiStore((state) => state.setSyncStatus)
+  const isOnline = useOnlineStatus()
 
-  return useMutation({
+  const mutation = useMutation({
     mutationFn: async ({ topicId, patch }: UpdatePrepTopicProgressVariables) =>
       updatePrepTopicProgress({
         topicId,
@@ -24,7 +27,7 @@ export function useUpdatePrepTopicProgress() {
       }),
     onMutate: async () => {
       const previousState = useUiStore.getState()
-      setSyncStatus('queued')
+      setSyncStatus(getMutationSyncStatus({ isAuthenticated: authStatus === 'authenticated' }))
 
       return {
         previousSyncStatus: previousState.syncStatus,
@@ -46,4 +49,9 @@ export function useUpdatePrepTopicProgress() {
       ])
     },
   })
+
+  return {
+    ...mutation,
+    isCloudWriteUnavailable: authStatus === 'authenticated' && !isOnline,
+  }
 }

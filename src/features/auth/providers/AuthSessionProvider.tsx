@@ -23,6 +23,7 @@ import { resetForgeDb } from '@/data/local/forgeDb'
 const GOOGLE_REDIRECT_INTENT_KEY = 'forge-auth-google-redirect'
 const GUEST_SESSION_INTENT_KEY = 'forge-auth-guest-session'
 const WORKSPACE_KIND_KEY = 'forge-local-workspace-kind'
+const WORKSPACE_USER_KEY = 'forge-local-workspace-user'
 
 type AuthState = {
   status: AuthStatus
@@ -93,9 +94,9 @@ export function AuthSessionProvider({ children }: PropsWithChildren) {
     bootstrappingUidRef.current = firebaseUser.uid
 
     try {
-      if (hasGuestWorkspace()) {
+      if (hasGuestWorkspace() || hasDifferentUserWorkspace(firebaseUser.uid)) {
         await resetForgeDb()
-        clearWorkspaceKind()
+        clearWorkspaceMarkers()
       }
 
       await bootstrapUserSession(firebaseUser)
@@ -105,6 +106,7 @@ export function AuthSessionProvider({ children }: PropsWithChildren) {
       }
 
       markWorkspaceKind('user')
+      markWorkspaceUser(firebaseUser.uid)
       setState({
         status: 'authenticated',
         flowPhase: 'idle',
@@ -172,7 +174,7 @@ export function AuthSessionProvider({ children }: PropsWithChildren) {
         })
 
         clearPendingGuestSession()
-        clearWorkspaceKind()
+        clearWorkspaceMarkers()
 
         if (!active) {
           return
@@ -405,7 +407,7 @@ export function AuthSessionProvider({ children }: PropsWithChildren) {
           })
         } catch (error) {
           clearPendingGuestSession()
-          clearWorkspaceKind()
+          clearWorkspaceMarkers()
 
           reportMonitoringError({
             domain: 'auth',
@@ -426,7 +428,7 @@ export function AuthSessionProvider({ children }: PropsWithChildren) {
         if (state.status === 'guest' || state.user?.isGuest) {
           clearPendingGoogleRedirect()
           clearPendingGuestSession()
-          clearWorkspaceKind()
+          clearWorkspaceMarkers()
           await resetForgeDb()
           setState({
             status: hasFirebaseEnv ? 'unauthenticated' : 'missing_config',
@@ -449,6 +451,8 @@ export function AuthSessionProvider({ children }: PropsWithChildren) {
         await clearLocalCalendarSessionArtifacts({
           clearMirrors: true,
         })
+        await resetForgeDb()
+        clearWorkspaceMarkers()
         await signOut(auth)
       },
     }),
@@ -542,6 +546,17 @@ function hasGuestWorkspace() {
   return window.localStorage.getItem(WORKSPACE_KIND_KEY) === 'guest'
 }
 
+function hasDifferentUserWorkspace(userId: string) {
+  if (typeof window === 'undefined') {
+    return false
+  }
+
+  const workspaceKind = window.localStorage.getItem(WORKSPACE_KIND_KEY)
+  const workspaceUser = window.localStorage.getItem(WORKSPACE_USER_KEY)
+
+  return workspaceKind === 'user' && Boolean(workspaceUser) && workspaceUser !== userId
+}
+
 function markWorkspaceKind(kind: 'guest' | 'user') {
   if (typeof window === 'undefined') {
     return
@@ -550,10 +565,19 @@ function markWorkspaceKind(kind: 'guest' | 'user') {
   window.localStorage.setItem(WORKSPACE_KIND_KEY, kind)
 }
 
-function clearWorkspaceKind() {
+function markWorkspaceUser(userId: string) {
+  if (typeof window === 'undefined') {
+    return
+  }
+
+  window.localStorage.setItem(WORKSPACE_USER_KEY, userId)
+}
+
+function clearWorkspaceMarkers() {
   if (typeof window === 'undefined') {
     return
   }
 
   window.localStorage.removeItem(WORKSPACE_KIND_KEY)
+  window.localStorage.removeItem(WORKSPACE_USER_KEY)
 }

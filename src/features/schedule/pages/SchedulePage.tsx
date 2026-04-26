@@ -30,6 +30,10 @@ export function SchedulePage({ embedded = false }: SchedulePageProps) {
   const updateDayModeMutation = useUpdateDayMode()
   const updateBlockStatusMutation = useUpdateBlockStatus()
   const [selectedDate, setSelectedDate] = useState<string | null>(null)
+  const dayTypeMutationDisabled =
+    updateDayTypeOverrideMutation.isPending || updateDayTypeOverrideMutation.isCloudWriteUnavailable
+  const dayModeMutationDisabled = updateDayModeMutation.isPending || updateDayModeMutation.isCloudWriteUnavailable
+  const blockStatusMutationDisabled = updateBlockStatusMutation.isPending || updateBlockStatusMutation.isCloudWriteUnavailable
 
   if (isLoading || !weekWorkspace) {
     return (
@@ -281,7 +285,7 @@ export function SchedulePage({ embedded = false }: SchedulePageProps) {
                     key={option.value}
                     size="small"
                     variant={option.value === selectedDay.dayType ? 'contained' : 'outlined'}
-                    disabled={updateDayTypeOverrideMutation.isPending}
+                    disabled={dayTypeMutationDisabled}
                     aria-pressed={option.value === selectedDay.dayType}
                     onClick={() => {
                       if (option.value !== selectedDay.dayType) {
@@ -309,7 +313,7 @@ export function SchedulePage({ embedded = false }: SchedulePageProps) {
                 <Button
                   size="small"
                   variant={selectedDay.dayMode === 'lowEnergy' ? 'contained' : 'outlined'}
-                  disabled={updateDayModeMutation.isPending}
+                  disabled={dayModeMutationDisabled}
                   aria-pressed={selectedDay.dayMode === 'lowEnergy'}
                   onClick={() => {
                     if (selectedDay.dayMode !== 'lowEnergy') {
@@ -322,7 +326,7 @@ export function SchedulePage({ embedded = false }: SchedulePageProps) {
                 <Button
                   size="small"
                   variant={selectedDay.dayMode === 'survival' ? 'contained' : 'outlined'}
-                  disabled={updateDayModeMutation.isPending}
+                  disabled={dayModeMutationDisabled}
                   aria-pressed={selectedDay.dayMode === 'survival'}
                   onClick={() => {
                     if (selectedDay.dayMode !== 'survival') {
@@ -335,7 +339,7 @@ export function SchedulePage({ embedded = false }: SchedulePageProps) {
                 <Button
                   size="small"
                   variant={selectedDay.dayMode === 'normal' ? 'contained' : 'outlined'}
-                  disabled={updateDayModeMutation.isPending}
+                  disabled={dayModeMutationDisabled}
                   aria-pressed={selectedDay.dayMode === 'normal'}
                   onClick={() => {
                     if (selectedDay.dayMode !== 'normal') {
@@ -498,7 +502,7 @@ export function SchedulePage({ embedded = false }: SchedulePageProps) {
                       <Button
                         size="small"
                         variant="contained"
-                        disabled={updateBlockStatusMutation.isPending}
+                        disabled={blockStatusMutationDisabled}
                         onClick={() =>
                           updateBlockStatusMutation.mutate({
                             date: selectedDay.date,
@@ -514,7 +518,7 @@ export function SchedulePage({ embedded = false }: SchedulePageProps) {
                       <Button
                         size="small"
                         variant="outlined"
-                        disabled={updateBlockStatusMutation.isPending}
+                        disabled={blockStatusMutationDisabled}
                         onClick={() =>
                           updateBlockStatusMutation.mutate({
                             date: selectedDay.date,
@@ -530,7 +534,7 @@ export function SchedulePage({ embedded = false }: SchedulePageProps) {
                       <Button
                         size="small"
                         variant="outlined"
-                        disabled={updateBlockStatusMutation.isPending}
+                        disabled={blockStatusMutationDisabled}
                         onClick={() =>
                           updateBlockStatusMutation.mutate({
                             date: selectedDay.date,
@@ -546,7 +550,7 @@ export function SchedulePage({ embedded = false }: SchedulePageProps) {
                       <Button
                         size="small"
                         variant="outlined"
-                        disabled={updateBlockStatusMutation.isPending}
+                        disabled={blockStatusMutationDisabled}
                         onClick={() =>
                           updateBlockStatusMutation.mutate({
                             date: selectedDay.date,

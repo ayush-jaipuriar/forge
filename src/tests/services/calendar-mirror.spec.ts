@@ -15,9 +15,16 @@ import { createDefaultUserSettings } from '@/domain/settings/types'
 import { googleCalendarIntegrationService } from '@/services/calendar/calendarIntegrationService'
 
 const flushSyncQueueMock = vi.hoisted(() => vi.fn(async () => 0))
+const firestoreSettingsPatchMock = vi.hoisted(() => vi.fn(async () => undefined))
 
 vi.mock('@/services/sync/syncOrchestrator', () => ({
   flushSyncQueue: flushSyncQueueMock,
+}))
+
+vi.mock('@/data/firebase/firestoreSettingsRepository', () => ({
+  FirestoreSettingsRepository: class {
+    patch = firestoreSettingsPatchMock
+  },
 }))
 
 function getActiveMirrorDate() {
@@ -72,6 +79,7 @@ describe('calendar mirror integration service', () => {
     vi.restoreAllMocks()
     vi.unstubAllGlobals()
     flushSyncQueueMock.mockClear()
+    firestoreSettingsPatchMock.mockClear()
   })
 
   it('upgrades the connection into write-enabled mirror mode', async () => {
@@ -91,6 +99,13 @@ describe('calendar mirror integration service', () => {
     expect(result.connection.featureGate).toBe('writeEnabled')
     expect(result.connection.managedEventMode).toBe('majorBlocks')
     expect((await localCalendarStateRepository.getDefault()).mirrorSyncStatus).toBe('stale')
+    expect(firestoreSettingsPatchMock).toHaveBeenCalledWith(
+      'user-1',
+      expect.objectContaining({
+        type: 'setCalendarIntegration',
+        settingsId: 'default',
+      }),
+    )
   })
 
   it('creates and later deletes mirrored major blocks through reconciliation', async () => {

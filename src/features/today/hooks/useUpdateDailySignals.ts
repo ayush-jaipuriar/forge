@@ -3,6 +3,8 @@ import { useUiStore } from '@/app/store/uiStore'
 import { useAuthSession } from '@/features/auth/providers/useAuthSession'
 import type { EnergyStatus, SleepStatus } from '@/domain/common/types'
 import { updateDailySignals } from '@/services/settings/dailySignalsService'
+import { getMutationSyncStatus } from '@/services/sync/sourceOfTruth'
+import { useOnlineStatus } from '@/services/sync/useOnlineStatus'
 
 type UpdateDailySignalsVariables = {
   date: string
@@ -15,8 +17,9 @@ export function useUpdateDailySignals() {
   const queryClient = useQueryClient()
   const { status, user } = useAuthSession()
   const setSyncStatus = useUiStore((state) => state.setSyncStatus)
+  const isOnline = useOnlineStatus()
 
-  return useMutation({
+  const mutation = useMutation({
     mutationFn: async ({ date, sleepStatus, energyStatus, sleepDurationHours }: UpdateDailySignalsVariables) =>
       updateDailySignals({
         date,
@@ -28,7 +31,7 @@ export function useUpdateDailySignals() {
       }),
     onMutate: async () => {
       const previousState = useUiStore.getState()
-      setSyncStatus('queued')
+      setSyncStatus(getMutationSyncStatus({ isAuthenticated: status === 'authenticated' }))
 
       return {
         previousSyncStatus: previousState.syncStatus,
@@ -51,4 +54,9 @@ export function useUpdateDailySignals() {
       ])
     },
   })
+
+  return {
+    ...mutation,
+    isCloudWriteUnavailable: status === 'authenticated' && !isOnline,
+  }
 }

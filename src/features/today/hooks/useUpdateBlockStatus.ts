@@ -3,6 +3,8 @@ import { useUiStore } from '@/app/store/uiStore'
 import { useAuthSession } from '@/features/auth/providers/useAuthSession'
 import type { BlockStatus } from '@/domain/common/types'
 import { updateDayBlockStatus } from '@/services/routine/dayExecutionService'
+import { getMutationSyncStatus } from '@/services/sync/sourceOfTruth'
+import { useOnlineStatus } from '@/services/sync/useOnlineStatus'
 
 type UpdateBlockStatusVariables = {
   date: string
@@ -14,8 +16,8 @@ export function useUpdateBlockStatus() {
   const queryClient = useQueryClient()
   const { status: authStatus, user } = useAuthSession()
   const setSyncStatus = useUiStore((state) => state.setSyncStatus)
-
-  return useMutation({
+  const isOnline = useOnlineStatus()
+  const mutation = useMutation({
     mutationFn: async ({ date, blockId, status }: UpdateBlockStatusVariables) =>
       updateDayBlockStatus({
         date,
@@ -26,7 +28,7 @@ export function useUpdateBlockStatus() {
       }),
     onMutate: async () => {
       const previousState = useUiStore.getState()
-      setSyncStatus('queued')
+      setSyncStatus(getMutationSyncStatus({ isAuthenticated: authStatus === 'authenticated' }))
 
       return {
         previousSyncStatus: previousState.syncStatus,
@@ -47,4 +49,9 @@ export function useUpdateBlockStatus() {
       ])
     },
   })
+
+  return {
+    ...mutation,
+    isCloudWriteUnavailable: authStatus === 'authenticated' && !isOnline,
+  }
 }

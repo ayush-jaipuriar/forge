@@ -31,6 +31,8 @@ export function PhysicalPage() {
   const persistedWorkoutNote = activeWorkout.note ?? activeWorkout.missReason ?? ''
   const activeWorkoutNoteDraft = workoutNoteDraft ?? persistedWorkoutNote
   const healthWorkspace = data.healthIntegration
+  const workoutMutationDisabled = updateWorkoutMutation.isPending || updateWorkoutMutation.isCloudWriteUnavailable
+  const signalsMutationDisabled = updateSignalsMutation.isPending || updateSignalsMutation.isCloudWriteUnavailable
 
   const executionSummary =
     activeWorkout.status === 'done'
@@ -104,7 +106,7 @@ export function PhysicalPage() {
                   <Button
                     size="small"
                     variant={activeWorkout.status === 'done' ? 'contained' : 'outlined'}
-                    disabled={updateWorkoutMutation.isPending}
+                    disabled={workoutMutationDisabled}
                     aria-pressed={activeWorkout.status === 'done'}
                     onClick={() => {
                       if (activeWorkout.status !== 'done') {
@@ -125,7 +127,7 @@ export function PhysicalPage() {
                   <Button
                     size="small"
                     variant={activeWorkout.status === 'skipped' ? 'contained' : 'outlined'}
-                    disabled={updateWorkoutMutation.isPending}
+                    disabled={workoutMutationDisabled}
                     aria-pressed={activeWorkout.status === 'skipped'}
                     onClick={() => {
                       if (activeWorkout.status !== 'skipped') {
@@ -146,7 +148,7 @@ export function PhysicalPage() {
                   <Button
                     size="small"
                     variant={activeWorkout.status === 'rescheduled' ? 'contained' : 'outlined'}
-                    disabled={updateWorkoutMutation.isPending}
+                    disabled={workoutMutationDisabled}
                     aria-pressed={activeWorkout.status === 'rescheduled'}
                     onClick={() => {
                       if (activeWorkout.status !== 'rescheduled') {
@@ -167,7 +169,7 @@ export function PhysicalPage() {
                   <Button
                     size="small"
                     variant={activeWorkout.status === (data.scheduledWorkout?.status ?? 'optional') ? 'contained' : 'outlined'}
-                    disabled={updateWorkoutMutation.isPending}
+                    disabled={workoutMutationDisabled}
                     aria-pressed={activeWorkout.status === (data.scheduledWorkout?.status ?? 'optional')}
                     onClick={() => {
                       if (activeWorkout.status !== (data.scheduledWorkout?.status ?? 'optional')) {
@@ -216,7 +218,7 @@ export function PhysicalPage() {
                       key={hours}
                       size="small"
                       variant={data.sleepDurationHours === hours ? 'contained' : 'outlined'}
-                      disabled={updateSignalsMutation.isPending}
+                      disabled={signalsMutationDisabled}
                       onClick={() =>
                         updateSignalsMutation.mutate({
                           date: data.dateKey,
@@ -230,7 +232,7 @@ export function PhysicalPage() {
                   <Button
                     size="small"
                     variant="outlined"
-                    disabled={updateSignalsMutation.isPending}
+                    disabled={signalsMutationDisabled}
                     onClick={() =>
                       updateSignalsMutation.mutate({
                         date: data.dateKey,

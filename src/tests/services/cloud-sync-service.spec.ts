@@ -8,6 +8,7 @@ const localSettingsUpsertMock = vi.hoisted(() => vi.fn())
 const localDayInstancesUpsertManyMock = vi.hoisted(() => vi.fn())
 const listOutstandingMock = vi.hoisted(() => vi.fn())
 const removeQueueItemMock = vi.hoisted(() => vi.fn())
+const clearQueueMock = vi.hoisted(() => vi.fn())
 const invalidateQueriesMock = vi.hoisted(() => vi.fn(async () => {}))
 
 vi.mock('@/data/firebase/firestoreSettingsRepository', () => ({
@@ -34,6 +35,7 @@ vi.mock('@/data/local', () => ({
   localSyncQueueRepository: {
     listOutstanding: listOutstandingMock,
     remove: removeQueueItemMock,
+    clearAll: clearQueueMock,
   },
 }))
 
@@ -54,6 +56,7 @@ describe('cloudSyncService', () => {
     localDayInstancesUpsertManyMock.mockReset()
     listOutstandingMock.mockReset()
     removeQueueItemMock.mockReset()
+    clearQueueMock.mockReset()
     invalidateQueriesMock.mockClear()
     listOutstandingMock.mockResolvedValue([])
     firestoreSettingsSubscribeDefaultMock.mockReturnValue(() => {})
@@ -110,7 +113,7 @@ describe('cloudSyncService', () => {
     expect(invalidateQueriesMock).toHaveBeenCalled()
   })
 
-  it('drops superseded queued shared-state items when remote truth is applied', async () => {
+  it('discards legacy authenticated queue items when remote truth is applied', async () => {
     const remoteSettings = {
       id: 'default',
       notificationsEnabled: false,
@@ -154,8 +157,7 @@ describe('cloudSyncService', () => {
 
     await hydrateCloudSharedState('user-1')
 
-    expect(removeQueueItemMock).toHaveBeenCalledWith('queue-settings')
-    expect(removeQueueItemMock).not.toHaveBeenCalledWith('queue-day')
+    expect(clearQueueMock).toHaveBeenCalled()
   })
 
   it('subscribes to remote shared state and applies updates locally', async () => {

@@ -4,7 +4,7 @@ import EventRepeatRoundedIcon from '@mui/icons-material/EventRepeatRounded'
 import WarningAmberRoundedIcon from '@mui/icons-material/WarningAmberRounded'
 import { useState } from 'react'
 import { alpha } from '@mui/material/styles'
-import { Box, Button, Chip, CircularProgress, Stack, Typography } from '@mui/material'
+import { Alert, Box, Button, Chip, CircularProgress, Stack, Typography } from '@mui/material'
 import { useSearchParams } from 'react-router-dom'
 import { forgeTokens } from '@/app/theme/tokens'
 import { useUiStore } from '@/app/store/uiStore'
@@ -34,8 +34,20 @@ type PrepTopic = PrepWorkspace['topicsByDomain'][PrepDomainKey][number]
 
 export function PlanPage() {
   const [searchParams] = useSearchParams()
-  const { data: weekWorkspace, isLoading: isWeekLoading } = useWeeklyWorkspace()
-  const { data: prepWorkspace, isLoading: isPrepLoading } = usePrepWorkspace()
+  const {
+    data: weekWorkspace,
+    error: weekError,
+    isError: isWeekError,
+    isLoading: isWeekLoading,
+    refetch: refetchWeek,
+  } = useWeeklyWorkspace()
+  const {
+    data: prepWorkspace,
+    error: prepError,
+    isError: isPrepError,
+    isLoading: isPrepLoading,
+    refetch: refetchPrep,
+  } = usePrepWorkspace()
   const syncStatus = useUiStore((state) => state.syncStatus)
   const updateDayTypeOverrideMutation = useUpdateDayTypeOverride()
   const updateDayModeMutation = useUpdateDayMode()
@@ -47,6 +59,28 @@ export function PlanPage() {
   const requestedFocus = searchParams.get('view') === 'prep' ? 'prep' : 'week'
 
   if (isWeekLoading || isPrepLoading || !weekWorkspace || !prepWorkspace) {
+    if (isWeekError || isPrepError) {
+      return (
+        <SurfaceCard
+          title="Plan could not load"
+          description={getWorkspaceErrorMessage(weekError ?? prepError)}
+        >
+          <Stack spacing={2} alignItems="flex-start">
+            <Alert severity="warning">Reconnect or retry when Firestore is reachable.</Alert>
+            <Button
+              variant="contained"
+              onClick={() => {
+                void refetchWeek()
+                void refetchPrep()
+              }}
+            >
+              Retry
+            </Button>
+          </Stack>
+        </SurfaceCard>
+      )
+    }
+
     return (
       <SurfaceCard title="Loading plan" description="Restoring your week.">
         <Stack alignItems="center" py={2}>
@@ -79,6 +113,13 @@ export function PlanPage() {
   const totalTouchedTopics = prepWorkspace.domainSummaries.reduce((sum, domain) => sum + domain.touchedTopicCount, 0)
   const totalTrackedHours = prepWorkspace.domainSummaries.reduce((sum, domain) => sum + domain.hoursSpent, 0)
   const prepFocusLabel = prepWorkspace.focusedDomains[0]?.label ?? weakestDomain?.label ?? activeSummary?.label ?? 'Prep'
+  const dayMutationDisabled =
+    updateDayTypeOverrideMutation.isPending ||
+    updateDayModeMutation.isPending ||
+    updateDayTypeOverrideMutation.isCloudWriteUnavailable ||
+    updateDayModeMutation.isCloudWriteUnavailable
+  const blockMutationDisabled = updateBlockStatusMutation.isPending || updateBlockStatusMutation.isCloudWriteUnavailable
+  const prepMutationDisabled = updateTopicMutation.isPending || updateTopicMutation.isCloudWriteUnavailable
 
   return (
     <Stack spacing={3} data-plan-focus={requestedFocus}>
@@ -162,7 +203,7 @@ export function PlanPage() {
           <Stack spacing={2.5}>
             <SelectedDayPanel
               day={selectedDay}
-              isDayMutationPending={updateDayTypeOverrideMutation.isPending || updateDayModeMutation.isPending}
+              isDayMutationPending={dayMutationDisabled}
               onDayTypeChange={(dayType) => {
                 if (dayType !== selectedDay.dayType) {
                   updateDayTypeOverrideMutation.mutate({
@@ -187,7 +228,7 @@ export function PlanPage() {
                   <PlanBlockRow
                     key={block.id}
                     block={block}
-                    isPending={updateBlockStatusMutation.isPending}
+                    isPending={blockMutationDisabled}
                     onChangeStatus={(status) =>
                       updateBlockStatusMutation.mutate({
                         date: selectedDay.date,
@@ -209,7 +250,7 @@ export function PlanPage() {
               activeSummary={activeSummary}
               weakestDomainLabel={weakestDomain?.label ?? 'Pending'}
               totalTrackedHours={totalTrackedHours}
-              isPending={updateTopicMutation.isPending}
+              isPending={prepMutationDisabled}
               onSelectDomain={(domain) => {
                 setSelectedDomain(domain)
                 setSelectedTopicId(prepWorkspace.topicsByDomain[domain]?.[0]?.id ?? null)
@@ -237,6 +278,10 @@ export function PlanPage() {
       ) : null}
     </Stack>
   )
+}
+
+function getWorkspaceErrorMessage(error: unknown) {
+  return error instanceof Error ? error.message : 'Forge could not load this workspace.'
 }
 
 function PlanMetric({

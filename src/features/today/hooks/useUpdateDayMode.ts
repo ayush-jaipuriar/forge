@@ -3,6 +3,8 @@ import { useUiStore } from '@/app/store/uiStore'
 import { useAuthSession } from '@/features/auth/providers/useAuthSession'
 import type { DayMode } from '@/domain/common/types'
 import { updateDayModeOverride } from '@/services/settings/dayModeOverrideService'
+import { getMutationSyncStatus } from '@/services/sync/sourceOfTruth'
+import { useOnlineStatus } from '@/services/sync/useOnlineStatus'
 
 type UpdateDayModeVariables = {
   date: string
@@ -14,8 +16,9 @@ export function useUpdateDayMode() {
   const { status, user } = useAuthSession()
   const setDayMode = useUiStore((state) => state.setDayMode)
   const setSyncStatus = useUiStore((state) => state.setSyncStatus)
+  const isOnline = useOnlineStatus()
 
-  return useMutation({
+  const mutation = useMutation({
     mutationFn: async ({ date, dayMode }: UpdateDayModeVariables) =>
       updateDayModeOverride({
         date,
@@ -27,7 +30,7 @@ export function useUpdateDayMode() {
       const previousState = useUiStore.getState()
 
       setDayMode(dayMode)
-      setSyncStatus('queued')
+      setSyncStatus(getMutationSyncStatus({ isAuthenticated: status === 'authenticated' }))
 
       return {
         previousDayMode: previousState.dayMode,
@@ -50,4 +53,9 @@ export function useUpdateDayMode() {
       ])
     },
   })
+
+  return {
+    ...mutation,
+    isCloudWriteUnavailable: status === 'authenticated' && !isOnline,
+  }
 }

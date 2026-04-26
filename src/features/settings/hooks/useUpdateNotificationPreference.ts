@@ -2,13 +2,16 @@ import { useMutation, useQueryClient } from '@tanstack/react-query'
 import { useUiStore } from '@/app/store/uiStore'
 import { useAuthSession } from '@/features/auth/providers/useAuthSession'
 import { updateNotificationPreference } from '@/services/settings/notificationPreferenceService'
+import { getMutationSyncStatus } from '@/services/sync/sourceOfTruth'
+import { useOnlineStatus } from '@/services/sync/useOnlineStatus'
 
 export function useUpdateNotificationPreference() {
   const queryClient = useQueryClient()
   const { status, user } = useAuthSession()
   const setSyncStatus = useUiStore((state) => state.setSyncStatus)
+  const isOnline = useOnlineStatus()
 
-  return useMutation({
+  const mutation = useMutation({
     mutationFn: async (enabled: boolean) =>
       updateNotificationPreference({
         enabled,
@@ -17,7 +20,7 @@ export function useUpdateNotificationPreference() {
       }),
     onMutate: async () => {
       const previousState = useUiStore.getState()
-      setSyncStatus('queued')
+      setSyncStatus(getMutationSyncStatus({ isAuthenticated: status === 'authenticated' }))
 
       return {
         previousSyncStatus: previousState.syncStatus,
@@ -35,4 +38,9 @@ export function useUpdateNotificationPreference() {
       await queryClient.invalidateQueries({ queryKey: ['settings-workspace'] })
     },
   })
+
+  return {
+    ...mutation,
+    isCloudWriteUnavailable: status === 'authenticated' && !isOnline,
+  }
 }

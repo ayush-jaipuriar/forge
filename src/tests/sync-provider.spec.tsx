@@ -18,6 +18,7 @@ const listOpenConflictsMock = vi.hoisted(() => vi.fn<() => Promise<unknown[]>>()
 const flushSyncQueueMock = vi.hoisted(() => vi.fn<(userId: string) => Promise<number>>())
 const hydrateCloudSharedStateMock = vi.hoisted(() => vi.fn<(userId: string) => Promise<unknown>>())
 const subscribeToCloudSharedStateMock = vi.hoisted(() => vi.fn<(userId: string) => () => void>())
+const discardLegacyAuthenticatedSyncQueueMock = vi.hoisted(() => vi.fn<() => Promise<void>>())
 
 vi.mock('@/features/auth/providers/useAuthSession', () => ({
   useAuthSession: () => authMock.value,
@@ -41,6 +42,7 @@ vi.mock('@/services/sync/syncOrchestrator', () => ({
 }))
 
 vi.mock('@/services/sync/cloudSyncService', () => ({
+  discardLegacyAuthenticatedSyncQueue: discardLegacyAuthenticatedSyncQueueMock,
   hydrateCloudSharedState: hydrateCloudSharedStateMock,
   subscribeToCloudSharedState: subscribeToCloudSharedStateMock,
 }))
@@ -55,6 +57,7 @@ describe('SyncProvider', () => {
     flushSyncQueueMock.mockReset()
     hydrateCloudSharedStateMock.mockReset()
     subscribeToCloudSharedStateMock.mockReset()
+    discardLegacyAuthenticatedSyncQueueMock.mockReset()
     authMock.value = {
       status: 'authenticated',
       user: {
@@ -69,6 +72,7 @@ describe('SyncProvider', () => {
       hydratedDayInstances: 0,
     })
     subscribeToCloudSharedStateMock.mockReturnValue(() => {})
+    discardLegacyAuthenticatedSyncQueueMock.mockResolvedValue()
   })
 
   it('hydrates shared cloud state and starts live subscriptions for authenticated users', async () => {
@@ -87,28 +91,8 @@ describe('SyncProvider', () => {
     })
   })
 
-  it('replays queued work after connectivity returns', async () => {
+  it('marks authenticated online-only state stale while offline and refreshes when connectivity returns', async () => {
     setNavigatorOnline(false)
-    const recentTimestamp = new Date().toISOString()
-    listOutstandingMock
-      .mockResolvedValueOnce([
-        {
-          id: 'q1',
-          status: 'pending',
-          queuedAt: recentTimestamp,
-          updatedAt: recentTimestamp,
-        },
-      ])
-      .mockResolvedValueOnce([
-        {
-          id: 'q1',
-          status: 'pending',
-          queuedAt: recentTimestamp,
-          updatedAt: recentTimestamp,
-        },
-      ])
-      .mockResolvedValueOnce([])
-    flushSyncQueueMock.mockResolvedValueOnce(0)
 
     render(
       <SyncProvider>
@@ -117,19 +101,22 @@ describe('SyncProvider', () => {
     )
 
     await waitFor(() => {
-      expect(useUiStore.getState().syncStatus).toBe('queued')
+      expect(useUiStore.getState().syncStatus).toBe('stale')
+      expect(discardLegacyAuthenticatedSyncQueueMock).toHaveBeenCalled()
     })
 
     setNavigatorOnline(true)
     window.dispatchEvent(new Event('online'))
 
     await waitFor(() => {
-      expect(flushSyncQueueMock).toHaveBeenCalledWith('operator-1')
+      expect(hydrateCloudSharedStateMock).toHaveBeenCalledWith('operator-1')
       expect(useUiStore.getState().syncStatus).toBe('stable')
     })
+
+    expect(flushSyncQueueMock).not.toHaveBeenCalled()
   })
 
-  it('surfaces degraded state when failed replay items remain outstanding', async () => {
+  it('ignores legacy failed queue items for authenticated online-only status', async () => {
     setNavigatorOnline(true)
     listOutstandingMock.mockResolvedValue([
       {
@@ -147,7 +134,7 @@ describe('SyncProvider', () => {
     )
 
     await waitFor(() => {
-      expect(useUiStore.getState().syncStatus).toBe('degraded')
+      expect(useUiStore.getState().syncStatus).toBe('stable')
     })
 
     expect(flushSyncQueueMock).not.toHaveBeenCalled()

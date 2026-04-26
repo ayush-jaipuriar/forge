@@ -3,6 +3,8 @@ import { useUiStore } from '@/app/store/uiStore'
 import { useAuthSession } from '@/features/auth/providers/useAuthSession'
 import type { WorkoutLogEntry } from '@/domain/physical/types'
 import { updateWorkoutLog } from '@/services/settings/workoutLogService'
+import { getMutationSyncStatus } from '@/services/sync/sourceOfTruth'
+import { useOnlineStatus } from '@/services/sync/useOnlineStatus'
 
 type UpdateWorkoutLogVariables = {
   date: string
@@ -13,8 +15,9 @@ export function useUpdateWorkoutLog() {
   const queryClient = useQueryClient()
   const { status: authStatus, user } = useAuthSession()
   const setSyncStatus = useUiStore((state) => state.setSyncStatus)
+  const isOnline = useOnlineStatus()
 
-  return useMutation({
+  const mutation = useMutation({
     mutationFn: async ({ date, patch }: UpdateWorkoutLogVariables) =>
       updateWorkoutLog({
         date,
@@ -24,7 +27,7 @@ export function useUpdateWorkoutLog() {
       }),
     onMutate: async () => {
       const previousState = useUiStore.getState()
-      setSyncStatus('queued')
+      setSyncStatus(getMutationSyncStatus({ isAuthenticated: authStatus === 'authenticated' }))
 
       return {
         previousSyncStatus: previousState.syncStatus,
@@ -45,4 +48,9 @@ export function useUpdateWorkoutLog() {
       ])
     },
   })
+
+  return {
+    ...mutation,
+    isCloudWriteUnavailable: authStatus === 'authenticated' && !isOnline,
+  }
 }

@@ -30,6 +30,7 @@ import { formatCalendarTimestamp, getCalendarStatusTone } from '@/domain/calenda
 import type { PlatformCapabilityStatus, PlatformWorkspace } from '@/domain/platform/types'
 import type { OperationalDiagnosticSeverity } from '@/services/monitoring/operationalDiagnosticsService'
 import { parseRestorePayloadText, type RestoreStage } from '@/services/backup/restoreService'
+import { useOnlineStatus } from '@/services/sync/useOnlineStatus'
 
 function getOperationalTone(severity: OperationalDiagnosticSeverity) {
   if (severity === 'critical') {
@@ -80,8 +81,9 @@ function getProviderSupportSummary(reason?: string) {
 
 export function SettingsPage() {
   const { status, user } = useAuthSession()
+  const isOnline = useOnlineStatus()
   const platformWorkspace = usePlatformWorkspace()
-  const { data, isLoading } = useSettingsWorkspace(user?.uid)
+  const { data, error, isError, isLoading, refetch } = useSettingsWorkspace(user?.uid)
   const updateNotificationPreference = useUpdateNotificationPreference()
   const requestNotificationPermission = useRequestNotificationPermission()
   const createManualBackup = useCreateManualBackup(user)
@@ -99,8 +101,22 @@ export function SettingsPage() {
   const [restoreError, setRestoreError] = useState<string | null>(null)
   const [backupNotice, setBackupNotice] = useState<string | null>(null)
   const [cloudRefreshNotice, setCloudRefreshNotice] = useState<string | null>(null)
+  const authenticatedOffline = status === 'authenticated' && !isOnline
 
   if (isLoading || !data) {
+    if (isError) {
+      return (
+        <SurfaceCard title="Settings could not load" description={getWorkspaceErrorMessage(error)}>
+          <Stack spacing={2} alignItems="flex-start">
+            <Alert severity="warning">Reconnect or retry when Firestore is reachable.</Alert>
+            <Button variant="contained" onClick={() => void refetch()}>
+              Retry
+            </Button>
+          </Stack>
+        </SurfaceCard>
+      )
+    }
+
     return (
       <SurfaceCard title="Loading settings" description="Restoring local settings.">
         <Stack alignItems="center" py={2}>
@@ -555,7 +571,7 @@ export function SettingsPage() {
                     },
                   })
                 }
-                disabled={refreshCloudWorkspace.isPending || status !== 'authenticated'}
+                disabled={refreshCloudWorkspace.isPending || status !== 'authenticated' || authenticatedOffline}
                 sx={{ alignSelf: 'flex-start' }}
               >
                 {refreshCloudWorkspace.isPending ? 'Refreshing...' : 'Refresh from cloud'}
@@ -563,6 +579,11 @@ export function SettingsPage() {
               {cloudRefreshNotice ? (
                 <Alert severity="success" variant="outlined" aria-live="polite">
                   {cloudRefreshNotice}
+                </Alert>
+              ) : null}
+              {authenticatedOffline ? (
+                <Alert severity="info" variant="outlined" aria-live="polite">
+                  Reconnect to refresh or save cloud changes.
                 </Alert>
               ) : null}
               {refreshCloudWorkspace.isError ? (
@@ -606,7 +627,7 @@ export function SettingsPage() {
                 <Switch
                   checked={settings?.notificationsEnabled ?? true}
                   onChange={(_, checked) => updateNotificationPreference.mutate(checked)}
-                  disabled={updateNotificationPreference.isPending}
+                  disabled={updateNotificationPreference.isPending || updateNotificationPreference.isCloudWriteUnavailable}
                   inputProps={{
                     'aria-label': 'Enable notifications',
                   }}
@@ -883,6 +904,10 @@ export function SettingsPage() {
       </SurfaceCard>
     </Stack>
   )
+}
+
+function getWorkspaceErrorMessage(error: unknown) {
+  return error instanceof Error ? error.message : 'Forge could not load this workspace.'
 }
 
 function CalendarErrorStack({

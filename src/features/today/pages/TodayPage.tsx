@@ -2,7 +2,7 @@ import AccessTimeRoundedIcon from '@mui/icons-material/AccessTimeRounded'
 import KeyboardDoubleArrowRightRoundedIcon from '@mui/icons-material/KeyboardDoubleArrowRightRounded'
 import { useEffect, useState } from 'react'
 import { alpha } from '@mui/material/styles'
-import { Box, Button, Chip, CircularProgress, Stack, Typography } from '@mui/material'
+import { Alert, Box, Button, Chip, CircularProgress, Stack, Typography } from '@mui/material'
 import { forgeTokens } from '@/app/theme/tokens'
 import { SectionHeader } from '@/components/common/SectionHeader'
 import { OperationalSignalCard } from '@/components/common/OperationalSignalCard'
@@ -21,7 +21,7 @@ import { useUpdateDayMode } from '@/features/today/hooks/useUpdateDayMode'
 import type { BlockStatus, DayMode, EnergyStatus, SleepStatus } from '@/domain/common/types'
 
 export function TodayPage() {
-  const { data, isLoading } = useTodayWorkspace()
+  const { data, error, isError, isLoading, refetch } = useTodayWorkspace()
   const setDayMode = useUiStore((state) => state.setDayMode)
   const setWarState = useUiStore((state) => state.setWarState)
   const currentDayMode = useUiStore((state) => state.dayMode)
@@ -40,6 +40,19 @@ export function TodayPage() {
   }, [data, setDayMode, setWarState])
 
   if (isLoading || !data) {
+    if (isError) {
+      return (
+        <SurfaceCard title="Today could not load" description={getWorkspaceErrorMessage(error)}>
+          <Stack spacing={2} alignItems="flex-start">
+            <Alert severity="warning">Reconnect or retry when Firestore is reachable.</Alert>
+            <Button variant="contained" onClick={() => void refetch()}>
+              Retry
+            </Button>
+          </Stack>
+        </SurfaceCard>
+      )
+    }
+
     return (
       <SurfaceCard title="Loading today" description="Restoring your day plan.">
         <Stack alignItems="center" py={2}>
@@ -72,6 +85,10 @@ export function TodayPage() {
     ? getFallbackKey(dayInstance.date, fallbackSuggestion.suggestedDayMode, fallbackSuggestion.explanation)
     : null
   const showFallbackSuggestion = fallbackSuggestion && fallbackKey !== dismissedFallbackKey
+  const blockStatusDisabled = updateBlockStatusMutation.isPending || updateBlockStatusMutation.isCloudWriteUnavailable
+  const blockNoteDisabled = updateBlockNoteMutation.isPending || updateBlockNoteMutation.isCloudWriteUnavailable
+  const dailySignalsDisabled = updateDailySignalsMutation.isPending || updateDailySignalsMutation.isCloudWriteUnavailable
+  const dayModeDisabled = updateDayModeMutation.isPending || updateDayModeMutation.isCloudWriteUnavailable
 
   function handleRevealRecommendation() {
     setShowRecommendation(true)
@@ -101,7 +118,7 @@ export function TodayPage() {
               <Button
                 variant="outlined"
                 startIcon={<AccessTimeRoundedIcon />}
-                disabled={!currentBlock || updateBlockStatusMutation.isPending}
+                disabled={!currentBlock || blockStatusDisabled}
                 onClick={() => {
                   if (currentBlock) {
                     updateBlockStatusMutation.mutate({
@@ -233,7 +250,7 @@ export function TodayPage() {
             <FallbackModeSuggestionCard
               suggestion={fallbackSuggestion}
               currentModeLabel={activeMode.label}
-              disabled={updateDayModeMutation.isPending}
+              disabled={dayModeDisabled}
               onApply={(dayMode) => updateDayModeMutation.mutate({ date: dayInstance.date, dayMode })}
               onDismiss={() => {
                 if (fallbackKey) {
@@ -329,7 +346,7 @@ export function TodayPage() {
                             <Button
                               size="small"
                               variant="contained"
-                              disabled={updateBlockStatusMutation.isPending}
+                              disabled={blockStatusDisabled}
                               onClick={() =>
                                 updateBlockStatusMutation.mutate({
                                   date: dayInstance.date,
@@ -343,7 +360,7 @@ export function TodayPage() {
                             <Button
                               size="small"
                               variant="outlined"
-                              disabled={updateBlockStatusMutation.isPending}
+                              disabled={blockStatusDisabled}
                               onClick={() =>
                                 updateBlockStatusMutation.mutate({
                                   date: dayInstance.date,
@@ -357,7 +374,7 @@ export function TodayPage() {
                             <Button
                               size="small"
                               variant="outlined"
-                              disabled={updateBlockStatusMutation.isPending}
+                              disabled={blockStatusDisabled}
                               onClick={() =>
                                 updateBlockStatusMutation.mutate({
                                   date: dayInstance.date,
@@ -371,7 +388,7 @@ export function TodayPage() {
                           </Stack>
                           <BlockNoteComposer
                             note={block.executionNote}
-                            disabled={updateBlockNoteMutation.isPending}
+                            disabled={blockNoteDisabled}
                             onSave={(executionNote) =>
                               updateBlockNoteMutation.mutate({
                                 date: dayInstance.date,
@@ -394,7 +411,7 @@ export function TodayPage() {
                             <Button
                               size="small"
                               variant="outlined"
-                              disabled={updateBlockStatusMutation.isPending}
+                              disabled={blockStatusDisabled}
                               onClick={() =>
                                 updateBlockStatusMutation.mutate({
                                   date: dayInstance.date,
@@ -408,7 +425,7 @@ export function TodayPage() {
                           </Stack>
                           <BlockNoteComposer
                             note={block.executionNote}
-                            disabled={updateBlockNoteMutation.isPending}
+                            disabled={blockNoteDisabled}
                             onSave={(executionNote) =>
                               updateBlockNoteMutation.mutate({
                                 date: dayInstance.date,
@@ -454,7 +471,7 @@ export function TodayPage() {
                 <SignalToggleGroup<SleepStatus>
                   label="Sleep"
                   value={sleepStatus}
-                  disabled={updateDailySignalsMutation.isPending}
+                  disabled={dailySignalsDisabled}
                   options={sleepStatusOptions}
                   onSelect={(value) =>
                     updateDailySignalsMutation.mutate({
@@ -466,7 +483,7 @@ export function TodayPage() {
                 <SignalToggleGroup<EnergyStatus>
                   label="Energy"
                   value={energyStatus}
-                  disabled={updateDailySignalsMutation.isPending}
+                  disabled={dailySignalsDisabled}
                   options={energyStatusOptions}
                   onSelect={(value) =>
                     updateDailySignalsMutation.mutate({
@@ -493,7 +510,7 @@ export function TodayPage() {
               ) : null}
               <DayModeSelector
                 activeDayMode={currentDayMode}
-                disabled={updateDayModeMutation.isPending}
+                disabled={dayModeDisabled}
                 onSelect={(dayMode) => updateDayModeMutation.mutate({ date: dayInstance.date, dayMode })}
               />
             </Stack>
@@ -583,6 +600,10 @@ export function TodayPage() {
       </Box>
     </Stack>
   )
+}
+
+function getWorkspaceErrorMessage(error: unknown) {
+  return error instanceof Error ? error.message : 'Forge could not load this workspace.'
 }
 
 function SupportDataRow({

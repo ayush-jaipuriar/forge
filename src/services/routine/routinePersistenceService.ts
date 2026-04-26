@@ -1,5 +1,7 @@
 import { forgePrepTaxonomy, forgeRoutine, forgeWorkoutSchedule } from '@/data/seeds'
 import { localDayInstanceRepository, localSettingsRepository } from '@/data/local'
+import { FirestoreDayInstanceRepository } from '@/data/firebase/firestoreDayInstanceRepository'
+import { FirestoreSettingsRepository } from '@/data/firebase/firestoreSettingsRepository'
 import { deriveRecommendationCalendarContext } from '@/domain/calendar/deriveRecommendationCalendarContext'
 import { googleCalendarIntegrationService } from '@/services/calendar/calendarIntegrationService'
 import {
@@ -18,11 +20,58 @@ import { getFallbackModeSuggestion } from '@/domain/recommendation/getFallbackMo
 import { getNextActionRecommendation } from '@/domain/recommendation/getNextActionRecommendation'
 import { dayTypeLabels, getAllowedDayTypeOverrides, getScheduledDayTypeForDate } from '@/domain/schedule/overrideRules'
 import type { DayInstance } from '@/domain/routine/types'
+import { createDefaultUserSettings, type UserSettings } from '@/domain/settings/types'
+
+const firestoreDayInstanceRepository = new FirestoreDayInstanceRepository()
+const firestoreSettingsRepository = new FirestoreSettingsRepository()
 
 export async function getOrCreateTodayWorkspace(date = new Date()) {
   const dateKey = getDateKey(date)
   const settings = await localSettingsRepository.getDefault()
-  const dayMode = settings?.dayModeOverrides[dateKey] ?? 'normal'
+  const dayInstance = await getOrCreateDayInstanceFromSettings({
+    dateKey,
+    settings,
+    readExisting: () => localDayInstanceRepository.getByDate(dateKey),
+    persistGenerated: (instance) => localDayInstanceRepository.upsert(instance),
+  })
+
+  return buildTodayWorkspace({
+    date,
+    dateKey,
+    settings,
+    dayInstance,
+  })
+}
+
+export async function getOrCreateTodayWorkspaceForUser(userId: string, date = new Date()) {
+  const dateKey = getDateKey(date)
+  const settings = await getCloudSettingsOrCreateDefault(userId)
+  const dayInstance = await getOrCreateDayInstanceFromSettings({
+    dateKey,
+    settings,
+    readExisting: () => firestoreDayInstanceRepository.getByDate(userId, dateKey),
+    persistGenerated: (instance) => firestoreDayInstanceRepository.upsert(userId, instance),
+  })
+
+  return buildTodayWorkspace({
+    date,
+    dateKey,
+    settings,
+    dayInstance,
+  })
+}
+
+async function buildTodayWorkspace({
+  date,
+  dateKey,
+  settings,
+  dayInstance,
+}: {
+  date: Date
+  dateKey: string
+  settings: UserSettings
+  dayInstance: DayInstance
+}) {
   const dayTypeOverride = settings?.dayTypeOverrides[dateKey]
   const dailySignals = settings?.dailySignals[dateKey] ?? {
     sleepStatus: 'unknown' as const,
@@ -31,20 +80,6 @@ export async function getOrCreateTodayWorkspace(date = new Date()) {
   }
   const scheduledDayType = getScheduledDayTypeForDate(dateKey, forgeRoutine)
   const effectiveDayType = dayTypeOverride ?? scheduledDayType
-
-  let dayInstance = await localDayInstanceRepository.getByDate(dateKey)
-
-  if (!dayInstance || dayInstance.dayMode !== dayMode || dayInstance.dayType !== effectiveDayType) {
-    dayInstance = generateDayInstance({
-      date: dateKey,
-      routine: forgeRoutine,
-      dayMode,
-      overrideDayType: dayTypeOverride,
-    })
-
-    await localDayInstanceRepository.upsert(dayInstance)
-  }
-
   const scheduledWorkout =
     forgeWorkoutSchedule.find((entry) => entry.weekday === dayInstance.weekday && entry.dayTypes.includes(dayInstance.dayType)) ??
     null
@@ -136,18 +171,61 @@ export async function getOrCreateTodayWorkspace(date = new Date()) {
 export async function getOrCreateWeeklyWorkspace(anchorDate = new Date()) {
   const anchorDateKey = getDateKey(anchorDate)
   const settings = await localSettingsRepository.getDefault()
+  const generatedWeek = generateWeekFromSettings(anchorDateKey, settings)
+  const existingInstances = await localDayInstanceRepository.getByDates(generatedWeek.map((instance) => instance.date))
+  const mergedWeek = mergeGeneratedWeekWithExisting(generatedWeek, existingInstances)
+
+  await localDayInstanceRepository.upsertMany(mergedWeek)
+
+  return buildWeeklyWorkspace({
+    anchorDate,
+    settings,
+    mergedWeek,
+  })
+}
+
+export async function getOrCreateWeeklyWorkspaceForUser(userId: string, anchorDate = new Date()) {
+  const anchorDateKey = getDateKey(anchorDate)
+  const settings = await getCloudSettingsOrCreateDefault(userId)
+  const generatedWeek = generateWeekFromSettings(anchorDateKey, settings)
+  const existingInstances = await firestoreDayInstanceRepository.getByDates(
+    userId,
+    generatedWeek.map((instance) => instance.date),
+  )
+  const mergedWeek = mergeGeneratedWeekWithExisting(generatedWeek, existingInstances)
+  const missingOrRegeneratedInstances = mergedWeek.filter((instance) => {
+    const existing = existingInstances.find((candidate) => candidate.date === instance.date)
+
+    return !existing || existing.dayMode !== instance.dayMode || existing.dayType !== instance.dayType
+  })
+
+  if (missingOrRegeneratedInstances.length > 0) {
+    await Promise.all(missingOrRegeneratedInstances.map((instance) => firestoreDayInstanceRepository.upsert(userId, instance)))
+  }
+
+  return buildWeeklyWorkspace({
+    anchorDate,
+    settings,
+    mergedWeek,
+  })
+}
+
+function generateWeekFromSettings(anchorDateKey: string, settings: UserSettings) {
   const dayModesByDate = settings?.dayModeOverrides ?? {}
   const dayTypesByDate = settings?.dayTypeOverrides ?? {}
-  const generatedWeek = generateWeekInstances({
+
+  return generateWeekInstances({
     anchorDate: anchorDateKey,
     routine: forgeRoutine,
     dayModesByDate,
     dayTypesByDate,
   })
+}
 
-  const existingInstances = await localDayInstanceRepository.getByDates(generatedWeek.map((instance) => instance.date))
+function mergeGeneratedWeekWithExisting(generatedWeek: DayInstance[], existingInstances: DayInstance[]) {
   const existingByDate = new Map(existingInstances.map((instance) => [instance.date, instance]))
-  const mergedWeek = generatedWeek.map((generatedInstance) => {
+
+  return generatedWeek.map((generatedInstance) => {
     const existing = existingByDate.get(generatedInstance.date)
 
     if (!existing || existing.dayMode !== generatedInstance.dayMode || existing.dayType !== generatedInstance.dayType) {
@@ -156,8 +234,18 @@ export async function getOrCreateWeeklyWorkspace(anchorDate = new Date()) {
 
     return existing
   })
+}
 
-  await localDayInstanceRepository.upsertMany(mergedWeek)
+async function buildWeeklyWorkspace({
+  anchorDate,
+  settings,
+  mergedWeek,
+}: {
+  anchorDate: Date
+  settings: UserSettings
+  mergedWeek: DayInstance[]
+}) {
+  const dayTypesByDate = settings?.dayTypeOverrides ?? {}
   const calendarWorkspaces = await googleCalendarIntegrationService.refreshCache({
     dates: mergedWeek.map((instance) => instance.date),
     blocksByDate: Object.fromEntries(mergedWeek.map((instance) => [instance.date, instance.blocks])),
@@ -201,4 +289,56 @@ export async function getOrCreateWeeklyWorkspace(anchorDate = new Date()) {
 
 export async function persistDayInstanceLocally(instance: DayInstance) {
   await localDayInstanceRepository.upsert(instance)
+}
+
+async function getCloudSettingsOrCreateDefault(userId: string) {
+  const settings = await firestoreSettingsRepository.getDefault(userId)
+
+  if (settings) {
+    return {
+      ...createDefaultUserSettings(),
+      ...settings,
+    }
+  }
+
+  const defaultSettings = createDefaultUserSettings()
+  await firestoreSettingsRepository.upsert(userId, defaultSettings)
+
+  return defaultSettings
+}
+
+async function getOrCreateDayInstanceFromSettings({
+  dateKey,
+  settings,
+  readExisting,
+  persistGenerated,
+}: {
+  dateKey: string
+  settings: UserSettings
+  readExisting: () => Promise<DayInstance | null>
+  persistGenerated: (instance: DayInstance) => Promise<void>
+}) {
+  const dayMode = settings.dayModeOverrides[dateKey] ?? 'normal'
+  const dayTypeOverride = settings.dayTypeOverrides[dateKey]
+  const effectiveDayType = dayTypeOverride ?? getScheduledDayTypeForDate(dateKey, forgeRoutine)
+  const existingDayInstance = await readExisting()
+
+  if (
+    existingDayInstance &&
+    existingDayInstance.dayMode === dayMode &&
+    existingDayInstance.dayType === effectiveDayType
+  ) {
+    return existingDayInstance
+  }
+
+  const generatedDayInstance = generateDayInstance({
+    date: dateKey,
+    routine: forgeRoutine,
+    dayMode,
+    overrideDayType: dayTypeOverride,
+  })
+
+  await persistGenerated(generatedDayInstance)
+
+  return generatedDayInstance
 }

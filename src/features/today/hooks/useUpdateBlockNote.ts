@@ -2,6 +2,8 @@ import { useMutation, useQueryClient } from '@tanstack/react-query'
 import { useUiStore } from '@/app/store/uiStore'
 import { useAuthSession } from '@/features/auth/providers/useAuthSession'
 import { updateDayBlockNote } from '@/services/routine/dayExecutionService'
+import { getMutationSyncStatus } from '@/services/sync/sourceOfTruth'
+import { useOnlineStatus } from '@/services/sync/useOnlineStatus'
 
 type UpdateBlockNoteVariables = {
   date: string
@@ -13,8 +15,9 @@ export function useUpdateBlockNote() {
   const queryClient = useQueryClient()
   const { status: authStatus, user } = useAuthSession()
   const setSyncStatus = useUiStore((state) => state.setSyncStatus)
+  const isOnline = useOnlineStatus()
 
-  return useMutation({
+  const mutation = useMutation({
     mutationFn: async ({ date, blockId, executionNote }: UpdateBlockNoteVariables) =>
       updateDayBlockNote({
         date,
@@ -25,7 +28,7 @@ export function useUpdateBlockNote() {
       }),
     onMutate: async () => {
       const previousState = useUiStore.getState()
-      setSyncStatus('queued')
+      setSyncStatus(getMutationSyncStatus({ isAuthenticated: authStatus === 'authenticated' }))
 
       return {
         previousSyncStatus: previousState.syncStatus,
@@ -46,4 +49,9 @@ export function useUpdateBlockNote() {
       ])
     },
   })
+
+  return {
+    ...mutation,
+    isCloudWriteUnavailable: authStatus === 'authenticated' && !isOnline,
+  }
 }

@@ -1,7 +1,8 @@
-import { collection, doc, getDoc, getDocs, onSnapshot, setDoc } from 'firebase/firestore'
+import { collection, doc, getDoc, getDocs, limit, onSnapshot, query, setDoc, where } from 'firebase/firestore'
 import { getFirebaseFirestore } from '@/lib/firebase/client'
 import { serializeDayInstance } from '@/domain/routine/serialization'
 import type { DayInstance } from '@/domain/routine/types'
+import { withFirestoreReadTimeout } from '@/data/firebase/firestoreReadTimeout'
 
 export class FirestoreDayInstanceRepository {
   async upsert(userId: string, instance: DayInstance) {
@@ -23,9 +24,28 @@ export class FirestoreDayInstanceRepository {
       return null
     }
 
-    const snapshot = await getDoc(doc(db, 'users', userId, 'dayInstances', id))
+    const snapshot = await withFirestoreReadTimeout(
+      getDoc(doc(db, 'users', userId, 'dayInstances', id)),
+      'Loading today from Firestore',
+    )
 
-    return snapshot.exists() ? (snapshot.data() as DayInstance) : null
+    if (snapshot.exists()) {
+      return snapshot.data() as DayInstance
+    }
+
+    const byDateSnapshot = await withFirestoreReadTimeout(
+      getDocs(query(collection(db, 'users', userId, 'dayInstances'), where('date', '==', id), limit(1))),
+      'Finding today by date in Firestore',
+    )
+    const matchingSnapshot = byDateSnapshot.docs[0]
+
+    return matchingSnapshot ? (matchingSnapshot.data() as DayInstance) : null
+  }
+
+  async getByDates(userId: string, ids: string[]) {
+    const instances = await Promise.all(ids.map((id) => this.getByDate(userId, id)))
+
+    return instances.filter((instance): instance is DayInstance => Boolean(instance))
   }
 
   async listAll(userId: string) {
@@ -35,7 +55,10 @@ export class FirestoreDayInstanceRepository {
       return []
     }
 
-    const snapshot = await getDocs(collection(db, 'users', userId, 'dayInstances'))
+    const snapshot = await withFirestoreReadTimeout(
+      getDocs(collection(db, 'users', userId, 'dayInstances')),
+      'Loading day history from Firestore',
+    )
 
     return snapshot.docs.map((entry) => entry.data() as DayInstance)
   }

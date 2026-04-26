@@ -5,7 +5,7 @@ import { useUiStore } from '@/app/store/uiStore'
 import { useAuthSession } from '@/features/auth/providers/useAuthSession'
 import { reportMonitoringError, reportMonitoringEvent } from '@/services/monitoring/monitoringService'
 import { assessSyncHealth, createInitialSyncDiagnosticsSnapshot, getSyncMonitoringSeverity } from '@/services/sync/syncHealthService'
-import { hydrateCloudSharedState, subscribeToCloudSharedState } from '@/services/sync/cloudSyncService'
+import { discardLegacyAuthenticatedSyncQueue, hydrateCloudSharedState, subscribeToCloudSharedState } from '@/services/sync/cloudSyncService'
 import { flushSyncQueue } from '@/services/sync/syncOrchestrator'
 
 export function SyncProvider({ children }: PropsWithChildren) {
@@ -25,6 +25,8 @@ export function SyncProvider({ children }: PropsWithChildren) {
       try {
         if (navigator.onLine) {
           await hydrateCloudSharedState(userId)
+        } else {
+          await discardLegacyAuthenticatedSyncQueue()
         }
 
         if (!active) {
@@ -70,6 +72,21 @@ export function SyncProvider({ children }: PropsWithChildren) {
   }, [status, user])
 
   useEffect(() => {
+    if (status === 'authenticated' && user) {
+      const updateAuthenticatedOnlineOnlyStatus = () => {
+        setSyncStatus(navigator.onLine ? 'stable' : 'stale')
+      }
+
+      updateAuthenticatedOnlineOnlyStatus()
+      window.addEventListener('online', updateAuthenticatedOnlineOnlyStatus)
+      window.addEventListener('offline', updateAuthenticatedOnlineOnlyStatus)
+
+      return () => {
+        window.removeEventListener('online', updateAuthenticatedOnlineOnlyStatus)
+        window.removeEventListener('offline', updateAuthenticatedOnlineOnlyStatus)
+      }
+    }
+
     let mounted = true
 
     async function syncNow() {

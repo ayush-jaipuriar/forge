@@ -1,6 +1,7 @@
 import type { User } from 'firebase/auth'
 import { doc, getDoc, serverTimestamp, writeBatch } from 'firebase/firestore'
 import { getFirebaseFirestore } from '@/lib/firebase/client'
+import { createDefaultUserSettings } from '@/domain/settings/types'
 
 export async function bootstrapUserSession(user: User) {
   const db = getFirebaseFirestore()
@@ -39,23 +40,7 @@ export async function bootstrapUserSession(user: User) {
   }
 
   if (!settingsSnapshot.exists()) {
-    batch.set(settingsRef, {
-      notificationsEnabled: true,
-      calendarIntegration: {
-        provider: 'google',
-        connectionStatus: 'notConnected',
-        featureGate: 'scaffoldingOnly',
-        managedEventMode: 'disabled',
-        selectedCalendarIds: [],
-      },
-      dayModeOverrides: {},
-      dayTypeOverrides: {},
-      dailySignals: {},
-      prepTopicProgress: {},
-      workoutLogs: {},
-      createdAt: serverTimestamp(),
-      updatedAt: serverTimestamp(),
-    })
+    batch.set(settingsRef, createDefaultUserSettings())
   }
 
   await batch.commit()

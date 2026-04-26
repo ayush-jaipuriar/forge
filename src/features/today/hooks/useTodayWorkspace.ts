@@ -1,9 +1,21 @@
 import { useQuery } from '@tanstack/react-query'
-import { getOrCreateTodayWorkspace } from '@/services/routine/routinePersistenceService'
+import { useAuthSession } from '@/features/auth/providers/useAuthSession'
+import { getOrCreateTodayWorkspace, getOrCreateTodayWorkspaceForUser } from '@/services/routine/routinePersistenceService'
 
 export function useTodayWorkspace() {
+  const { status, user } = useAuthSession()
+  const readMode = status === 'authenticated' ? 'authenticatedCloud' : 'guestLocal'
+
   return useQuery({
-    queryKey: ['today-workspace'],
-    queryFn: () => getOrCreateTodayWorkspace(),
+    queryKey: ['today-workspace', readMode, user?.uid ?? 'local'],
+    queryFn: () => {
+      if (status === 'authenticated' && user) {
+        return getOrCreateTodayWorkspaceForUser(user.uid)
+      }
+
+      return getOrCreateTodayWorkspace()
+    },
+    enabled: status === 'authenticated' ? Boolean(user) : status === 'guest',
+    retry: status === 'authenticated' ? 1 : 3,
   })
 }

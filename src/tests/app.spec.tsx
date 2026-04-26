@@ -136,6 +136,42 @@ const commandCenterMock = vi.hoisted(() => ({
   },
 }))
 
+const cloudSyncMock = vi.hoisted(() => ({
+  discardLegacyAuthenticatedSyncQueue: vi.fn(async () => {}),
+  hydrateCloudSharedState: vi.fn(async () => ({
+    hydratedSettings: true,
+    hydratedDayInstances: 0,
+  })),
+  subscribeToCloudSharedState: vi.fn(() => () => {}),
+}))
+
+const firestoreAppMock = vi.hoisted(() => ({
+  settings: {
+    id: 'default' as const,
+    notificationsEnabled: true,
+    calendarIntegration: {
+      connectionStatus: 'notConnected' as const,
+      selectedCalendarId: null,
+      selectedCalendarSummary: null,
+      readEnabled: false,
+      writeEnabled: false,
+      featureGate: 'planned' as const,
+      updatedAt: '2026-03-28T00:00:00.000Z',
+    },
+    dayModeOverrides: {},
+    dayTypeOverrides: {},
+    dailySignals: {},
+    prepTopicProgress: {},
+    workoutLogs: {},
+    updatedAt: '2026-03-28T00:00:00.000Z',
+  },
+  dayGetByDate: vi.fn(async () => null),
+  dayGetByDates: vi.fn(async () => []),
+  dayUpsert: vi.fn(async () => {}),
+  settingsGetDefault: vi.fn(async () => firestoreAppMock.settings),
+  settingsUpsert: vi.fn(async () => {}),
+}))
+
 const readinessMock = vi.hoisted(() => {
   const data = {
     dateKey: '2026-03-28',
@@ -259,6 +295,23 @@ vi.mock('@/features/readiness/hooks/useReadinessWorkspace', () => ({
   useReadinessWorkspace: () => readinessMock.value,
 }))
 
+vi.mock('@/services/sync/cloudSyncService', () => cloudSyncMock)
+
+vi.mock('@/data/firebase/firestoreDayInstanceRepository', () => ({
+  FirestoreDayInstanceRepository: class {
+    getByDate = firestoreAppMock.dayGetByDate
+    getByDates = firestoreAppMock.dayGetByDates
+    upsert = firestoreAppMock.dayUpsert
+  },
+}))
+
+vi.mock('@/data/firebase/firestoreSettingsRepository', () => ({
+  FirestoreSettingsRepository: class {
+    getDefault = firestoreAppMock.settingsGetDefault
+    upsert = firestoreAppMock.settingsUpsert
+  },
+}))
+
 describe('App', () => {
   beforeEach(() => {
     window.history.pushState({}, '', '/')
@@ -276,6 +329,14 @@ describe('App', () => {
       signInAsGuest: vi.fn(async () => {}),
       signOutUser: vi.fn(async () => {}),
     }
+    cloudSyncMock.discardLegacyAuthenticatedSyncQueue.mockClear()
+    cloudSyncMock.hydrateCloudSharedState.mockClear()
+    cloudSyncMock.subscribeToCloudSharedState.mockClear()
+    firestoreAppMock.dayGetByDate.mockClear()
+    firestoreAppMock.dayGetByDates.mockClear()
+    firestoreAppMock.dayUpsert.mockClear()
+    firestoreAppMock.settingsGetDefault.mockClear()
+    firestoreAppMock.settingsUpsert.mockClear()
     commandCenterMock.value = {
       ...commandCenterMock.value,
       isLoading: false,

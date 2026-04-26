@@ -1,10 +1,14 @@
 import type { BlockStatus } from '@/domain/common/types'
 import { localDayInstanceRepository, localSyncQueueRepository } from '@/data/local'
+import { FirestoreDayInstanceRepository } from '@/data/firebase/firestoreDayInstanceRepository'
 import { updateBlockExecutionNote, updateBlockStatus } from '@/domain/routine/mutations'
 import type { DayInstance } from '@/domain/routine/types'
 import { markCalendarMirrorsStaleIfEnabled } from '@/services/calendar/calendarIntegrationService'
 import { getOrCreateTodayWorkspace } from '@/services/routine/routinePersistenceService'
 import { persistSyncableChange, type SyncWriteMode } from '@/services/sync/persistSyncableChange'
+import { assertAuthenticatedCloudWriteAvailable, isAuthenticatedCloudMode } from '@/services/sync/sourceOfTruth'
+
+const firestoreDayInstanceRepository = new FirestoreDayInstanceRepository()
 
 type UpdateDayBlockStatusInput = {
   date: string
@@ -73,6 +77,21 @@ async function updateDayInstance({
   if (nextDayInstance === dayInstance) {
     return {
       pendingCount: await localSyncQueueRepository.countOutstanding(),
+    }
+  }
+
+  if (isAuthenticatedCloudMode(userId, syncMode)) {
+    if (!userId) {
+      throw new Error('Forge needs an authenticated user before saving cloud day state.')
+    }
+
+    assertAuthenticatedCloudWriteAvailable(userId, syncMode)
+    await firestoreDayInstanceRepository.upsert(userId, nextDayInstance)
+    await localDayInstanceRepository.upsert(nextDayInstance)
+    await markCalendarMirrorsStaleIfEnabled()
+
+    return {
+      pendingCount: 0,
     }
   }
 

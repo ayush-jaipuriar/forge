@@ -49,6 +49,7 @@ export function PrepPage({ embedded = false }: PrepPageProps) {
   const activeSummary = data.domainSummaries.find((domain) => domain.domain === activeDomain) ?? data.domainSummaries[0]
   const focusedDomainLabels = data.focusedDomains.map((domain) => domain.label)
   const activeNoteDraft = selectedTopicId === activeTopic?.id ? noteDraft : (activeTopic?.notes ?? '')
+  const topicMutationDisabled = updateTopicMutation.isPending || updateTopicMutation.isCloudWriteUnavailable
 
   const sortedDomains = [...data.domainSummaries].sort((left, right) => {
     const leftScore = left.highConfidenceCount * 3 + left.touchedTopicCount * 2 + left.hoursSpent
@@ -229,7 +230,7 @@ export function PrepPage({ embedded = false }: PrepPageProps) {
                         key={option.value}
                         size="small"
                         variant={activeTopic.confidence === option.value ? 'contained' : 'outlined'}
-                        disabled={updateTopicMutation.isPending}
+                        disabled={topicMutationDisabled}
                         onClick={() =>
                           updateTopicMutation.mutate({
                             topicId: activeTopic.id,
@@ -253,7 +254,7 @@ export function PrepPage({ embedded = false }: PrepPageProps) {
                         key={option.value}
                         size="small"
                         variant={activeTopic.exposureState === option.value ? 'contained' : 'outlined'}
-                        disabled={updateTopicMutation.isPending}
+                        disabled={topicMutationDisabled}
                         onClick={() =>
                           updateTopicMutation.mutate({
                             topicId: activeTopic.id,
@@ -283,7 +284,7 @@ export function PrepPage({ embedded = false }: PrepPageProps) {
                   <Button
                     size="small"
                     variant="outlined"
-                    disabled={updateTopicMutation.isPending}
+                    disabled={topicMutationDisabled}
                     onClick={() =>
                       updateTopicMutation.mutate({
                         topicId: activeTopic.id,
@@ -296,7 +297,7 @@ export function PrepPage({ embedded = false }: PrepPageProps) {
                   <Button
                     size="small"
                     variant="outlined"
-                    disabled={updateTopicMutation.isPending}
+                    disabled={topicMutationDisabled}
                     onClick={() =>
                       updateTopicMutation.mutate({
                         topicId: activeTopic.id,
@@ -309,7 +310,7 @@ export function PrepPage({ embedded = false }: PrepPageProps) {
                   <Button
                     size="small"
                     variant="outlined"
-                    disabled={updateTopicMutation.isPending}
+                    disabled={topicMutationDisabled}
                     onClick={() =>
                       updateTopicMutation.mutate({
                         topicId: activeTopic.id,
@@ -322,7 +323,7 @@ export function PrepPage({ embedded = false }: PrepPageProps) {
                   <Button
                     size="small"
                     variant="outlined"
-                    disabled={updateTopicMutation.isPending}
+                    disabled={topicMutationDisabled}
                     onClick={() =>
                       updateTopicMutation.mutate({
                         topicId: activeTopic.id,
@@ -350,7 +351,7 @@ export function PrepPage({ embedded = false }: PrepPageProps) {
                     <Button
                       size="small"
                       variant="contained"
-                      disabled={updateTopicMutation.isPending || activeNoteDraft.trim() === (activeTopic.notes ?? '').trim()}
+                      disabled={topicMutationDisabled || activeNoteDraft.trim() === (activeTopic.notes ?? '').trim()}
                       onClick={() =>
                         updateTopicMutation.mutate({
                           topicId: activeTopic.id,
