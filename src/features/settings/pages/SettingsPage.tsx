@@ -1,15 +1,17 @@
 import ArchiveRoundedIcon from '@mui/icons-material/ArchiveRounded'
 import CalendarMonthRoundedIcon from '@mui/icons-material/CalendarMonthRounded'
 import DownloadRoundedIcon from '@mui/icons-material/DownloadRounded'
+import DarkModeRoundedIcon from '@mui/icons-material/DarkModeRounded'
 import ExpandMoreRoundedIcon from '@mui/icons-material/ExpandMoreRounded'
+import LightModeRoundedIcon from '@mui/icons-material/LightModeRounded'
 import MonitorHeartRoundedIcon from '@mui/icons-material/MonitorHeartRounded'
 import NotificationsActiveRoundedIcon from '@mui/icons-material/NotificationsActiveRounded'
 import RestoreRoundedIcon from '@mui/icons-material/RestoreRounded'
 import UploadFileRoundedIcon from '@mui/icons-material/UploadFileRounded'
 import { useRef, useState, type ChangeEvent, type ReactNode } from 'react'
 import { alpha } from '@mui/material/styles'
-import { Alert, Box, Button, Chip, CircularProgress, Collapse, Stack, Switch, Typography } from '@mui/material'
-import { forgeTokens } from '@/app/theme/tokens'
+import { Alert, Box, Button, Chip, CircularProgress, Collapse, Stack, Switch, ToggleButton, ToggleButtonGroup, Typography } from '@mui/material'
+import { useThemeMode } from '@/app/theme/themeModeContext'
 import { SurfaceCard } from '@/components/common/SurfaceCard'
 import { useAuthSession } from '@/features/auth/providers/useAuthSession'
 import { usePlatformWorkspace } from '@/features/platform/hooks/usePlatformWorkspace'
@@ -81,6 +83,7 @@ function getProviderSupportSummary(reason?: string) {
 
 export function SettingsPage() {
   const { status, user } = useAuthSession()
+  const { mode, setMode } = useThemeMode()
   const isOnline = useOnlineStatus()
   const platformWorkspace = usePlatformWorkspace()
   const { data, error, isError, isLoading, refetch } = useSettingsWorkspace(user?.uid)
@@ -106,23 +109,29 @@ export function SettingsPage() {
   if (isLoading || !data) {
     if (isError) {
       return (
-        <SurfaceCard title="Settings could not load" description={getWorkspaceErrorMessage(error)}>
-          <Stack spacing={2} alignItems="flex-start">
-            <Alert severity="warning">Reconnect or retry when Firestore is reachable.</Alert>
-            <Button variant="contained" onClick={() => void refetch()}>
-              Retry
-            </Button>
-          </Stack>
-        </SurfaceCard>
+        <Stack spacing={3}>
+          <AppearanceSettingsCard mode={mode} setMode={setMode} />
+          <SurfaceCard title="Settings could not load" description={getWorkspaceErrorMessage(error)}>
+            <Stack spacing={2} alignItems="flex-start">
+              <Alert severity="warning">Reconnect or retry when Firestore is reachable.</Alert>
+              <Button variant="contained" onClick={() => void refetch()}>
+                Retry
+              </Button>
+            </Stack>
+          </SurfaceCard>
+        </Stack>
       )
     }
 
     return (
-      <SurfaceCard title="Loading settings" description="Restoring local settings.">
-        <Stack alignItems="center" py={2}>
-          <CircularProgress color="primary" />
-        </Stack>
-      </SurfaceCard>
+      <Stack spacing={3}>
+        <AppearanceSettingsCard mode={mode} setMode={setMode} />
+        <SurfaceCard title="Loading settings" description="Restoring local settings.">
+          <Stack alignItems="center" py={2}>
+            <CircularProgress color="primary" />
+          </Stack>
+        </SurfaceCard>
+      </Stack>
     )
   }
 
@@ -193,9 +202,9 @@ export function SettingsPage() {
   return (
     <Stack spacing={3}>
       <SurfaceCard
+        variant="hero"
         contentSx={{
-          background:
-            'radial-gradient(circle at top right, rgba(212, 111, 60, 0.11), transparent 30%), linear-gradient(180deg, rgba(20, 25, 36, 0.98) 0%, rgba(11, 15, 23, 0.98) 100%)',
+          background: 'transparent',
         }}
       >
         <Stack spacing={2.25}>
@@ -278,6 +287,8 @@ export function SettingsPage() {
           </Box>
         </Stack>
       </SurfaceCard>
+
+      <AppearanceSettingsCard mode={mode} setMode={setMode} />
 
       <Box
         sx={{
@@ -966,14 +977,14 @@ function SettingsMetric({
   return (
     <Stack
       spacing={0.5}
-      sx={{
+      sx={(theme) => ({
         minHeight: { xs: 76, sm: 96, md: 112 },
         border: '1px solid',
-        borderColor: alpha(forgeTokens.palette.text.secondary, 0.12),
+        borderColor: alpha(theme.palette.text.secondary, theme.palette.mode === 'light' ? 0.14 : 0.12),
         borderRadius: 4,
         p: { xs: 1.25, md: 1.75 },
-        backgroundColor: alpha(forgeTokens.palette.background.elevated, 0.16),
-      }}
+        backgroundColor: alpha(theme.palette.background.paper, theme.palette.mode === 'light' ? 0.46 : 0.16),
+      })}
     >
       <Typography variant="overline" color="primary.light">
         {label}
@@ -992,6 +1003,73 @@ function SettingsMetric({
   )
 }
 
+function AppearanceSettingsCard({
+  mode,
+  setMode,
+}: {
+  mode: 'dark' | 'light'
+  setMode: (mode: 'dark' | 'light') => void
+}) {
+  return (
+    <SurfaceCard variant="quiet" eyebrow="Appearance" title="Choose the look" description="Saved on this device.">
+      <ToggleButtonGroup
+        exclusive
+        value={mode}
+        aria-label="Theme mode"
+        onChange={(_, nextMode: 'dark' | 'light' | null) => {
+          if (nextMode) {
+            setMode(nextMode)
+          }
+        }}
+        sx={{
+          display: 'grid',
+          gap: 1,
+          gridTemplateColumns: { xs: '1fr', sm: 'repeat(2, minmax(0, 220px))' },
+          '& .MuiToggleButtonGroup-grouped': {
+            m: 0,
+            border: '1px solid',
+            borderColor: 'divider',
+            borderRadius: 3,
+            justifyContent: 'flex-start',
+            px: 2,
+            py: 1.25,
+            textTransform: 'none',
+            '&:not(:first-of-type)': {
+              borderRadius: 3,
+              borderLeft: '1px solid',
+              borderColor: 'divider',
+            },
+            '&:first-of-type': {
+              borderRadius: 3,
+            },
+            '&.Mui-selected': {
+              borderColor: 'primary.main',
+              color: 'primary.main',
+            },
+          },
+        }}
+      >
+        <ToggleButton value="dark" aria-label="Use dark theme">
+          <Stack direction="row" spacing={1} alignItems="center">
+            <DarkModeRoundedIcon fontSize="small" />
+            <Typography component="span" fontWeight={700}>
+              Dark
+            </Typography>
+          </Stack>
+        </ToggleButton>
+        <ToggleButton value="light" aria-label="Use light theme">
+          <Stack direction="row" spacing={1} alignItems="center">
+            <LightModeRoundedIcon fontSize="small" />
+            <Typography component="span" fontWeight={700}>
+              Light
+            </Typography>
+          </Stack>
+        </ToggleButton>
+      </ToggleButtonGroup>
+    </SurfaceCard>
+  )
+}
+
 function SettingsSubsection({
   title,
   action,
@@ -1003,13 +1081,13 @@ function SettingsSubsection({
 }) {
   return (
     <Box
-      sx={{
+      sx={(theme) => ({
         border: '1px solid',
-        borderColor: alpha(forgeTokens.palette.text.secondary, 0.1),
+        borderColor: alpha(theme.palette.text.secondary, theme.palette.mode === 'light' ? 0.12 : 0.1),
         borderRadius: 4,
         p: 1.5,
-        backgroundColor: alpha(forgeTokens.palette.background.elevated, 0.14),
-      }}
+        backgroundColor: alpha(theme.palette.background.paper, theme.palette.mode === 'light' ? 0.42 : 0.14),
+      })}
     >
       <Stack spacing={1.2}>
         <Stack
@@ -1042,13 +1120,13 @@ function AdvancedDisclosure({
 
   return (
     <Box
-      sx={{
+      sx={(theme) => ({
         border: '1px solid',
-        borderColor: alpha(forgeTokens.palette.text.secondary, 0.1),
+        borderColor: alpha(theme.palette.text.secondary, theme.palette.mode === 'light' ? 0.12 : 0.1),
         borderRadius: 4,
-        backgroundColor: alpha(forgeTokens.palette.background.elevated, 0.1),
+        backgroundColor: alpha(theme.palette.background.paper, theme.palette.mode === 'light' ? 0.38 : 0.1),
         overflow: 'hidden',
-      }}
+      })}
     >
       <Button
         type="button"

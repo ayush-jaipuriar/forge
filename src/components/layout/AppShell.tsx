@@ -2,11 +2,10 @@ import LogoutRoundedIcon from '@mui/icons-material/LogoutRounded'
 import MenuRoundedIcon from '@mui/icons-material/MenuRounded'
 import { useMemo, useState } from 'react'
 import { alpha } from '@mui/material/styles'
-import { Avatar, Box, Button, Chip, Container, Drawer, IconButton, Stack, Tooltip, Typography } from '@mui/material'
+import { Avatar, Box, Button, Container, Drawer, IconButton, Stack, Tooltip, Typography } from '@mui/material'
 import { NavLink, Outlet, useLocation } from 'react-router-dom'
 import { navigationItems } from '@/app/router/navigation'
 import { useUiStore } from '@/app/store/uiStore'
-import { forgeTokens } from '@/app/theme/tokens'
 import { StatusBadge } from '@/components/status/StatusBadge'
 import { SyncIndicator } from '@/components/status/SyncIndicator'
 import { useAuthSession } from '@/features/auth/providers/useAuthSession'
@@ -40,14 +39,16 @@ export function AppShell() {
   )
   const activeRouteLabel = activeItem?.label ?? getSecondaryRouteLabel(location.pathname)
   const mobileQuickNavItems = navigationItems.filter((item) => mobileQuickNavPaths.includes(item.path))
+  const showSyncIndicator = syncStatus !== 'stable'
+  const showOperationalSignals = warState !== 'onTrack' || dayMode !== 'normal' || showSyncIndicator
 
   return (
-    <Box sx={{ minHeight: '100vh', background: forgeTokens.gradients.page }}>
+    <Box sx={(theme) => ({ minHeight: '100vh', background: theme.palette.background.default })}>
       <Box
         sx={{
           minHeight: '100vh',
           display: { xs: 'block', md: 'grid' },
-          gridTemplateColumns: { md: '124px minmax(0, 1fr)' },
+          gridTemplateColumns: { md: '108px minmax(0, 1fr)' },
         }}
       >
         <Box
@@ -58,26 +59,26 @@ export function AppShell() {
             height: '100vh',
             display: { xs: 'none', md: 'flex' },
             flexDirection: 'column',
-            gap: 2,
+            gap: 1.5,
             borderRight: '1px solid',
             borderColor: 'divider',
-            backgroundColor: alpha(forgeTokens.palette.background.nav, 0.92),
-            backdropFilter: 'blur(18px)',
-            px: 1.5,
-            py: 2,
+            backgroundColor: (theme) => alpha(theme.palette.background.default, theme.palette.mode === 'light' ? 0.7 : 0.82),
+            backdropFilter: 'blur(16px)',
+            px: 1.25,
+            py: 1.75,
           }}
         >
-          <Stack spacing={0.25} alignItems="center" sx={{ px: 0.5 }}>
+          <Stack spacing={0.5} alignItems="center" sx={{ px: 0.25 }}>
             <Typography
               variant="overline"
               color="primary.light"
-              sx={{ fontSize: '0.82rem', letterSpacing: '0.08em', whiteSpace: 'nowrap' }}
+              sx={{ fontSize: '0.8rem', letterSpacing: '0.08em', whiteSpace: 'nowrap' }}
             >
               F
             </Typography>
           </Stack>
 
-          <Stack spacing={0.75} sx={{ flex: 1 }}>
+          <Stack spacing={0.5} sx={{ flex: 1 }}>
             {navigationItems.map(({ icon: Icon, label, path }) => {
               const isActive = isRouteActive(location.pathname, path)
               const compactLabel = getCompactRailLabel(label)
@@ -94,37 +95,36 @@ export function AppShell() {
                       display: 'flex',
                       alignItems: 'center',
                       justifyContent: 'center',
-                      px: 1,
-                      py: 1.05,
-                      borderRadius: 3,
+                      px: 0.85,
+                      py: 0.95,
+                      borderRadius: 2.75,
                       color: isActive ? 'text.primary' : 'text.secondary',
                       textDecoration: 'none',
-                      backgroundColor: isActive
-                        ? alpha(forgeTokens.palette.accent.ember, 0.12)
-                        : 'transparent',
+                      backgroundColor: (theme) =>
+                        isActive ? alpha(theme.palette.primary.main, theme.palette.mode === 'light' ? 0.08 : 0.1) : 'transparent',
                       border: '1px solid',
-                      borderColor: isActive ? forgeTokens.palette.border.accent : 'transparent',
-                      transition: 'background-color 160ms ease, border-color 160ms ease, color 160ms ease',
-                      transform: isActive ? 'translateX(0)' : 'translateX(0)',
+                      borderColor: 'transparent',
+                      transition: 'background-color 160ms ease, border-color 160ms ease, color 160ms ease, transform 160ms ease, box-shadow 160ms ease',
                       '&::before': isActive
                         ? {
                             content: '""',
                             position: 'absolute',
-                            insetBlock: 8,
-                            insetInlineStart: -5,
+                            insetBlock: 10,
+                            insetInlineStart: -4,
                             width: 2,
                             borderRadius: 999,
                             backgroundColor: 'primary.main',
                           }
                         : undefined,
                       '&:hover': {
-                        backgroundColor: alpha(forgeTokens.palette.background.elevated, 0.72),
-                        borderColor: alpha(forgeTokens.palette.text.secondary, 0.18),
-                        transform: 'translateX(2px)',
+                        backgroundColor: (theme) => alpha(theme.palette.background.paper, theme.palette.mode === 'light' ? 0.54 : 0.36),
+                        color: 'text.primary',
+                        transform: 'translateX(1px)',
                       },
                       '&:focus-visible': {
-                        backgroundColor: alpha(forgeTokens.palette.background.elevated, 0.72),
-                        transform: 'translateX(2px)',
+                        outline: 'none',
+                        backgroundColor: (theme) => alpha(theme.palette.background.paper, theme.palette.mode === 'light' ? 0.6 : 0.44),
+                        boxShadow: (theme) => `0 0 0 2px ${alpha(theme.palette.primary.main, 0.22)}`,
                       },
                     }}
                   >
@@ -132,7 +132,7 @@ export function AppShell() {
                       <Icon fontSize="small" />
                       <Typography
                         sx={{
-                          fontSize: '0.62rem',
+                          fontSize: '0.6rem',
                           lineHeight: 1.1,
                           color: isActive ? 'text.primary' : 'text.secondary',
                           fontWeight: isActive ? 700 : 600,
@@ -150,40 +150,21 @@ export function AppShell() {
             })}
           </Stack>
 
-          <Stack spacing={1} alignItems="center">
+          <Stack spacing={0.75} alignItems="center">
             <Avatar
               sx={{
-                width: 36,
-                height: 36,
-                bgcolor: alpha(forgeTokens.palette.accent.ember, 0.2),
+                width: 34,
+                height: 34,
+                bgcolor: (theme) => alpha(theme.palette.primary.main, theme.palette.mode === 'light' ? 0.12 : 0.18),
                 color: 'primary.light',
                 border: '1px solid',
-                borderColor: alpha(forgeTokens.palette.accent.ember, 0.35),
+                borderColor: (theme) => alpha(theme.palette.primary.main, 0.32),
                 fontSize: '0.82rem',
                 fontWeight: 700,
               }}
             >
               {getUserInitials(user?.displayName ?? user?.email ?? 'Forge')}
             </Avatar>
-            {user?.isGuest ? (
-              <Typography variant="caption" color="text.secondary">
-                Guest
-              </Typography>
-            ) : null}
-            <Typography
-              component={NavLink}
-              to="/about"
-              color="text.secondary"
-              sx={{
-                fontSize: '0.68rem',
-                textDecoration: 'none',
-                '&:hover': {
-                  color: 'text.primary',
-                },
-              }}
-            >
-              About
-            </Typography>
           </Stack>
         </Box>
 
@@ -196,11 +177,11 @@ export function AppShell() {
               zIndex: 20,
               borderBottom: '1px solid',
               borderColor: 'divider',
-              backgroundColor: alpha(forgeTokens.palette.background.shell, 0.84),
-              backdropFilter: 'blur(18px)',
+              backgroundColor: (theme) => alpha(theme.palette.background.default, theme.palette.mode === 'light' ? 0.74 : 0.82),
+              backdropFilter: 'blur(16px)',
             }}
           >
-            <Container maxWidth={false} sx={{ px: { xs: 2, md: 3 }, py: { xs: 1.5, md: 1.75 }, maxWidth: 1480 }}>
+            <Container maxWidth={false} sx={{ px: { xs: 2, md: 3 }, py: { xs: 1.25, md: 1.35 }, maxWidth: 1480 }}>
               <Stack direction="row" spacing={2} alignItems="center" justifyContent="space-between">
                 <Stack direction="row" spacing={1.5} alignItems="center" sx={{ minWidth: 0 }}>
                   <IconButton
@@ -212,33 +193,37 @@ export function AppShell() {
                       display: { xs: 'inline-flex', md: 'none' },
                       border: '1px solid',
                       borderColor: 'divider',
-                      backgroundColor: alpha(forgeTokens.palette.background.elevated, 0.56),
+                      backgroundColor: (theme) => alpha(theme.palette.background.paper, theme.palette.mode === 'light' ? 0.54 : 0.34),
                     }}
                   >
                     <MenuRoundedIcon />
                   </IconButton>
 
                   <Stack spacing={0.25} sx={{ minWidth: 0 }}>
-                    <Typography variant="overline" color="primary.light">
-                      Daily execution
+                    <Typography
+                      variant="overline"
+                      color="primary.light"
+                      sx={{ fontSize: '0.62rem', letterSpacing: '0.14em' }}
+                    >
+                      Personal execution OS
                     </Typography>
                     <Stack
-                      direction={{ xs: 'column', sm: 'row' }}
-                      spacing={{ xs: 0.25, sm: 1 }}
-                      alignItems={{ xs: 'flex-start', sm: 'center' }}
+                      direction="row"
+                      spacing={0.9}
+                      alignItems="baseline"
                       sx={{ minWidth: 0 }}
                     >
-                      <Typography variant="h3" sx={{ whiteSpace: 'nowrap' }}>
+                      <Typography variant="h3" sx={{ whiteSpace: 'nowrap', fontSize: { xs: '1.52rem', md: '1.6rem' } }}>
                         Forge
                       </Typography>
                       <Typography
                         color="text.secondary"
                         sx={{
                           fontFamily: '"JetBrains Mono", "SFMono-Regular", monospace',
-                          fontSize: '0.68rem',
+                          fontSize: '0.66rem',
                           letterSpacing: '0.04em',
                           textTransform: 'uppercase',
-                          whiteSpace: { xs: 'normal', sm: 'nowrap' },
+                          whiteSpace: 'nowrap',
                         }}
                       >
                         {activeRouteLabel}
@@ -248,19 +233,47 @@ export function AppShell() {
                 </Stack>
 
                 <Stack direction="row" spacing={1} alignItems="center" sx={{ minWidth: 0 }}>
-                  {user?.isGuest ? <Chip label="Guest" size="small" variant="outlined" color="warning" /> : null}
-                  <Box sx={{ display: { xs: 'none', sm: 'block' } }}>
-                    <SyncIndicator status={syncStatus} compact />
-                  </Box>
+                  {showSyncIndicator ? (
+                    <Box sx={{ display: { xs: 'none', sm: 'block' } }}>
+                      <SyncIndicator status={syncStatus} compact />
+                    </Box>
+                  ) : null}
                   <Button
-                    variant="outlined"
+                    component={NavLink}
+                    to="/about"
                     color="inherit"
-                    startIcon={<LogoutRoundedIcon fontSize="small" />}
-                    onClick={() => void signOutUser()}
-                    sx={{ display: { xs: 'none', md: 'inline-flex' }, whiteSpace: 'nowrap' }}
+                    sx={{
+                      display: { xs: 'none', lg: 'inline-flex' },
+                      minWidth: 0,
+                      px: 1.1,
+                      color: 'text.secondary',
+                      '&:hover': {
+                        color: 'text.primary',
+                        backgroundColor: (theme) => alpha(theme.palette.background.paper, theme.palette.mode === 'light' ? 0.5 : 0.34),
+                      },
+                    }}
                   >
-                    {user?.isGuest ? 'Exit guest' : 'Sign out'}
+                    About
                   </Button>
+                  {user?.isGuest ? (
+                    <Button
+                      variant="contained"
+                      onClick={() => void signInWithGoogle()}
+                      sx={{ display: { xs: 'none', md: 'inline-flex' }, whiteSpace: 'nowrap' }}
+                    >
+                      Sign in
+                    </Button>
+                  ) : (
+                    <Button
+                      variant="outlined"
+                      color="inherit"
+                      startIcon={<LogoutRoundedIcon fontSize="small" />}
+                      onClick={() => void signOutUser()}
+                      sx={{ display: { xs: 'none', md: 'inline-flex' }, whiteSpace: 'nowrap' }}
+                    >
+                      Sign out
+                    </Button>
+                  )}
                 </Stack>
               </Stack>
             </Container>
@@ -269,72 +282,22 @@ export function AppShell() {
           <Box component="main" sx={{ px: { xs: 2, md: 3 }, py: { xs: 2, md: 3 }, pb: { xs: 12, md: 4 } }}>
             <Container maxWidth={false} sx={{ px: 0, maxWidth: 1480 }}>
               <Stack spacing={3}>
-                <Stack
-                  direction={{ xs: 'column', sm: 'row' }}
-                  spacing={1}
-                  justifyContent="space-between"
-                  alignItems={{ xs: 'flex-start', sm: 'center' }}
-                >
-                  <Stack direction="row" spacing={1} useFlexGap flexWrap="wrap">
-                    <StatusBadge
-                      label={warState === 'onTrack' ? 'On Track' : titleFromToken(warState)}
-                      tone={warState}
-                    />
-                    <StatusBadge label={titleFromToken(dayMode)} tone={dayMode} />
-                  </Stack>
-                  <Typography
-                    variant="caption"
-                    color="text.secondary"
-                    sx={{ display: { xs: 'none', lg: 'block' } }}
-                  >
-                    {user?.isGuest ? 'Guest session' : user?.displayName ?? user?.email ?? 'Signed in'}
-                  </Typography>
-                </Stack>
-
-                {user?.isGuest ? (
+                {showOperationalSignals ? (
                   <Stack
-                    direction={{ xs: 'column', lg: 'row' }}
-                    spacing={1.5}
-                    alignItems={{ xs: 'flex-start', lg: 'center' }}
-                    justifyContent="space-between"
+                    direction="row"
+                    spacing={0.9}
+                    useFlexGap
+                    flexWrap="wrap"
+                    alignItems="center"
                     sx={{
-                      border: '1px solid',
-                      borderColor: alpha(forgeTokens.palette.accent.ember, 0.32),
-                      borderRadius: 4,
-                      px: { xs: 1.5, md: 2 },
-                      py: { xs: 1.5, md: 1.75 },
-                      backgroundColor: alpha(forgeTokens.palette.accent.ember, 0.08),
+                      minHeight: 28,
                     }}
                   >
-                    <Stack spacing={0.35} sx={{ minWidth: 0 }}>
-                      <Typography variant="overline" color="primary.light">
-                        Guest mode
-                      </Typography>
-                      <Typography variant="body1" sx={{ fontWeight: 700 }}>
-                        This session stays on this browser.
-                      </Typography>
-                      <Typography color="text.secondary" sx={{ maxWidth: 760 }}>
-                        Explore the demo freely. Sign in to keep progress.
-                      </Typography>
-                    </Stack>
-
-                    <Stack direction={{ xs: 'column', sm: 'row' }} spacing={1} sx={{ width: { xs: '100%', lg: 'auto' } }}>
-                      <Button
-                        variant="contained"
-                        onClick={() => void signInWithGoogle()}
-                        sx={{ whiteSpace: 'nowrap' }}
-                      >
-                        Sign in to keep progress
-                      </Button>
-                      <Button
-                        variant="outlined"
-                        color="inherit"
-                        onClick={() => void signOutUser()}
-                        sx={{ whiteSpace: 'nowrap' }}
-                      >
-                        Exit guest
-                      </Button>
-                    </Stack>
+                    {warState !== 'onTrack' ? (
+                      <StatusBadge label={titleFromToken(warState)} tone={warState} />
+                    ) : null}
+                    {dayMode !== 'normal' ? <StatusBadge label={titleFromToken(dayMode)} tone={dayMode} /> : null}
+                    {showSyncIndicator ? <SyncIndicator status={syncStatus} compact /> : null}
                   </Stack>
                 ) : null}
 
@@ -371,14 +334,11 @@ export function AppShell() {
         PaperProps={{ id: 'forge-mobile-navigation-drawer' }}
       >
         <Stack spacing={3} sx={{ width: 320, p: 3 }}>
-          <Stack spacing={0.75}>
+          <Stack spacing={0.5}>
             <Typography variant="overline" color="primary.light">
               Forge
             </Typography>
             <Typography variant="h3">Navigation</Typography>
-            <Typography color="text.secondary">
-              Move between the main workspaces.
-            </Typography>
           </Stack>
 
           <Stack spacing={1}>
@@ -394,7 +354,7 @@ export function AppShell() {
                   onClick={() => setMobileMenuOpen(false)}
                   startIcon={<Icon fontSize="small" />}
                   color={isActive ? 'primary' : 'inherit'}
-                  variant={isActive ? 'contained' : 'outlined'}
+                  variant={isActive ? 'contained' : 'text'}
                   sx={{ justifyContent: 'flex-start' }}
                 >
                   {label}
@@ -403,11 +363,13 @@ export function AppShell() {
             })}
           </Stack>
 
-          <Stack direction="row" spacing={1} flexWrap="wrap" useFlexGap>
-            <StatusBadge label={warState === 'onTrack' ? 'On Track' : titleFromToken(warState)} tone={warState} />
-            <StatusBadge label={titleFromToken(dayMode)} tone={dayMode} />
-            <SyncIndicator status={syncStatus} compact />
-          </Stack>
+          {showOperationalSignals ? (
+            <Stack direction="row" spacing={1} flexWrap="wrap" useFlexGap>
+              {warState !== 'onTrack' ? <StatusBadge label={titleFromToken(warState)} tone={warState} /> : null}
+              {dayMode !== 'normal' ? <StatusBadge label={titleFromToken(dayMode)} tone={dayMode} /> : null}
+              {showSyncIndicator ? <SyncIndicator status={syncStatus} compact /> : null}
+            </Stack>
+          ) : null}
 
           <Button
             component={NavLink}
@@ -420,15 +382,26 @@ export function AppShell() {
             About Forge
           </Button>
 
-          <Button
-            variant="outlined"
-            color="inherit"
-            startIcon={<LogoutRoundedIcon fontSize="small" />}
-            onClick={() => void signOutUser()}
-            sx={{ alignSelf: 'flex-start' }}
-          >
-            {user?.isGuest ? 'Exit guest' : 'Sign out'}
-          </Button>
+          {user?.isGuest ? (
+            <Stack spacing={1} alignItems="flex-start">
+              <Button variant="contained" onClick={() => void signInWithGoogle()}>
+                Sign in to save progress
+              </Button>
+              <Button variant="text" color="inherit" onClick={() => void signOutUser()} sx={{ px: 0 }}>
+                Leave demo
+              </Button>
+            </Stack>
+          ) : (
+            <Button
+              variant="outlined"
+              color="inherit"
+              startIcon={<LogoutRoundedIcon fontSize="small" />}
+              onClick={() => void signOutUser()}
+              sx={{ alignSelf: 'flex-start' }}
+            >
+              Sign out
+            </Button>
+          )}
         </Stack>
       </Drawer>
 
@@ -447,11 +420,11 @@ export function AppShell() {
           sx={{
             border: '1px solid',
             borderColor: 'divider',
-            borderRadius: 4,
-            p: 0.75,
+            borderRadius: 3.5,
+            p: 0.6,
             justifyContent: 'space-between',
-            backgroundColor: alpha(forgeTokens.palette.background.shell, 0.94),
-            backdropFilter: 'blur(18px)',
+            backgroundColor: (theme) => alpha(theme.palette.background.default, theme.palette.mode === 'light' ? 0.82 : 0.88),
+            backdropFilter: 'blur(14px)',
           }}
         >
           {mobileQuickNavItems.map(({ icon: Icon, label, path }) => {
@@ -468,15 +441,17 @@ export function AppShell() {
                   flex: 1,
                   minWidth: 0,
                   textDecoration: 'none',
-                  borderRadius: 3,
+                  borderRadius: 2.5,
                   px: 0.75,
-                  py: 0.75,
-                  backgroundColor: isActive ? alpha(forgeTokens.palette.accent.ember, 0.14) : 'transparent',
+                  py: 0.65,
+                  backgroundColor: (theme) => (isActive ? alpha(theme.palette.primary.main, theme.palette.mode === 'light' ? 0.08 : 0.1) : 'transparent'),
                   border: '1px solid',
-                  borderColor: isActive ? forgeTokens.palette.border.accent : 'transparent',
+                  borderColor: 'transparent',
                   color: isActive ? 'text.primary' : 'text.secondary',
                   '&:focus-visible': {
-                    backgroundColor: alpha(forgeTokens.palette.background.elevated, 0.72),
+                    outline: 'none',
+                    backgroundColor: (theme) => alpha(theme.palette.background.paper, theme.palette.mode === 'light' ? 0.62 : 0.5),
+                    boxShadow: (theme) => `0 0 0 2px ${alpha(theme.palette.primary.main, 0.22)}`,
                   },
                 }}
               >
@@ -511,9 +486,9 @@ export function AppShell() {
               alignItems: 'center',
               justifyContent: 'center',
               textDecoration: 'none',
-              borderRadius: 3,
+              borderRadius: 2.5,
               px: 0.75,
-              py: 0.75,
+              py: 0.65,
               border: '1px solid',
               borderColor: 'divider',
               color: 'text.secondary',
@@ -522,14 +497,16 @@ export function AppShell() {
               cursor: 'pointer',
               transition: 'background-color 160ms ease, border-color 160ms ease, color 160ms ease, transform 160ms ease',
               '&:hover': {
-                backgroundColor: alpha(forgeTokens.palette.background.elevated, 0.42),
+                backgroundColor: (theme) => alpha(theme.palette.background.paper, theme.palette.mode === 'light' ? 0.66 : 0.42),
                 transform: 'translateY(-1px)',
               },
               '&:active': {
                 transform: 'translateY(0)',
               },
               '&:focus-visible': {
-                backgroundColor: alpha(forgeTokens.palette.background.elevated, 0.56),
+                outline: 'none',
+                backgroundColor: (theme) => alpha(theme.palette.background.paper, theme.palette.mode === 'light' ? 0.62 : 0.5),
+                boxShadow: (theme) => `0 0 0 2px ${alpha(theme.palette.primary.main, 0.22)}`,
               },
             }}
           >

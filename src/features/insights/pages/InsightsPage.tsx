@@ -119,9 +119,9 @@ function UnifiedInsightsSurface({
   return (
     <Stack spacing={3} data-insights-focus={requestedFocus}>
       <SurfaceCard
+        variant="hero"
         contentSx={{
-          background:
-            'radial-gradient(circle at top right, rgba(212, 111, 60, 0.16), transparent 32%), linear-gradient(180deg, rgba(21, 27, 38, 0.98) 0%, rgba(11, 14, 21, 1) 100%)',
+          background: 'transparent',
         }}
       >
         <Stack spacing={2.5}>

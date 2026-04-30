@@ -460,7 +460,7 @@ describe('App', () => {
     render(<App />)
 
     expect(await screen.findByRole('button', { name: /what should i do now/i })).toBeInTheDocument()
-    expect(screen.getByRole('heading', { name: /^agenda$/i })).toBeInTheDocument()
+    expect(screen.getByRole('heading', { name: /today timeline/i })).toBeInTheDocument()
     expect(screen.getByRole('heading', { name: /^signals$/i })).toBeInTheDocument()
 
     expect(screen.queryByText(/shell readiness/i)).not.toBeInTheDocument()
@@ -610,7 +610,7 @@ describe('App', () => {
     render(<App />)
 
     expect(await screen.findByRole('heading', { name: /forge exists to make disciplined execution easier to sustain/i })).toBeInTheDocument()
-    expect(screen.getByText(/guest mode/i)).toBeInTheDocument()
+    expect(screen.getAllByRole('button', { name: /sign in/i }).length).toBeGreaterThan(0)
   })
 
   it('shows the redirect-return status copy while the protected shell is restoring a Google sign-in', () => {

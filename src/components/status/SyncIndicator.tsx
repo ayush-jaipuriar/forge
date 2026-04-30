@@ -6,7 +6,6 @@ import WarningAmberRoundedIcon from '@mui/icons-material/WarningAmberRounded'
 import { Box, Stack, Typography } from '@mui/material'
 import { alpha } from '@mui/material/styles'
 import type { SyncStatus } from '@/domain/common/types'
-import { forgeTokens } from '@/app/theme/tokens'
 
 type SyncIndicatorProps = {
   status: SyncStatus
@@ -54,26 +53,29 @@ const statusMap = {
 
 export function SyncIndicator({ status, compact = false }: SyncIndicatorProps) {
   const config = statusMap[status]
-  const palette = {
-    default: forgeTokens.palette.text.secondary,
-    success: forgeTokens.palette.accent.success,
-    warning: forgeTokens.palette.accent.warning,
-    error: forgeTokens.palette.accent.critical,
-  }[config.color]
 
   return (
     <Box
       component="span"
-      sx={{
-        display: 'inline-flex',
-        alignItems: 'center',
-        minHeight: compact ? 24 : 26,
-        px: compact ? 0.9 : 1,
-        borderRadius: 2,
-        color: palette,
-        border: '1px solid',
-        borderColor: alpha(palette, 0.2),
-        backgroundColor: alpha(palette, 0.045),
+      sx={(theme) => {
+        const palette = {
+          default: theme.palette.text.secondary,
+          success: theme.palette.success.main,
+          warning: theme.palette.warning.main,
+          error: theme.palette.error.main,
+        }[config.color]
+
+        return {
+          display: 'inline-flex',
+          alignItems: 'center',
+          minHeight: compact ? 22 : 24,
+          px: compact ? 0.8 : 0.95,
+          borderRadius: 1.75,
+          color: palette,
+          border: '1px solid',
+          borderColor: alpha(palette, theme.palette.mode === 'light' ? 0.18 : 0.16),
+          backgroundColor: alpha(palette, theme.palette.mode === 'light' ? 0.05 : 0.035),
+        }
       }}
     >
       <Stack direction="row" spacing={0.55} alignItems="center">
@@ -82,7 +84,7 @@ export function SyncIndicator({ status, compact = false }: SyncIndicatorProps) {
           sx={{
             display: 'inline-flex',
             alignItems: 'center',
-            color: palette,
+            color: 'inherit',
             '& svg': {
               fontSize: compact ? '0.95rem' : '1rem',
             },
@@ -93,8 +95,8 @@ export function SyncIndicator({ status, compact = false }: SyncIndicatorProps) {
         <Typography
           component="span"
           sx={{
-            fontFamily: '"Plus Jakarta Sans", "Inter", "Segoe UI", sans-serif',
-            fontSize: compact ? '0.68rem' : '0.72rem',
+            fontFamily: '"Geist Sans", "Plus Jakarta Sans", "Avenir Next", sans-serif',
+            fontSize: compact ? '0.66rem' : '0.69rem',
             fontWeight: 600,
             lineHeight: 1,
           }}

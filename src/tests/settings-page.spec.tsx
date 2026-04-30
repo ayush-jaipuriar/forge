@@ -49,6 +49,13 @@ const settingsWorkspaceMock = vi.hoisted(() => ({
   value: null as MockSettingsWorkspaceResult | null,
 }))
 
+const themeModeMock = vi.hoisted(() => ({
+  value: {
+    mode: 'dark' as const,
+    setMode: vi.fn(),
+  },
+}))
+
 const notificationPreferenceMock = vi.hoisted(() => ({
   mutate: vi.fn(),
   isPending: false,
@@ -193,8 +200,13 @@ vi.mock('@/features/settings/hooks/useApplyRestoreStage', () => ({
   useApplyRestoreStage: () => applyRestoreStageMock,
 }))
 
+vi.mock('@/app/theme/themeModeContext', () => ({
+  useThemeMode: () => themeModeMock.value,
+}))
+
 describe('SettingsPage', () => {
   beforeEach(() => {
+    themeModeMock.value.setMode.mockReset()
     notificationPreferenceMock.mutate.mockReset()
     requestNotificationPermissionMock.mutate.mockReset()
     createManualBackupMock.mutate.mockReset()
@@ -407,5 +419,17 @@ describe('SettingsPage', () => {
     await user.click(screen.getByRole('button', { name: /refresh from cloud/i }))
 
     expect(refreshCloudWorkspaceMock.mutate).toHaveBeenCalled()
+  })
+
+  it('lets the user choose the local appearance mode from Settings', async () => {
+    const user = userEvent.setup()
+
+    render(<SettingsPage />)
+
+    expect(screen.getByRole('heading', { name: /choose the look/i })).toBeInTheDocument()
+
+    await user.click(screen.getByRole('button', { name: /use light theme/i }))
+
+    expect(themeModeMock.value.setMode).toHaveBeenCalledWith('light')
   })
 })

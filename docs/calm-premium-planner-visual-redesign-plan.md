@@ -4,7 +4,9 @@
 
 Implementation in progress.
 
-Sprint 0 has started to stabilize the authenticated online-only runtime before the visual redesign begins.
+Sprint 0 and Sprint 0.1 stabilized the authenticated online-only runtime enough to support the visual redesign track.
+
+Sprint 1 code implementation is complete at the theme/shared-component layer as of `2026-04-29 17:16 IST`; automated verification and screenshot QA are green.
 
 ## Purpose
 
@@ -539,9 +541,19 @@ Remove the fragile local-first/offline-first architecture from authenticated pro
 
 ## Sprint 1: Visual System Foundation And Theme Architecture
 
+Detailed sprint plan:
+
+- `docs/calm-premium-planner-sprint-1-theme-and-shared-polish-plan.md`
+
+Planning note:
+
+- Sprint 1 now includes theme foundation plus the first shared-component and page-hero polish pass.
+- It keeps dark mode as the default, adds user-controlled light/dark selection in Settings, and captures screenshot QA evidence where the browser session permits it.
+- Sprint 2 shared-component de-dashboarding is now implemented at the primitive layer as of `2026-04-29 17:50 IST`.
+
 ### Goal
 
-Create the design-token and theme foundation for a calm premium planner with light mode and softened dark mode.
+Create the design-token and theme foundation for a calm premium planner with light mode, softened dark mode, and the first shared surface/hero polish pass.
 
 ### Scope
 
@@ -550,6 +562,8 @@ Create the design-token and theme foundation for a calm premium planner with lig
 - Soften dark mode tokens.
 - Add shared semantic tokens for surface hierarchy.
 - Add an appearance control in Settings.
+- Add first-pass shared component variants for calmer surfaces.
+- Apply the new hero treatment to primary page headers where practical.
 - Preserve current functionality and data flows.
 
 ### Relevant Files
@@ -565,25 +579,29 @@ Create the design-token and theme foundation for a calm premium planner with lig
 
 ### Implementation Checklist
 
-- [ ] Define semantic tokens for `canvas`, `paper`, `surface`, `raised`, `border`, `accent`, and `muted`.
-- [ ] Add light mode palette.
-- [ ] Replace overly cold dark tokens with warmer dark tokens.
-- [ ] Add theme-mode persistence.
-- [ ] Add Settings appearance section.
-- [ ] Ensure PWA/browser reload preserves selected theme.
-- [ ] Reduce global amber use in theme defaults.
-- [ ] Preserve visible focus states in both themes.
-- [ ] Verify contrast for primary text, secondary text, buttons, and chips.
+- [x] Define semantic tokens for `canvas`, `paper`, `surface`, `raised`, `border`, `accent`, and `muted`.
+- [x] Add light mode palette.
+- [x] Replace overly cold dark tokens with warmer dark tokens.
+- [x] Add theme-mode persistence.
+- [x] Add Settings appearance section.
+- [x] Ensure PWA/browser reload preserves selected theme at provider/test level.
+- [x] Reduce global amber use in theme defaults.
+- [x] Preserve visible focus states in both themes.
+- [x] Verify contrast for primary text, secondary text, buttons, and chips at the first-pass token/component level.
 
 ### QA Checklist
 
-- [ ] `npm run typecheck`
-- [ ] `npm run lint`
-- [ ] `npm run test:run`
-- [ ] `npm run build`
-- [ ] Screenshot QA: Settings light desktop/mobile.
-- [ ] Screenshot QA: Settings dark desktop/mobile.
-- [ ] Screenshot QA: Auth light/dark.
+- [x] `npm run typecheck`
+- [x] `npm run lint`
+- [x] `npm run test:run`
+- [x] `npm run build`
+- [x] Screenshot QA: Settings light desktop/mobile.
+- [x] Screenshot QA: Settings dark desktop/mobile.
+- [x] Screenshot QA: Auth light/dark.
+
+Screenshot artifact directory:
+
+- `/Users/ayushjaipuriar/Documents/GitHub/forge/output/playwright/calm-premium-planner-sprint-1/`
 
 ### Acceptance Criteria
 
@@ -618,20 +636,29 @@ Reduce the system-wide card/border/dashboard feeling before redesigning individu
 
 ### Implementation Checklist
 
-- [ ] Add a `surface` variant for quiet sections.
-- [ ] Add a `feature` or `hero` variant for high-emphasis modules.
-- [ ] Add a `plain` variant for low-emphasis groups without heavy borders.
-- [ ] Reduce default card shadow and border strength.
-- [ ] Make metric tiles calmer and less boxed-in.
-- [ ] Reduce uppercase label usage in shared primitives.
-- [ ] Ensure buttons have tactile hover/active states in both themes.
-- [ ] Ensure chips are not visually louder than their content.
+- [x] Add a `surface` variant for quiet sections.
+- [x] Add a `feature` or `hero` variant for high-emphasis modules.
+- [x] Add a `plain` variant for low-emphasis groups without heavy borders.
+- [x] Reduce default card shadow and border strength.
+- [x] Make metric tiles calmer and less boxed-in.
+- [x] Reduce uppercase label usage in shared primitives.
+- [x] Ensure buttons have tactile hover/active states in both themes.
+- [x] Ensure chips are not visually louder than their content.
 
 ### QA Checklist
 
-- [ ] Component regression tests remain green.
-- [ ] Primary pages still render without layout breakage.
-- [ ] Light/dark screenshots show visual consistency.
+- [x] Component regression tests remain green.
+- [x] Primary pages still render without layout breakage.
+- [x] Light/dark screenshots show visual consistency.
+
+### Verification Notes
+
+- Updated primitives: `SurfaceCard`, `MetricTile`, `SectionHeader`, `EmptyState`, `StatusBadge`, `SyncIndicator`, and `OperationalSignalCard`.
+- Full regression passed: `npm run test:run` -> `74` files and `278` tests.
+- Sprint 2 screenshot artifacts captured under:
+  - `/Users/ayushjaipuriar/Documents/GitHub/forge/output/playwright/calm-premium-planner-sprint-2/`
+- The calmer primitive defaults improved `Today`, `Plan`, `Insights`, and `Settings` without requiring route-specific rewrites.
+- Known caveat: guest-mode `Settings` can still remain in a local-workspace loading state in Playwright, although the local Appearance control now renders above it and remains usable.
 
 ### Acceptance Criteria
 
@@ -662,27 +689,38 @@ Make `Today` the flagship expression of the new calm premium planner direction.
 
 ### Implementation Checklist
 
-- [ ] Create a single top `Now` module.
-- [ ] Show one current block title once in the first viewport.
-- [ ] Put primary action and completion action in a clear hierarchy.
-- [ ] Convert agenda items into a timeline/list, not repeated large cards.
-- [ ] Move signals into a compact support panel.
-- [ ] Reduce chip count in the first viewport.
-- [ ] Add mobile-specific ordering for `Now`, next action, agenda, and signals.
-- [ ] Add sufficient bottom padding for mobile nav.
-- [ ] Verify empty/loading/error states match the new visual language.
+- [x] Create a single top `Now` module.
+- [x] Show one current block title once in the first viewport.
+- [x] Put primary action and completion action in a clear hierarchy.
+- [x] Convert agenda items into a timeline/list, not repeated large cards.
+- [x] Move signals into a compact support panel.
+- [x] Reduce chip count in the first viewport.
+- [x] Add mobile-specific ordering for `Now`, next action, agenda, and signals.
+- [x] Add sufficient bottom padding for mobile nav.
+- [x] Verify empty/loading/error states match the new visual language.
 
 ### QA Checklist
 
-- [ ] `npm run typecheck`
-- [ ] `npm run lint`
-- [ ] `npm run test:run -- src/tests/app.spec.tsx`
-- [ ] `npm run test:run`
-- [ ] `npm run build`
-- [ ] Screenshot QA: Today light desktop.
-- [ ] Screenshot QA: Today light mobile.
-- [ ] Screenshot QA: Today dark desktop.
-- [ ] Screenshot QA: Today dark mobile.
+- [x] `npm run typecheck`
+- [x] `npm run lint`
+- [x] `npm run test:run -- src/tests/app.spec.tsx`
+- [x] `npm run test:run`
+- [x] `npm run build`
+- [x] Screenshot QA: Today light desktop.
+- [x] Screenshot QA: Today light mobile.
+- [x] Screenshot QA: Today dark desktop.
+- [x] Screenshot QA: Today dark mobile.
+
+### Verification Notes
+
+- `TodayPage` was restructured around one true `Now` hero instead of a hero plus a second duplicated current-block surface.
+- Recommendation and fallback guidance now sit directly below `Now`, so they read as the next layer of decision support rather than competing headers.
+- The agenda now reads as a calmer timeline/list and the support signals live in a quieter secondary column.
+- Mobile top-of-screen order now prioritizes `Now`, then action, then deeper planning content.
+- Sprint 3 screenshot artifacts were captured under:
+  - `/Users/ayushjaipuriar/Documents/GitHub/forge/output/playwright/calm-premium-planner-sprint-3/`
+- Remaining caveat:
+  - The guest/demo banner still consumes a meaningful amount of first-viewport space in unauthenticated screenshot flows. Authenticated production use will be cleaner, but the guest-state shell could still use its own later simplification pass.
 
 ### Acceptance Criteria
 
@@ -715,26 +753,68 @@ Reduce persistent chrome and make navigation feel premium, quiet, and proportion
 
 ### Implementation Checklist
 
-- [ ] Reduce desktop left rail visual weight.
-- [ ] Reconsider whether About belongs in the persistent rail or secondary menu.
-- [ ] Make active nav state quieter and less blocky.
-- [ ] Reduce top status badges to compact, optional indicators.
-- [ ] Ensure mobile header does not dominate first viewport.
-- [ ] Ensure bottom nav does not overlap key CTAs.
-- [ ] Add clear keyboard focus and aria labels.
-- [ ] Confirm legacy redirects still land correctly.
+- [x] Reduce desktop left rail visual weight.
+- [x] Reconsider whether About belongs in the persistent rail or secondary menu.
+- [x] Make active nav state quieter and less blocky.
+- [x] Reduce top status badges to compact, optional indicators.
+- [x] Ensure mobile header does not dominate first viewport.
+- [x] Ensure bottom nav does not overlap key CTAs.
+- [x] Add clear keyboard focus and aria labels.
+- [x] Confirm legacy redirects still land correctly.
 
 ### QA Checklist
 
-- [ ] Desktop screenshot QA for all primary routes.
-- [ ] Mobile screenshot QA for all primary routes.
-- [ ] Keyboard navigation smoke test.
-- [ ] Route redirect browser QA.
+- [x] Desktop screenshot QA for all primary routes.
+- [x] Mobile screenshot QA for all primary routes.
+- [x] Keyboard navigation smoke test.
+- [x] Route redirect browser QA.
 
 ### Acceptance Criteria
 
 - The shell feels like a calm product frame, not a system console.
 - Navigation is obvious but not visually louder than page content.
+
+### Sprint 4 Implementation Notes
+
+Completed on `2026-04-30`.
+
+Files updated in this sprint:
+
+- `src/components/layout/AppShell.tsx`
+- `src/tests/app.spec.tsx`
+
+What changed:
+
+- Reduced the desktop rail width and removed the heavier bordered active-state treatment.
+- Moved `About` out of the persistent rail and into quieter secondary navigation.
+- Removed the always-on shell status strip and made sync/status signals conditional instead of constant.
+- Removed the broad guest/demo banner from the shell and replaced it with a lighter header-level sign-in path.
+- Tightened the mobile top bar and softened the bottom navigation treatment.
+- Added explicit custom focus-visible treatments for shell links and the mobile menu action.
+
+Verification completed:
+
+- `npm run typecheck`
+- `npm run lint`
+- `npm run test:run`
+- `git diff --check`
+- Browser keyboard smoke check confirmed tab order reaches shell navigation with correct accessible names.
+- Browser redirect QA confirmed `/schedule -> /plan?view=week` and `/command-center -> /insights?view=weekly`.
+
+Screenshot QA artifacts:
+
+- `output/playwright/calm-premium-planner-sprint-4/today-desktop.png`
+- `output/playwright/calm-premium-planner-sprint-4/plan-desktop.png`
+- `output/playwright/calm-premium-planner-sprint-4/insights-desktop.png`
+- `output/playwright/calm-premium-planner-sprint-4/settings-desktop.png`
+- `output/playwright/calm-premium-planner-sprint-4/today-mobile.png`
+- `output/playwright/calm-premium-planner-sprint-4/plan-mobile.png`
+- `output/playwright/calm-premium-planner-sprint-4/insights-mobile.png`
+- `output/playwright/calm-premium-planner-sprint-4/settings-mobile.png`
+
+Known caveat carried forward:
+
+- Guest/demo `Settings` can still remain in a local-workspace loading state during screenshot QA. The shell/nav pass does not worsen this, but it remains a guest/demo runtime issue to address separately.
 
 ## Sprint 5: Plan Redesign
 
@@ -758,24 +838,62 @@ Turn `Plan` into a calm weekly planning surface instead of a row of dense mini d
 
 ### Implementation Checklist
 
-- [ ] Replace week cards with compact day strip or calendar rhythm.
-- [ ] Make selected day the primary working area.
-- [ ] Reduce repeated labels and chips in day summaries.
-- [ ] Move prep focus below selected-day planning on mobile.
-- [ ] Keep constraints visible without making them the page mood.
-- [ ] Validate empty and low-data states.
+- [x] Replace week cards with compact day strip or calendar rhythm.
+- [x] Make selected day the primary working area.
+- [x] Reduce repeated labels and chips in day summaries.
+- [x] Move prep focus below selected-day planning on mobile.
+- [x] Keep constraints visible without making them the page mood.
+- [x] Validate empty and low-data states.
 
 ### QA Checklist
 
-- [ ] Plan tests updated and passing.
-- [ ] Legacy `/schedule` and `/prep` redirect checks.
-- [ ] Screenshot QA: Plan light/dark desktop.
-- [ ] Screenshot QA: Plan light/dark mobile.
+- [x] Plan tests updated and passing.
+- [x] Legacy `/schedule` and `/prep` redirect checks.
+- [x] Screenshot QA: Plan light/dark desktop.
+- [x] Screenshot QA: Plan light/dark mobile.
 
 ### Acceptance Criteria
 
 - Plan reads as one calm weekly workflow.
 - The user can quickly select a day and understand what to adjust.
+
+### Sprint 5 Implementation Notes
+
+Completed on `2026-04-30`.
+
+Files updated in this sprint:
+
+- `src/features/plan/pages/PlanPage.tsx`
+- `docs/calm-premium-planner-visual-redesign-plan.md`
+
+What changed:
+
+- Reworked the `Plan` hero into a calmer weekly overview with a compact status summary instead of a wide metrics wall.
+- Converted the seven-day board into a shorter rhythm strip so choosing a day feels like the first planning action.
+- Made the selected day the primary working surface and reduced the internal metric tiles to compact supporting facts.
+- Kept block actions, day-type overrides, day-mode controls, prep topic actions, planning signals, and calendar constraints wired to the existing mutations.
+- Kept prep and calendar visible as supporting planning context, with prep naturally following selected-day planning on mobile.
+- Changed ambiguous calendar wording from `Offline` to `Not connected`.
+
+Verification completed:
+
+- `npm run typecheck`
+- `npm run lint`
+- `npm run test:run -- src/tests/plan-page.spec.tsx src/tests/app.spec.tsx`
+- `npm run test:run`
+- `npm run build`
+- `git diff --check`
+
+Screenshot QA artifacts:
+
+- `output/playwright/calm-premium-planner-sprint-5/plan-dark-desktop.png`
+- `output/playwright/calm-premium-planner-sprint-5/plan-light-desktop.png`
+- `output/playwright/calm-premium-planner-sprint-5/plan-dark-mobile.png`
+- `output/playwright/calm-premium-planner-sprint-5/plan-light-mobile.png`
+
+Known caveat carried forward:
+
+- The fixed mobile bottom navigation can visually cover the very bottom of first-viewport screenshots when the capture cuts through the start of the next section. Page padding still protects reachable content during actual scrolling.
 
 ## Sprint 6: Insights Redesign
 

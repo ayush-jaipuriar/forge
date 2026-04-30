@@ -1,7 +1,6 @@
 import { alpha } from '@mui/material/styles'
 import type { ReactNode } from 'react'
 import { Box, CircularProgress, Stack, Typography } from '@mui/material'
-import { forgeTokens } from '@/app/theme/tokens'
 
 type EmptyStateProps = {
   eyebrow?: string
@@ -15,34 +14,6 @@ type EmptyStateProps = {
   compact?: boolean
 }
 
-const toneMap = {
-  default: {
-    accent: forgeTokens.palette.accent.copper,
-    soft: alpha(forgeTokens.palette.background.elevated, 0.64),
-    border: alpha(forgeTokens.palette.text.secondary, 0.16),
-  },
-  info: {
-    accent: forgeTokens.palette.accent.steel,
-    soft: alpha(forgeTokens.palette.accent.steel, 0.1),
-    border: alpha(forgeTokens.palette.accent.steel, 0.22),
-  },
-  success: {
-    accent: forgeTokens.palette.accent.success,
-    soft: alpha(forgeTokens.palette.accent.success, 0.1),
-    border: alpha(forgeTokens.palette.accent.success, 0.22),
-  },
-  warning: {
-    accent: forgeTokens.palette.accent.warning,
-    soft: alpha(forgeTokens.palette.accent.warning, 0.1),
-    border: alpha(forgeTokens.palette.accent.warning, 0.24),
-  },
-  error: {
-    accent: forgeTokens.palette.accent.critical,
-    soft: alpha(forgeTokens.palette.accent.critical, 0.1),
-    border: alpha(forgeTokens.palette.accent.critical, 0.24),
-  },
-} as const
-
 export function EmptyState({
   eyebrow,
   title,
@@ -54,7 +25,6 @@ export function EmptyState({
   loading = false,
   compact = false,
 }: EmptyStateProps) {
-  const palette = toneMap[tone]
   const centered = align === 'center'
 
   return (
@@ -64,48 +34,78 @@ export function EmptyState({
       textAlign={centered ? 'center' : 'left'}
       role={loading ? 'status' : tone === 'error' ? 'alert' : undefined}
       aria-live={loading ? 'polite' : tone === 'error' ? 'assertive' : undefined}
-      sx={{
-        border: '1px solid',
-        borderColor: palette.border,
-        borderRadius: 4,
-        p: compact ? 2 : 2.5,
-        background: `linear-gradient(180deg, ${alpha(forgeTokens.palette.background.elevated, 0.72)} 0%, ${alpha(forgeTokens.palette.background.panel, 0.88)} 100%)`,
-        position: 'relative',
-        overflow: 'hidden',
-        '&::before': {
-          content: '""',
-          position: 'absolute',
-          inset: 0,
-          borderTop: '1px solid',
-          borderColor: alpha(palette.accent, 0.45),
-          pointerEvents: 'none',
-        },
+      sx={(theme) => {
+        const accent = {
+          default: theme.palette.primary.dark,
+          info: theme.palette.info.main,
+          success: theme.palette.success.main,
+          warning: theme.palette.warning.main,
+          error: theme.palette.error.main,
+        }[tone]
+
+        return {
+          border: '1px solid',
+          borderColor: alpha(accent, tone === 'default' ? 0.12 : 0.18),
+          borderRadius: 4,
+          p: compact ? 2 : 2.5,
+          background:
+            theme.palette.mode === 'light'
+              ? `linear-gradient(180deg, ${alpha(theme.palette.background.paper, 0.74)} 0%, ${alpha(theme.palette.background.default, 0.9)} 100%)`
+              : `linear-gradient(180deg, ${alpha(theme.palette.background.paper, 0.42)} 0%, ${alpha(theme.palette.background.default, 0.66)} 100%)`,
+          position: 'relative',
+          overflow: 'hidden',
+          boxShadow: theme.palette.mode === 'light' ? '0 10px 24px rgba(75, 55, 34, 0.04)' : 'none',
+          '&::before': {
+            content: '""',
+            position: 'absolute',
+            insetInlineStart: 18,
+            insetBlockStart: 18,
+            width: 10,
+            height: 10,
+            borderRadius: '999px',
+            backgroundColor: alpha(accent, 0.72),
+            pointerEvents: 'none',
+          },
+        }
       }}
     >
       {eyebrow ? (
         <Typography
           variant="overline"
-          sx={{
-            color: palette.accent,
-            fontSize: '0.64rem',
-            letterSpacing: '0.18em',
-          }}
+          sx={(theme) => ({
+            color: {
+              default: theme.palette.primary.dark,
+              info: theme.palette.info.main,
+              success: theme.palette.success.main,
+              warning: theme.palette.warning.main,
+              error: theme.palette.error.main,
+            }[tone],
+            fontSize: '0.62rem',
+            letterSpacing: '0.12em',
+            fontWeight: 700,
+          })}
         >
           {eyebrow}
         </Typography>
       ) : null}
 
       {loading ? (
-        <CircularProgress size={compact ? 22 : 26} sx={{ color: palette.accent }} />
+        <CircularProgress size={compact ? 22 : 26} color={tone === 'default' ? 'primary' : tone} />
       ) : icon ? (
         <Box
-          sx={{
+          sx={(theme) => ({
             display: 'inline-flex',
-            color: palette.accent,
+            color: {
+              default: theme.palette.primary.dark,
+              info: theme.palette.info.main,
+              success: theme.palette.success.main,
+              warning: theme.palette.warning.main,
+              error: theme.palette.error.main,
+            }[tone],
             '& .MuiSvgIcon-root': {
               fontSize: compact ? '1.1rem' : '1.25rem',
             },
-          }}
+          })}
         >
           {icon}
         </Box>

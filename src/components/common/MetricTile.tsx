@@ -1,6 +1,5 @@
 import { alpha } from '@mui/material/styles'
 import { Box, Stack, Typography } from '@mui/material'
-import { forgeTokens } from '@/app/theme/tokens'
 
 type MetricTileProps = {
   eyebrow: string
@@ -9,41 +8,46 @@ type MetricTileProps = {
   tone?: 'neutral' | 'success' | 'warning'
 }
 
-const toneMap = {
-  neutral: forgeTokens.palette.accent.steel,
-  success: forgeTokens.palette.accent.success,
-  warning: forgeTokens.palette.accent.warning,
-}
-
 export function MetricTile({ eyebrow, value, detail, tone = 'neutral' }: MetricTileProps) {
-  const toneColor = toneMap[tone]
-
   return (
     <Stack
-      spacing={1}
-      sx={{
-        minHeight: { xs: 132, md: 144 },
-        border: '1px solid',
-        borderColor: 'divider',
-        borderRadius: 4,
-        p: 2.5,
-        background: `linear-gradient(180deg, ${alpha(forgeTokens.palette.background.panel, 0.98)} 0%, ${alpha(forgeTokens.palette.background.surface, 0.98)} 100%)`,
-        position: 'relative',
-        overflow: 'hidden',
-        '&::before': {
-          content: '""',
-          position: 'absolute',
-          insetInline: 0,
-          insetBlockStart: 0,
-          height: 2,
-          background: `linear-gradient(90deg, ${alpha(toneColor, 0.9)} 0%, ${alpha(toneColor, 0)} 100%)`,
-        },
+      spacing={0.8}
+      sx={(theme) => {
+        const toneColor = {
+          neutral: theme.palette.secondary.main,
+          success: theme.palette.success.main,
+          warning: theme.palette.warning.main,
+        }[tone]
+
+        return {
+          minHeight: { xs: 126, md: 138 },
+          border: '1px solid',
+          borderColor: alpha(theme.palette.text.secondary, theme.palette.mode === 'light' ? 0.12 : 0.08),
+          borderRadius: 3.5,
+          p: 2.15,
+          background:
+            theme.palette.mode === 'light'
+              ? `linear-gradient(180deg, ${alpha(theme.palette.background.paper, 0.82)} 0%, ${alpha(theme.palette.background.default, 0.9)} 100%)`
+              : alpha(theme.palette.background.paper, 0.42),
+          position: 'relative',
+          overflow: 'hidden',
+          '&::before': {
+            content: '""',
+            position: 'absolute',
+            insetInlineStart: 18,
+            insetBlockStart: 18,
+            width: 8,
+            height: 8,
+            borderRadius: '999px',
+            backgroundColor: alpha(toneColor, theme.palette.mode === 'light' ? 0.5 : 0.72),
+          },
+        }
       }}
     >
-      <Typography variant="overline" color="primary.light">
+      <Typography variant="overline" color="primary.main" sx={{ fontSize: '0.62rem', letterSpacing: '0.12em', fontWeight: 700 }}>
         {eyebrow}
       </Typography>
-      <Typography variant="h3" sx={{ fontSize: '1.35rem' }}>
+      <Typography variant="h3" sx={{ fontSize: '1.28rem', lineHeight: 1.05 }}>
         {value}
       </Typography>
       <Box sx={{ mt: 'auto' }}>

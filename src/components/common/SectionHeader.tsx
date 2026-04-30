@@ -19,15 +19,16 @@ export function SectionHeader({ eyebrow, title, description, action }: SectionHe
       <Stack spacing={0.9} maxWidth={760}>
         <Typography
           variant="overline"
-          color="primary.light"
+          color="primary.main"
           sx={{
-            fontSize: '0.66rem',
-            letterSpacing: '0.2em',
+            fontSize: '0.62rem',
+            letterSpacing: '0.12em',
+            fontWeight: 700,
           }}
         >
           {eyebrow}
         </Typography>
-        <Typography variant="h2" sx={{ maxWidth: 720 }}>
+        <Typography variant="h2" sx={{ maxWidth: 720, letterSpacing: '-0.04em' }}>
           {title}
         </Typography>
         <Typography color="text.secondary" sx={{ maxWidth: 720 }}>

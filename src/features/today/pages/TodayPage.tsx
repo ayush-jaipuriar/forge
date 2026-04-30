@@ -3,8 +3,6 @@ import KeyboardDoubleArrowRightRoundedIcon from '@mui/icons-material/KeyboardDou
 import { useEffect, useState } from 'react'
 import { alpha } from '@mui/material/styles'
 import { Alert, Box, Button, Chip, CircularProgress, Stack, Typography } from '@mui/material'
-import { forgeTokens } from '@/app/theme/tokens'
-import { SectionHeader } from '@/components/common/SectionHeader'
 import { OperationalSignalCard } from '@/components/common/OperationalSignalCard'
 import { SurfaceCard } from '@/components/common/SurfaceCard'
 import { StatusBadge } from '@/components/status/StatusBadge'
@@ -95,45 +93,99 @@ export function TodayPage() {
   }
 
   return (
-    <Stack spacing={3}>
+    <Stack spacing={3} sx={{ pb: { xs: 11, md: 4 } }}>
       <SurfaceCard
+        variant="hero"
         contentSx={{
-          background:
-            'radial-gradient(circle at top right, rgba(212, 111, 60, 0.12), transparent 32%), linear-gradient(180deg, rgba(21, 27, 38, 0.98) 0%, rgba(12, 16, 24, 0.98) 100%)',
+          background: 'transparent',
         }}
       >
-        <SectionHeader
-          eyebrow="Today"
-          title={currentBlock?.title ?? dayInstance.focusLabel}
-          description={`${weekdayLabel}, ${dateLabel}. ${currentBlock?.detail ?? dayInstance.label}.`}
-          action={
-            <Stack direction={{ xs: 'column', sm: 'row' }} spacing={1}>
-              <Button
-                variant="contained"
-                startIcon={<KeyboardDoubleArrowRightRoundedIcon />}
-                onClick={handleRevealRecommendation}
+        <Stack spacing={2.25}>
+          <Stack
+            direction={{ xs: 'column', xl: 'row' }}
+            spacing={2}
+            justifyContent="space-between"
+            alignItems={{ xs: 'flex-start', xl: 'flex-end' }}
+          >
+            <Stack spacing={0.9} maxWidth={860}>
+              <Typography
+                variant="overline"
+                color="primary.main"
+                sx={{ fontSize: '0.62rem', letterSpacing: '0.12em', fontWeight: 700 }}
               >
-                {showRecommendation ? 'Refresh recommendation' : 'What should I do now?'}
-              </Button>
-              <Button
-                variant="outlined"
-                startIcon={<AccessTimeRoundedIcon />}
-                disabled={!currentBlock || blockStatusDisabled}
-                onClick={() => {
-                  if (currentBlock) {
-                    updateBlockStatusMutation.mutate({
-                      date: dayInstance.date,
-                      blockId: currentBlock.id,
-                      status: 'completed',
-                    })
-                  }
+                Now
+              </Typography>
+              <Typography
+                variant="h1"
+                sx={{
+                  fontSize: { xs: '2.5rem', md: '4rem' },
+                  lineHeight: 0.92,
+                  letterSpacing: '-0.06em',
                 }}
               >
-                Mark current block complete
-              </Button>
+                {currentBlock?.title ?? dayInstance.focusLabel}
+              </Typography>
+              <Typography variant="body1" color="text.secondary" sx={{ maxWidth: 780 }}>
+                {weekdayLabel}, {dateLabel}. {currentBlock?.detail ?? dayInstance.label}.
+              </Typography>
             </Stack>
-          }
-        />
+
+            <Stack spacing={1} sx={{ width: { xs: '100%', xl: 'auto' } }}>
+              <Stack direction="row" spacing={1} useFlexGap flexWrap="wrap">
+                <StatusBadge label={scorePreview.label} tone={scorePreview.warState} />
+                <Chip label={`${scorePreview.projectedScore}/100`} size="small" variant="outlined" />
+                <Chip
+                  label={currentBlock ? 'Live block' : 'Next action'}
+                  size="small"
+                  variant="outlined"
+                  color={currentBlock ? 'success' : 'default'}
+                />
+              </Stack>
+              <Stack direction={{ xs: 'column', sm: 'row' }} spacing={1} sx={{ width: '100%' }}>
+                <Button
+                  variant="contained"
+                  startIcon={<KeyboardDoubleArrowRightRoundedIcon />}
+                  onClick={handleRevealRecommendation}
+                  sx={{ minWidth: { sm: 220 } }}
+                >
+                  {showRecommendation ? 'Refresh recommendation' : 'What should I do now?'}
+                </Button>
+                <Button
+                  variant="outlined"
+                  startIcon={<AccessTimeRoundedIcon />}
+                  disabled={!currentBlock || blockStatusDisabled}
+                  onClick={() => {
+                    if (currentBlock) {
+                      updateBlockStatusMutation.mutate({
+                        date: dayInstance.date,
+                        blockId: currentBlock.id,
+                        status: 'completed',
+                      })
+                    }
+                  }}
+                  sx={{ minWidth: { sm: 220 } }}
+                >
+                  Mark current block complete
+                </Button>
+              </Stack>
+            </Stack>
+          </Stack>
+
+          <Box
+            sx={{
+              display: 'grid',
+              gap: 1.25,
+              gridTemplateColumns: { xs: '1fr', sm: 'repeat(3, minmax(0, 1fr))' },
+            }}
+          >
+            <ActionSummary label="Window" value={currentBlock?.startTime ?? 'Flexible'} />
+            <ActionSummary label="Mode" value={activeMode.label.replace(' Mode', '')} />
+            <ActionSummary
+              label="Primary pressure"
+              value={topPriorities.length > 0 ? topPriorities[0].title : 'Protect continuity'}
+            />
+          </Box>
+        </Stack>
       </SurfaceCard>
 
       <Box
@@ -154,191 +206,152 @@ export function TodayPage() {
           }}
         >
           <SurfaceCard
-            eyebrow="Now"
-            title={currentBlock?.title ?? 'No active block'}
+            variant="quiet"
+            eyebrow="Next move"
+            title={showRecommendation ? recommendation.actionLabel : 'Need the next move?'}
             description={
-              currentBlock?.detail ??
-              'Use the day focus until the next block starts.'
+              showRecommendation
+                ? recommendation.rationale
+                : 'Ask Forge for the smallest useful action when the day gets fuzzy.'
             }
-            contentSx={{
-              background:
-                'radial-gradient(circle at top right, rgba(240, 179, 122, 0.12), transparent 30%), linear-gradient(180deg, rgba(28, 36, 49, 0.98) 0%, rgba(17, 22, 32, 0.98) 100%)',
-            }}
             action={
               <Chip
-                label={currentBlock ? 'Live block' : 'Awaiting next block'}
-                size="small"
-                sx={{
-                  color: currentBlock ? 'primary.light' : 'text.secondary',
-                }}
-              />
-            }
-          >
-            <Stack spacing={2}>
-              <Stack
-                direction={{ xs: 'column', md: 'row' }}
-                spacing={1.5}
-                justifyContent="space-between"
-                alignItems={{ xs: 'flex-start', md: 'flex-end' }}
-              >
-                <Stack spacing={0.5}>
-                  <Typography variant="overline" color="primary.light">
-                    Now
-                  </Typography>
-                  <Typography
-                    variant="h1"
-                    sx={{
-                      fontSize: { xs: '2.2rem', md: '3rem' },
-                      maxWidth: 760,
-                    }}
-                  >
-                    {currentBlock?.title ?? dayInstance.focusLabel}
-                  </Typography>
-                </Stack>
-                <Stack direction="row" spacing={1} useFlexGap flexWrap="wrap">
-                  <StatusBadge label={scorePreview.label} tone={scorePreview.warState} />
-                  <Chip label={`${scorePreview.projectedScore}/100`} size="small" variant="outlined" />
-                </Stack>
-              </Stack>
-
-              <Typography variant="body1" color="text.secondary" sx={{ maxWidth: 900 }}>
-                {currentBlock?.detail ??
-                  'You are between timed blocks. Keep the day moving with the next recoverable action.'}
-              </Typography>
-
-              <Stack direction={{ xs: 'column', sm: 'row' }} spacing={1.25}>
-                <ActionSummary label="Block" value={currentBlock?.startTime ?? 'Flexible'} />
-                <ActionSummary
-                  label="Main risk"
-                  value={topPriorities.length > 0 ? topPriorities[0].title : 'No live priority'}
-                />
-                <ActionSummary label="Mode" value={activeMode.label.replace(' Mode', '')} />
-              </Stack>
-            </Stack>
-          </SurfaceCard>
-
-          {showRecommendation ? (
-            <SurfaceCard
-              eyebrow="Next"
-              title={recommendation.actionLabel}
-              description={recommendation.rationale}
-              action={
-                <Chip
-                  label={`${recommendation.urgency.toUpperCase()} priority`}
-                  color={
-                    recommendation.urgency === 'critical'
+                label={showRecommendation ? `${capitalize(recommendation.urgency)} priority` : 'On demand'}
+                color={
+                  showRecommendation
+                    ? recommendation.urgency === 'critical'
                       ? 'error'
                       : recommendation.urgency === 'high'
                         ? 'warning'
                         : 'default'
-                  }
-                  size="small"
-                />
-              }
-            >
-              <Stack spacing={1.25}>
-                {recommendation.alternativePath ? (
-                  <Typography variant="body2" color="text.secondary">
-                    Alternative: {recommendation.alternativePath}
-                  </Typography>
-                ) : null}
-              </Stack>
-            </SurfaceCard>
-          ) : null}
+                    : 'default'
+                }
+                size="small"
+                variant="outlined"
+              />
+            }
+          >
+            <Stack spacing={1.25}>
+              {showRecommendation ? (
+                <>
+                  {recommendation.alternativePath ? (
+                    <Typography variant="body2" color="text.secondary">
+                      Alternative path: {recommendation.alternativePath}
+                    </Typography>
+                  ) : null}
+                </>
+              ) : (
+                <Typography variant="body2" color="text.secondary">
+                  Ask Forge for the next recoverable move when the day loses shape or the current block finishes early.
+                </Typography>
+              )}
+            </Stack>
+          </SurfaceCard>
 
           {showFallbackSuggestion ? (
-            <FallbackModeSuggestionCard
-              suggestion={fallbackSuggestion}
-              currentModeLabel={activeMode.label}
-              disabled={dayModeDisabled}
-              onApply={(dayMode) => updateDayModeMutation.mutate({ date: dayInstance.date, dayMode })}
-              onDismiss={() => {
-                if (fallbackKey) {
-                  setDismissedFallbackKey(fallbackKey)
-                }
-              }}
-            />
+            <SurfaceCard
+              variant="plain"
+              contentSx={{ p: 0 }}
+            >
+              <FallbackModeSuggestionCard
+                suggestion={fallbackSuggestion}
+                currentModeLabel={activeMode.label}
+                disabled={dayModeDisabled}
+                onApply={(dayMode) => updateDayModeMutation.mutate({ date: dayInstance.date, dayMode })}
+                onDismiss={() => {
+                  if (fallbackKey) {
+                    setDismissedFallbackKey(fallbackKey)
+                  }
+                }}
+              />
+            </SurfaceCard>
           ) : null}
 
           <SurfaceCard
             eyebrow="Agenda"
-            title="Agenda"
-            description="Finish one block at a time."
+            title="Today timeline"
+            description="Work one block at a time. Restore only what still matters."
           >
-            <Stack spacing={1.5}>
+            <Stack spacing={1}>
               {dayInstance.blocks.map((block) => {
                 const isCurrentBlock = currentBlock?.id === block.id
-                const blockTone =
-                  block.status === 'completed'
-                    ? forgeTokens.palette.accent.success
-                    : block.status === 'planned'
-                      ? forgeTokens.palette.accent.ember
-                      : forgeTokens.palette.accent.warning
 
                 return (
                   <Box
                     key={block.id}
-                    sx={{
-                      border: '1px solid',
-                      borderColor: isCurrentBlock ? forgeTokens.palette.border.accent : 'divider',
-                      borderRadius: 4,
-                      p: { xs: 1.75, md: 2 },
-                      background: isCurrentBlock
-                        ? `linear-gradient(180deg, ${alpha(forgeTokens.palette.accent.ember, 0.08)} 0%, ${alpha(forgeTokens.palette.background.panel, 0.98)} 100%)`
-                        : `linear-gradient(180deg, ${alpha(forgeTokens.palette.background.panel, 0.98)} 0%, ${alpha(forgeTokens.palette.background.surface, 0.98)} 100%)`,
-                      position: 'relative',
-                      overflow: 'hidden',
-                      '&::before': {
-                        content: '""',
-                        position: 'absolute',
-                        insetInlineStart: 0,
-                        insetBlock: 0,
-                        width: 2,
-                        backgroundColor: blockTone,
-                      },
+                    sx={(theme) => {
+                      const blockTone =
+                        block.status === 'completed'
+                          ? theme.palette.success.main
+                          : block.status === 'planned'
+                            ? theme.palette.primary.main
+                            : theme.palette.warning.main
+
+                      return {
+                        border: '1px solid',
+                        borderColor: isCurrentBlock
+                          ? alpha(theme.palette.primary.main, theme.palette.mode === 'light' ? 0.34 : 0.28)
+                          : 'divider',
+                        borderRadius: 4,
+                        p: { xs: 1.4, md: 1.65 },
+                        background: isCurrentBlock
+                          ? alpha(theme.palette.primary.main, theme.palette.mode === 'light' ? 0.05 : 0.07)
+                          : alpha(theme.palette.background.paper, theme.palette.mode === 'light' ? 0.42 : 0.22),
+                        position: 'relative',
+                        overflow: 'hidden',
+                        '&::before': {
+                          content: '""',
+                          position: 'absolute',
+                          insetInlineStart: 16,
+                          insetBlockStart: 20,
+                          width: 8,
+                          height: 8,
+                          borderRadius: '999px',
+                          backgroundColor: blockTone,
+                        },
+                      }
                     }}
                   >
-                    <Stack spacing={1.25}>
-                      <Stack
-                        direction={{ xs: 'column', md: 'row' }}
-                        spacing={1.25}
-                        justifyContent="space-between"
-                        alignItems={{ xs: 'flex-start', md: 'center' }}
+                    <Stack spacing={1.1}>
+                      <Box
+                        sx={{
+                          display: 'grid',
+                          gap: 1.25,
+                          gridTemplateColumns: { xs: '1fr', md: '92px minmax(0, 1fr)' },
+                          alignItems: 'start',
+                        }}
                       >
-                        <Stack
-                          direction={{ xs: 'column', sm: 'row' }}
-                          spacing={{ xs: 0.75, sm: 1.5 }}
-                          alignItems={{ xs: 'flex-start', sm: 'baseline' }}
+                        <Typography
+                          variant="caption"
+                          color="primary.main"
+                          sx={{ pl: { xs: 2.2, md: 1.8 }, pt: 0.15, letterSpacing: '0.08em' }}
                         >
-                          <Typography
-                            variant="caption"
-                            color="primary.light"
-                            sx={{ minWidth: { sm: 78 } }}
+                          {block.startTime ??
+                            (block.durationMinutes ? `${block.durationMinutes}m` : 'Flexible')}
+                        </Typography>
+
+                        <Stack spacing={0.8}>
+                          <Stack
+                            direction={{ xs: 'column', sm: 'row' }}
+                            spacing={0.9}
+                            alignItems={{ xs: 'flex-start', sm: 'center' }}
+                            useFlexGap
+                            flexWrap="wrap"
                           >
-                            {block.startTime ??
-                              (block.durationMinutes ? `${block.durationMinutes}m` : 'Flexible')}
-                          </Typography>
-                          <Stack spacing={0.35}>
-                            <Stack
-                              direction={{ xs: 'column', sm: 'row' }}
-                              spacing={1}
-                              alignItems={{ xs: 'flex-start', sm: 'center' }}
-                            >
-                              <Typography variant="h3">{block.title}</Typography>
-                              {isCurrentBlock ? <Chip label="Current" size="small" color="warning" /> : null}
-                              <Chip
-                                label={blockStatusLabels[block.status]}
-                                color={blockStatusTones[block.status]}
-                                size="small"
-                                variant="outlined"
-                              />
-                            </Stack>
-                            <Typography variant="body2" color="text.secondary">
-                              {block.detail}
-                            </Typography>
+                            <Typography variant="h4">{block.title}</Typography>
+                            {isCurrentBlock ? <Chip label="Current" size="small" color="warning" /> : null}
+                            <Chip
+                              label={blockStatusLabels[block.status]}
+                              color={blockStatusTones[block.status]}
+                              size="small"
+                              variant="outlined"
+                            />
                           </Stack>
+                          <Typography variant="body2" color="text.secondary">
+                            {block.detail}
+                          </Typography>
                         </Stack>
-                      </Stack>
+                      </Box>
 
                       {block.status === 'planned' ? (
                         <Stack spacing={1.25}>
@@ -443,17 +456,18 @@ export function TodayPage() {
             </Stack>
           </SurfaceCard>
         </Stack>
-        <Stack spacing={2.5} sx={{ gridColumn: { xs: 1, lg: 2 } }}>
+        <Stack spacing={2} sx={{ gridColumn: { xs: 1, lg: 2 } }}>
           <SurfaceCard
+            variant="quiet"
             eyebrow="Context"
             title="Signals"
-            description="Only what can change today."
+            description="Keep only the support signals that can still change the day."
           >
-            <Stack spacing={2}>
+            <Stack spacing={1.75}>
               <Box
                 sx={{
                   display: 'grid',
-                  gap: 1.25,
+                  gap: 1,
                   gridTemplateColumns: { xs: '1fr', sm: 'repeat(2, minmax(0, 1fr))', lg: '1fr' },
                 }}
               >
@@ -497,7 +511,8 @@ export function TodayPage() {
           </SurfaceCard>
 
           <SurfaceCard
-            eyebrow="Day Mode"
+            variant="quiet"
+            eyebrow="Day mode"
             title={activeMode.label.replace(' Mode', '')}
             description="Adjust only if today needs it."
             action={<StatusBadge label={activeMode.label} tone={currentDayMode} />}
@@ -517,9 +532,14 @@ export function TodayPage() {
           </SurfaceCard>
 
           <SurfaceCard
-            eyebrow="Main Risk"
+            variant="quiet"
+            eyebrow="Protection"
             title={topPriorities.length > 0 ? topPriorities[0].title : 'No urgent risk'}
-            description={`${topPriorities.length} priority blocks remain.`}
+            description={
+              topPriorities.length > 0
+                ? `${topPriorities.length} priority block${topPriorities.length === 1 ? '' : 's'} still need protection.`
+                : 'Nothing is asking for extra protection right now.'
+            }
           >
             <Stack spacing={1.25}>
               {operationalSignals.length > 0 ? (
@@ -539,24 +559,12 @@ export function TodayPage() {
               )}
             </Stack>
           </SurfaceCard>
-        </Stack>
 
-        <Box
-          sx={{
-            display: 'grid',
-            gap: 2,
-            alignItems: 'start',
-            gridColumn: '1 / -1',
-            gridTemplateColumns: {
-              xs: '1fr',
-              md: 'repeat(2, minmax(0, 1fr))',
-            },
-          }}
-        >
           <SurfaceCard
+            variant="quiet"
             eyebrow="Calendar"
             title="Outside commitments"
-            description="Shown only when it changes the plan."
+            description="Only the external pressure that bends today's shape."
             action={<Chip label={calendarSummary.severity} size="small" variant="outlined" />}
           >
             <Stack spacing={1.25}>
@@ -580,6 +588,7 @@ export function TodayPage() {
           </SurfaceCard>
 
           <SurfaceCard
+            variant="quiet"
             eyebrow="Prep"
             title={
               focusedPrepDomains.length > 0
@@ -596,7 +605,7 @@ export function TodayPage() {
               ))}
             </Stack>
           </SurfaceCard>
-        </Box>
+        </Stack>
       </Box>
     </Stack>
   )
@@ -617,7 +626,7 @@ function SupportDataRow({
 }) {
   return (
     <Stack spacing={0.25}>
-      <Typography variant="caption" color="primary.light">
+      <Typography variant="caption" color="primary.main" sx={{ letterSpacing: '0.08em' }}>
         {label}
       </Typography>
       <Typography variant="subtitle2">{value}</Typography>
@@ -632,23 +641,27 @@ function ActionSummary({ label, value }: { label: string; value: string }) {
   return (
     <Stack
       spacing={0.35}
-      sx={{
+      sx={(theme) => ({
         flex: 1,
         minWidth: { xs: '100%', sm: 0 },
         border: '1px solid',
         borderColor: 'divider',
         borderRadius: 3,
         px: 1.5,
-        py: 1.25,
-        backgroundColor: alpha(forgeTokens.palette.background.elevated, 0.36),
-      }}
+        py: 1.2,
+        backgroundColor: alpha(theme.palette.background.paper, theme.palette.mode === 'light' ? 0.42 : 0.22),
+      })}
     >
-      <Typography variant="caption" color="primary.light">
+      <Typography variant="caption" color="primary.main" sx={{ letterSpacing: '0.08em' }}>
         {label}
       </Typography>
       <Typography variant="subtitle2">{value}</Typography>
     </Stack>
   )
+}
+
+function capitalize(value: string) {
+  return value.charAt(0).toUpperCase() + value.slice(1)
 }
 
 function sleepLabel(status: SleepStatus) {

@@ -3,7 +3,6 @@ import InfoOutlinedIcon from '@mui/icons-material/InfoOutlined'
 import TaskAltRoundedIcon from '@mui/icons-material/TaskAltRounded'
 import { alpha } from '@mui/material/styles'
 import { Chip, Stack, Typography } from '@mui/material'
-import { forgeTokens } from '@/app/theme/tokens'
 
 type OperationalSignalCardProps = {
   title: string
@@ -12,51 +11,45 @@ type OperationalSignalCardProps = {
   badge?: string
 }
 
-const toneStyles = {
-  critical: {
-    borderColor: forgeTokens.palette.accent.critical,
-    backgroundColor: alpha(forgeTokens.palette.accent.critical, 0.08),
-    icon: <WarningAmberRoundedIcon color="error" fontSize="small" />,
-  },
-  warning: {
-    borderColor: forgeTokens.palette.accent.warning,
-    backgroundColor: alpha(forgeTokens.palette.accent.warning, 0.08),
-    icon: <WarningAmberRoundedIcon color="warning" fontSize="small" />,
-  },
-  info: {
-    borderColor: alpha(forgeTokens.palette.text.secondary, 0.16),
-    backgroundColor: alpha(forgeTokens.palette.background.elevated, 0.5),
-    icon: <InfoOutlinedIcon color="info" fontSize="small" />,
-  },
-  positive: {
-    borderColor: forgeTokens.palette.accent.success,
-    backgroundColor: alpha(forgeTokens.palette.accent.success, 0.08),
-    icon: <TaskAltRoundedIcon color="success" fontSize="small" />,
-  },
-} as const
-
 export function OperationalSignalCard({
   title,
   detail,
   tone,
   badge,
 }: OperationalSignalCardProps) {
-  const style = toneStyles[tone]
+  const icon = {
+    critical: <WarningAmberRoundedIcon color="error" fontSize="small" />,
+    warning: <WarningAmberRoundedIcon color="warning" fontSize="small" />,
+    info: <InfoOutlinedIcon color="info" fontSize="small" />,
+    positive: <TaskAltRoundedIcon color="success" fontSize="small" />,
+  }[tone]
 
   return (
     <Stack
       spacing={1}
-      sx={{
-        border: '1px solid',
-        borderColor: style.borderColor,
-        borderRadius: 3,
-        p: 1.75,
-        backgroundColor: style.backgroundColor,
+      sx={(theme) => {
+        const toneColor = {
+          critical: theme.palette.error.main,
+          warning: theme.palette.warning.main,
+          info: theme.palette.text.secondary,
+          positive: theme.palette.success.main,
+        }[tone]
+
+        return {
+          border: '1px solid',
+          borderColor: alpha(toneColor, tone === 'info' ? 0.12 : 0.2),
+          borderRadius: 3.5,
+          p: 1.6,
+          background:
+            theme.palette.mode === 'light'
+              ? `linear-gradient(180deg, ${alpha(theme.palette.background.paper, 0.8)} 0%, ${alpha(toneColor, tone === 'info' ? 0.03 : 0.06)} 100%)`
+              : alpha(toneColor, tone === 'info' ? 0.05 : 0.07),
+        }
       }}
     >
       <Stack direction="row" spacing={1} justifyContent="space-between" alignItems="flex-start">
         <Stack direction="row" spacing={1} alignItems="flex-start">
-          {style.icon}
+          {icon}
           <Stack spacing={0.4}>
             <Typography variant="subtitle2">{title}</Typography>
             <Typography variant="body2" color="text.secondary">
@@ -68,16 +61,26 @@ export function OperationalSignalCard({
           <Chip
             label={badge}
             size="small"
-            sx={{
+            sx={(theme) => ({
               color:
                 tone === 'critical'
-                  ? forgeTokens.palette.accent.critical
+                  ? theme.palette.error.main
                   : tone === 'warning'
-                    ? forgeTokens.palette.accent.warning
+                    ? theme.palette.warning.main
                     : tone === 'positive'
-                      ? forgeTokens.palette.accent.success
-                      : forgeTokens.palette.text.secondary,
-            }}
+                      ? theme.palette.success.main
+                      : theme.palette.text.secondary,
+              backgroundColor: alpha(
+                tone === 'critical'
+                  ? theme.palette.error.main
+                  : tone === 'warning'
+                    ? theme.palette.warning.main
+                    : tone === 'positive'
+                      ? theme.palette.success.main
+                      : theme.palette.text.secondary,
+                theme.palette.mode === 'light' ? 0.06 : 0.08,
+              ),
+            })}
           />
         ) : null}
       </Stack>

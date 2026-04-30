@@ -6,7 +6,6 @@ import { useState } from 'react'
 import { alpha } from '@mui/material/styles'
 import { Alert, Box, Button, Chip, CircularProgress, Stack, Typography } from '@mui/material'
 import { useSearchParams } from 'react-router-dom'
-import { forgeTokens } from '@/app/theme/tokens'
 import { useUiStore } from '@/app/store/uiStore'
 import { OperationalSignalCard } from '@/components/common/OperationalSignalCard'
 import { SectionHeader } from '@/components/common/SectionHeader'
@@ -122,58 +121,76 @@ export function PlanPage() {
   const prepMutationDisabled = updateTopicMutation.isPending || updateTopicMutation.isCloudWriteUnavailable
 
   return (
-    <Stack spacing={3} data-plan-focus={requestedFocus}>
+    <Stack spacing={{ xs: 2.5, md: 3 }} data-plan-focus={requestedFocus}>
       <SurfaceCard
+        variant="hero"
         contentSx={{
-          background:
-            'radial-gradient(circle at 88% 12%, rgba(212, 111, 60, 0.13), transparent 28%), linear-gradient(180deg, rgba(18, 23, 33, 0.98) 0%, rgba(11, 15, 23, 0.98) 100%)',
+          background: 'transparent',
+          p: { xs: 2.5, md: 3.25 },
         }}
       >
-        <Stack spacing={2.25}>
-          <SectionHeader
-            eyebrow="Plan"
-            title="Shape the week."
-            description="Choose a day, adjust blocks, and keep prep focused."
-            action={
-              <Stack direction="row" spacing={1} useFlexGap flexWrap="wrap">
-                <SyncIndicator status={syncStatus} />
-                <Chip
-                  icon={<CalendarMonthRoundedIcon />}
-                  label={`${calendar.constrainedDayCount} constrained`}
-                  size="small"
-                  color={calendarTone}
-                  variant="outlined"
-                />
-              </Stack>
-            }
-          />
-
-          <Box
-            sx={{
-              display: 'grid',
-              gap: 1.25,
-              gridTemplateColumns: { xs: 'repeat(2, minmax(0, 1fr))', lg: 'repeat(4, minmax(0, 1fr))' },
-            }}
-          >
-            <PlanMetric label="Selected day" value={selectedDay?.weekdayLabel ?? 'Today'} detail={selectedDay?.label ?? 'No day loaded'} />
-            <PlanMetric label="Open blocks" value={`${plannedBlockCount}`} detail={`${overrideCount} override${overrideCount === 1 ? '' : 's'} active`} />
-            <PlanMetric label="Prep focus" value={prepFocusLabel} detail={`${totalTouchedTopics}/${prepWorkspace.totalTopicCount} topics touched`} />
-            <PlanMetric
-              label="Calendar"
-              value={calendar.connectionStatus === 'connected' ? 'Connected' : 'Not connected'}
-              detail={`${calendar.constrainedDayCount} constrained day${calendar.constrainedDayCount === 1 ? '' : 's'}`}
-            />
-          </Box>
-        </Stack>
-      </SurfaceCard>
-
-      <SurfaceCard eyebrow="Week" title="Choose a day." description="Keep the week easy to scan.">
         <Box
           sx={{
             display: 'grid',
-            gap: 1.25,
+            gap: { xs: 2.25, lg: 3 },
+            gridTemplateColumns: { xs: '1fr', lg: 'minmax(0, 1.2fr) minmax(320px, 0.8fr)' },
+            alignItems: 'center',
+          }}
+        >
+          <SectionHeader
+            eyebrow="Plan"
+            title="Shape the week."
+            description="Choose the day, keep the load honest, and let prep stay in view without taking over."
+          />
+
+          <Stack
+            spacing={1.25}
+            sx={(theme) => ({
+              border: '1px solid',
+              borderColor: alpha(theme.palette.text.secondary, theme.palette.mode === 'light' ? 0.12 : 0.1),
+              borderRadius: 2.5,
+              p: { xs: 1.5, md: 1.75 },
+              backgroundColor: alpha(theme.palette.background.paper, theme.palette.mode === 'light' ? 0.44 : 0.22),
+            })}
+          >
+            <Stack direction="row" spacing={1} useFlexGap flexWrap="wrap" alignItems="center">
+              <SyncIndicator status={syncStatus} />
+              <Chip
+                icon={<CalendarMonthRoundedIcon />}
+                label={`${calendar.constrainedDayCount} constrained`}
+                size="small"
+                color={calendarTone}
+                variant="outlined"
+              />
+            </Stack>
+            <Box
+              sx={{
+                display: 'grid',
+                gap: 1,
+                gridTemplateColumns: { xs: 'repeat(2, minmax(0, 1fr))', sm: 'repeat(4, minmax(0, 1fr))', lg: 'repeat(2, minmax(0, 1fr))' },
+              }}
+            >
+              <PlanMetric label="Day" value={selectedDay?.weekdayLabel ?? 'Today'} detail={selectedDay?.label ?? 'No day loaded'} compact />
+              <PlanMetric label="Open" value={`${plannedBlockCount}`} detail={`${overrideCount} adjusted`} compact />
+              <PlanMetric label="Prep" value={prepFocusLabel} detail={`${totalTouchedTopics}/${prepWorkspace.totalTopicCount} touched`} compact />
+              <PlanMetric
+                label="Calendar"
+                value={calendar.connectionStatus === 'connected' ? 'Connected' : 'Not connected'}
+                detail={`${calendar.constrainedDayCount} constrained`}
+                compact
+              />
+            </Box>
+          </Stack>
+        </Box>
+      </SurfaceCard>
+
+      <SurfaceCard variant="quiet" eyebrow="Week rhythm" title="Choose a day." description="Scan the week first, then tune only the day that needs attention.">
+        <Box
+          sx={{
+            display: 'grid',
+            gap: { xs: 1, md: 1.1 },
             gridTemplateColumns: {
-              xs: 'repeat(7, minmax(184px, 1fr))',
+              xs: 'repeat(7, minmax(142px, 1fr))',
               lg: 'repeat(7, minmax(0, 1fr))',
             },
             overflowX: { xs: 'auto', lg: 'visible' },
@@ -195,12 +212,12 @@ export function PlanPage() {
         <Box
           sx={{
             display: 'grid',
-            gap: 2.5,
-            gridTemplateColumns: { xs: '1fr', lg: 'minmax(0, 1.22fr) minmax(320px, 0.78fr)' },
+            gap: { xs: 2.25, lg: 2.5 },
+            gridTemplateColumns: { xs: '1fr', lg: 'minmax(0, 1.32fr) minmax(310px, 0.68fr)' },
             alignItems: 'start',
           }}
         >
-          <Stack spacing={2.5}>
+          <Stack spacing={{ xs: 2.25, md: 2.5 }}>
             <SelectedDayPanel
               day={selectedDay}
               isDayMutationPending={dayMutationDisabled}
@@ -222,7 +239,7 @@ export function PlanPage() {
               }}
             />
 
-            <SurfaceCard eyebrow="Blocks" title={`${selectedDay.weekdayLabel} agenda`}>
+            <SurfaceCard variant="quiet" eyebrow="Blocks" title={`${selectedDay.weekdayLabel} agenda`}>
               <Stack spacing={1.1}>
                 {selectedDay.blocks.map((block) => (
                   <PlanBlockRow
@@ -242,7 +259,7 @@ export function PlanPage() {
             </SurfaceCard>
           </Stack>
 
-          <Stack spacing={2.5}>
+          <Stack spacing={{ xs: 2.25, md: 2.5 }}>
             <PrepPressurePanel
               workspace={prepWorkspace}
               activeDomain={activeDomain}
@@ -288,26 +305,28 @@ function PlanMetric({
   label,
   value,
   detail,
+  compact = false,
 }: {
   label: string
   value: string
   detail: string
+  compact?: boolean
 }) {
   return (
     <Stack
-      spacing={0.45}
-      sx={{
+      spacing={0.3}
+      sx={(theme) => ({
         border: '1px solid',
-        borderColor: alpha(forgeTokens.palette.text.secondary, 0.12),
-        borderRadius: 3,
-        p: 1.55,
-        backgroundColor: alpha(forgeTokens.palette.background.elevated, 0.2),
-      }}
+        borderColor: alpha(theme.palette.text.secondary, theme.palette.mode === 'light' ? 0.12 : 0.09),
+        borderRadius: 2,
+        p: compact ? 1.1 : 1.35,
+        backgroundColor: alpha(theme.palette.background.paper, theme.palette.mode === 'light' ? 0.44 : 0.18),
+      })}
     >
       <Typography variant="overline" color="primary.light">
         {label}
       </Typography>
-      <Typography variant="h3">{value}</Typography>
+      <Typography variant={compact ? 'subtitle2' : 'h3'}>{value}</Typography>
       <Typography variant="body2" color="text.secondary">
         {detail}
       </Typography>
@@ -333,27 +352,31 @@ function WeekDayButton({
       type="button"
       onClick={onSelect}
       aria-pressed={isSelected}
-      sx={{
-        minHeight: 188,
+      sx={(theme) => ({
+        minHeight: { xs: 138, lg: 150 },
         textAlign: 'left',
         border: '1px solid',
-        borderColor: isSelected ? forgeTokens.palette.border.accent : alpha(forgeTokens.palette.text.secondary, 0.12),
-        borderRadius: 3,
-        p: 1.45,
+        borderColor: isSelected ? alpha(theme.palette.primary.main, 0.72) : alpha(theme.palette.text.secondary, theme.palette.mode === 'light' ? 0.12 : 0.1),
+        borderRadius: 2.25,
+        p: 1.25,
         background: isSelected
-          ? `linear-gradient(180deg, ${alpha(forgeTokens.palette.accent.ember, 0.1)} 0%, ${alpha(forgeTokens.palette.background.panel, 0.98)} 100%)`
-          : `linear-gradient(180deg, ${alpha(forgeTokens.palette.background.panel, 0.96)} 0%, ${alpha(forgeTokens.palette.background.surface, 0.96)} 100%)`,
+          ? alpha(theme.palette.primary.main, theme.palette.mode === 'light' ? 0.075 : 0.085)
+          : alpha(theme.palette.background.paper, theme.palette.mode === 'light' ? 0.48 : 0.26),
         color: 'text.primary',
         cursor: 'pointer',
-        transition: 'border-color 160ms ease, transform 160ms ease, background-color 160ms ease',
+        transition: 'border-color 160ms ease, transform 160ms ease, background-color 160ms ease, box-shadow 160ms ease',
         '&:hover': {
-          borderColor: alpha(forgeTokens.palette.accent.ember, 0.5),
+          borderColor: alpha(theme.palette.primary.main, 0.5),
           transform: 'translateY(-1px)',
         },
-      }}
+        '&:focus-visible': {
+          outline: 'none',
+          boxShadow: `0 0 0 2px ${alpha(theme.palette.primary.main, 0.22)}`,
+        },
+      })}
     >
-      <Stack spacing={1.2} height="100%" justifyContent="space-between">
-        <Stack spacing={0.55}>
+      <Stack spacing={1} height="100%" justifyContent="space-between">
+        <Stack spacing={0.45}>
           <Stack direction="row" spacing={1} justifyContent="space-between" alignItems="baseline">
             <Typography variant="overline" color="primary.light">
               {day.weekdayLabel}
@@ -363,12 +386,12 @@ function WeekDayButton({
             </Typography>
           </Stack>
           <Typography variant="subtitle2">{day.label}</Typography>
-          <Typography variant="body2" color="text.secondary">
+          <Typography variant="body2" color="text.secondary" sx={{ display: { xs: 'none', xl: 'block' } }}>
             {day.focusLabel}
           </Typography>
         </Stack>
 
-        <Stack spacing={0.8}>
+        <Stack spacing={0.55}>
           <Stack direction="row" spacing={0.65} useFlexGap flexWrap="wrap">
             <StatusBadge label={scheduleModeLabels[day.dayMode]} tone={day.dayMode} />
             {day.isDayTypeOverridden ? <Chip label="Override" size="small" color="warning" variant="outlined" /> : null}
@@ -397,6 +420,7 @@ function SelectedDayPanel({
 
   return (
     <SurfaceCard
+      variant="hero"
       eyebrow="Selected day"
       title={`${day.weekdayLabel} · ${day.label}`}
       description={day.focusLabel}
@@ -413,7 +437,7 @@ function SelectedDayPanel({
         </Stack>
       }
     >
-      <Stack spacing={2}>
+      <Stack spacing={2.1}>
         <Box
           sx={{
             display: 'grid',
@@ -421,8 +445,8 @@ function SelectedDayPanel({
             gridTemplateColumns: { xs: '1fr', sm: 'repeat(2, minmax(0, 1fr))', xl: 'repeat(4, minmax(0, 1fr))' },
           }}
         >
-          <PlanMetric label="Day type" value={dayTypeLabels[day.dayType]} detail={`Base: ${dayTypeLabels[day.baseDayType]}`} />
-          <PlanMetric label="Blocks" value={`${openBlocks}/${day.blocks.length}`} detail="Open planned work" />
+          <PlanMetric label="Day type" value={dayTypeLabels[day.dayType]} detail={`Base: ${dayTypeLabels[day.baseDayType]}`} compact />
+          <PlanMetric label="Blocks" value={`${openBlocks}/${day.blocks.length}`} detail="Open planned work" compact />
           <PlanMetric
             label="Calendar"
             value={
@@ -431,10 +455,18 @@ function SelectedDayPanel({
                 : 'Clear'
             }
             detail="Calendar load"
+            compact
           />
-          <PlanMetric label="Mode" value={scheduleModeLabels[day.dayMode]} detail="Fallback posture" />
+          <PlanMetric label="Mode" value={scheduleModeLabels[day.dayMode]} detail="Fallback posture" compact />
         </Box>
 
+        <Box
+          sx={{
+            display: 'grid',
+            gap: 1.5,
+            gridTemplateColumns: { xs: '1fr', md: 'repeat(2, minmax(0, 1fr))' },
+          }}
+        >
         <Stack spacing={1}>
           <Typography variant="overline" color="primary.light">
             Day type
@@ -474,6 +506,7 @@ function SelectedDayPanel({
             ))}
           </Stack>
         </Stack>
+        </Box>
       </Stack>
     </SurfaceCard>
   )
@@ -492,14 +525,16 @@ function PlanBlockRow({
 
   return (
     <Box
-      sx={{
+      sx={(theme) => ({
         border: '1px solid',
-        borderColor: block.status === 'planned' ? alpha(forgeTokens.palette.accent.ember, 0.32) : alpha(forgeTokens.palette.text.secondary, 0.12),
-        borderRadius: 3,
-        p: 1.5,
+        borderColor: block.status === 'planned' ? alpha(theme.palette.primary.main, 0.2) : alpha(theme.palette.text.secondary, 0.1),
+        borderRadius: 2.25,
+        p: { xs: 1.35, md: 1.45 },
         backgroundColor:
-          block.status === 'planned' ? alpha(forgeTokens.palette.accent.ember, 0.045) : alpha(forgeTokens.palette.background.panel, 0.72),
-      }}
+          block.status === 'planned'
+            ? alpha(theme.palette.primary.main, theme.palette.mode === 'light' ? 0.045 : 0.032)
+            : alpha(theme.palette.background.paper, theme.palette.mode === 'light' ? 0.44 : 0.28),
+      })}
     >
       <Stack
         direction={{ xs: 'column', md: 'row' }}
@@ -570,6 +605,7 @@ function PrepPressurePanel({
 }) {
   return (
     <SurfaceCard
+      variant="quiet"
       eyebrow="Prep"
       title="Prep focus"
       description={`${activeSummary?.label ?? prepDomainLabels[activeDomain]} · ${activeSummary?.readinessLevel ?? 'building'} · weakest: ${weakestDomainLabel}`}
@@ -586,9 +622,10 @@ function PrepPressurePanel({
             label="Coverage"
             value={`${activeSummary?.touchedTopicCount ?? 0}/${activeSummary?.topicCount ?? 0}`}
             detail="Topics touched"
+            compact
           />
-          <PlanMetric label="Confidence" value={`${activeSummary?.highConfidenceCount ?? 0}`} detail="High-confidence topics" />
-          <PlanMetric label="Effort" value={`${totalTrackedHours.toFixed(1)}h`} detail="Tracked prep time" />
+          <PlanMetric label="Confidence" value={`${activeSummary?.highConfidenceCount ?? 0}`} detail="High-confidence topics" compact />
+          <PlanMetric label="Effort" value={`${totalTrackedHours.toFixed(1)}h`} detail="Tracked prep time" compact />
         </Box>
 
         <Stack spacing={1}>
@@ -690,7 +727,7 @@ function PlanPressurePanel({
   const signals = [...globalSignals.slice(0, 2), ...day.operationalSignals.slice(0, 1)]
 
   return (
-    <SurfaceCard eyebrow="Signals" title="Planning signals">
+    <SurfaceCard variant="quiet" eyebrow="Signals" title="Planning signals">
       <Stack spacing={1}>
         {signals.length > 0 ? (
           signals.map((signal) => (
@@ -730,6 +767,7 @@ function CalendarConstraintPanel({
 
   return (
     <SurfaceCard
+      variant="quiet"
       eyebrow="Calendar"
       title="Outside commitments"
       action={<Chip icon={<EventBusyRoundedIcon />} label={connectionStatus} size="small" variant="outlined" color={tone} />}
@@ -740,13 +778,13 @@ function CalendarConstraintPanel({
         </Typography>
         {hasOverlap ? (
           <Box
-            sx={{
+            sx={(theme) => ({
               border: '1px solid',
-              borderColor: alpha(forgeTokens.palette.accent.warning, 0.26),
+              borderColor: alpha(theme.palette.warning.main, 0.26),
               borderRadius: 3,
               p: 1.35,
-              backgroundColor: alpha(forgeTokens.palette.accent.warning, 0.06),
-            }}
+              backgroundColor: alpha(theme.palette.warning.main, 0.06),
+            })}
           >
             <Stack direction="row" spacing={1} alignItems="flex-start">
               <WarningAmberRoundedIcon color="warning" fontSize="small" />
