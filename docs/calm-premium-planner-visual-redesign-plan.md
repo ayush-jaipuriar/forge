@@ -1022,27 +1022,45 @@ Close visual seams after all primary routes are redesigned.
 
 ### Implementation Checklist
 
-- [ ] Audit all primary routes in light mode.
-- [ ] Audit all primary routes in dark mode.
-- [ ] Audit mobile first viewport for all primary routes.
-- [ ] Remove remaining cockpit/system visual language.
-- [ ] Verify no primary CTA is hidden behind bottom nav.
-- [ ] Verify loading states are skeleton-like or calm, not spinner-heavy.
-- [ ] Verify error and empty states are helpful and plain.
-- [ ] Update final visual QA docs.
+- [x] Audit all primary routes in light mode.
+- [x] Audit all primary routes in dark mode.
+- [x] Audit mobile first viewport for all primary routes.
+- [x] Remove remaining cockpit/system visual language.
+- [x] Verify no primary CTA is hidden behind bottom nav.
+- [x] Verify loading states are skeleton-like or calm, not spinner-heavy.
+- [x] Verify error and empty states are helpful and plain.
+- [x] Update final visual QA docs.
 
 ### QA Checklist
 
-- [ ] `npm run typecheck`
-- [ ] `npm run lint`
-- [ ] `npm run test:run`
-- [ ] `npm run build`
-- [ ] Browser QA: all primary routes, light desktop.
-- [ ] Browser QA: all primary routes, light mobile.
-- [ ] Browser QA: all primary routes, dark desktop.
-- [ ] Browser QA: all primary routes, dark mobile.
-- [ ] Browser QA: auth signed-out, light/dark.
-- [ ] Browser QA: legacy redirects.
+- [x] `npm run typecheck`
+- [x] `npm run lint`
+- [x] `npm run test:run`
+- [x] `npm run build`
+- [x] Browser QA: all primary routes, light desktop.
+- [x] Browser QA: all primary routes, light mobile.
+- [x] Browser QA: all primary routes, dark desktop.
+- [x] Browser QA: all primary routes, dark mobile.
+- [x] Browser QA: auth signed-out, light/dark.
+- [x] Browser QA: legacy redirects.
+
+### Sprint 8 Implementation Notes
+
+- Replaced the remaining first-viewport brand label `Personal execution OS` with `Personal planner` in the app shell and Auth page.
+- Replaced spinner-first route loading states with the shared `EmptyState` skeleton treatment across Today, Plan, Schedule, Prep, Physical, Readiness, Settings, and shared loading panels.
+- Updated remaining user-facing cockpit-style copy: `critical war state` became `today's score is under pressure`, and `Local operator action` became `User action`.
+- Revalidated the primary routes in light and dark mode on desktop and mobile: Today, Plan, Insights, and Settings.
+- Revalidated signed-out Auth in light and dark mode.
+- Revalidated legacy redirects: `/schedule -> /plan?view=week`, `/command-center -> /insights?view=weekly`, and `/readiness -> /insights?view=readiness`.
+- Captured release-candidate screenshot artifacts in `output/playwright/calm-premium-planner-sprint-8/`.
+
+### Sprint 8 Visual QA Notes
+
+- Today: primary CTA and current-block completion are visible on desktop and mobile; lower content sits behind the mobile nav only after the main action area.
+- Plan: desktop and mobile now share the same calm planning hierarchy; the selected-day controls remain visible before deeper prep detail.
+- Insights: summary-first structure holds in both themes and avoids chart overload in the first viewport.
+- Settings: signed-out fallback is plain and stable; Appearance remains available without pretending unavailable account controls are loaded.
+- Auth: signed-out first impression reads warmer and less system-like in both themes.
 
 ### Acceptance Criteria
 

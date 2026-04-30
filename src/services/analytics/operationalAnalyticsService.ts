@@ -121,7 +121,7 @@ export function buildTodayOperationalSignals({
     signals.push({
       id: 'today-streak-break-risk',
       title: 'Streak-break risk is active',
-      detail: `Execution continuity is at ${executionStreak?.current} day(s), but today is already in a critical war state. Protect the minimum strong-day threshold before optimizing anything else.`,
+      detail: `Execution continuity is at ${executionStreak?.current} day(s), but today's score is under pressure. Protect the minimum strong-day threshold before optimizing anything else.`,
       tone: 'critical',
       badge: 'Continuity Risk',
     })

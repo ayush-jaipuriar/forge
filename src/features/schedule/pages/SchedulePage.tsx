@@ -4,8 +4,9 @@ import EventRepeatRoundedIcon from '@mui/icons-material/EventRepeatRounded'
 import WarningAmberRoundedIcon from '@mui/icons-material/WarningAmberRounded'
 import { useState } from 'react'
 import { alpha } from '@mui/material/styles'
-import { Box, Button, Chip, CircularProgress, Stack, Typography } from '@mui/material'
+import { Box, Button, Chip, Stack, Typography } from '@mui/material'
 import { forgeTokens } from '@/app/theme/tokens'
+import { EmptyState } from '@/components/common/EmptyState'
 import { OperationalSignalCard } from '@/components/common/OperationalSignalCard'
 import { SectionHeader } from '@/components/common/SectionHeader'
 import { SurfaceCard } from '@/components/common/SurfaceCard'
@@ -37,10 +38,14 @@ export function SchedulePage({ embedded = false }: SchedulePageProps) {
 
   if (isLoading || !weekWorkspace) {
     return (
-      <SurfaceCard title="Loading weekly routine" description="Forge is restoring the locally cached week view.">
-        <Stack alignItems="center" py={2}>
-          <CircularProgress color="primary" />
-        </Stack>
+      <SurfaceCard title="Loading weekly routine" description="Restoring the week view.">
+        <EmptyState
+          title="Preparing the schedule"
+          description="The selected day and weekly blocks are coming into view."
+          loading
+          align="center"
+          tone="warning"
+        />
       </SurfaceCard>
     )
   }

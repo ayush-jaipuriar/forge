@@ -11,6 +11,7 @@ import { useRef, useState, type ChangeEvent, type ReactNode } from 'react'
 import { alpha } from '@mui/material/styles'
 import { Alert, Box, Button, Chip, CircularProgress, Collapse, Stack, Switch, ToggleButton, ToggleButtonGroup, Typography } from '@mui/material'
 import { useThemeMode } from '@/app/theme/themeModeContext'
+import { EmptyState } from '@/components/common/EmptyState'
 import { SurfaceCard } from '@/components/common/SurfaceCard'
 import { useAuthSession } from '@/features/auth/providers/useAuthSession'
 import { usePlatformWorkspace } from '@/features/platform/hooks/usePlatformWorkspace'
@@ -133,10 +134,14 @@ export function SettingsPage() {
     return (
       <Stack spacing={3}>
         <AppearanceSettingsCard mode={mode} setMode={setMode} />
-        <SurfaceCard title="Loading settings" description="Restoring local settings.">
-          <Stack alignItems="center" py={2}>
-            <CircularProgress color="primary" />
-          </Stack>
+        <SurfaceCard title="Loading settings" description="Restoring your workspace preferences.">
+          <EmptyState
+            title="Preparing settings"
+            description="Account, backup, Calendar, and notification controls are loading."
+            loading
+            align="center"
+            tone="warning"
+          />
         </SurfaceCard>
       </Stack>
     )

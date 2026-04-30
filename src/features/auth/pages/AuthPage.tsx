@@ -57,7 +57,7 @@ export function AuthPage() {
         >
           <Stack spacing={2.25} sx={{ display: { xs: 'none', md: 'flex' } }}>
             <Typography variant="overline" color="primary.light">
-              Personal execution OS
+              Personal planner
             </Typography>
             <Typography
               variant="h1"

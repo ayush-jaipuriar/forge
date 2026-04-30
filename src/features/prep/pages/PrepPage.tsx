@@ -1,5 +1,6 @@
 import { useState } from 'react'
-import { Button, Chip, CircularProgress, Divider, Grid, Stack, TextField, Typography } from '@mui/material'
+import { Button, Chip, Divider, Grid, Stack, TextField, Typography } from '@mui/material'
+import { EmptyState } from '@/components/common/EmptyState'
 import { MetricTile } from '@/components/common/MetricTile'
 import { SectionHeader } from '@/components/common/SectionHeader'
 import { SurfaceCard } from '@/components/common/SurfaceCard'
@@ -35,10 +36,14 @@ export function PrepPage({ embedded = false }: PrepPageProps) {
 
   if (isLoading || !data) {
     return (
-      <SurfaceCard title="Loading prep workspace" description="Forge is restoring persisted prep progress and topic readiness.">
-        <Stack alignItems="center" py={2}>
-          <CircularProgress color="primary" />
-        </Stack>
+      <SurfaceCard title="Loading prep workspace" description="Restoring prep progress and topic readiness.">
+        <EmptyState
+          title="Preparing prep"
+          description="Topic progress and focus domains are loading."
+          loading
+          align="center"
+          tone="warning"
+        />
       </SurfaceCard>
     )
   }

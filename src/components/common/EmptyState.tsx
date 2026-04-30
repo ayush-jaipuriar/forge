@@ -1,6 +1,6 @@
 import { alpha } from '@mui/material/styles'
 import type { ReactNode } from 'react'
-import { Box, CircularProgress, Stack, Typography } from '@mui/material'
+import { Box, Skeleton, Stack, Typography } from '@mui/material'
 
 type EmptyStateProps = {
   eyebrow?: string
@@ -90,7 +90,11 @@ export function EmptyState({
       ) : null}
 
       {loading ? (
-        <CircularProgress size={compact ? 22 : 26} color={tone === 'default' ? 'primary' : tone} />
+        <Stack spacing={0.75} sx={{ width: centered ? 'min(320px, 100%)' : '100%', maxWidth: 420 }}>
+          <Skeleton variant="rounded" width="68%" height={compact ? 10 : 12} />
+          <Skeleton variant="rounded" width="92%" height={compact ? 10 : 12} />
+          <Skeleton variant="rounded" width="44%" height={compact ? 10 : 12} />
+        </Stack>
       ) : icon ? (
         <Box
           sx={(theme) => ({

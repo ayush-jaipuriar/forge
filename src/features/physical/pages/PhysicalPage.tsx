@@ -1,5 +1,6 @@
 import { useState } from 'react'
-import { Alert, Button, CircularProgress, Divider, Grid, Stack, TextField, Typography } from '@mui/material'
+import { Alert, Button, Divider, Grid, Stack, TextField, Typography } from '@mui/material'
+import { EmptyState } from '@/components/common/EmptyState'
 import { MetricTile } from '@/components/common/MetricTile'
 import { SectionHeader } from '@/components/common/SectionHeader'
 import { SurfaceCard } from '@/components/common/SurfaceCard'
@@ -19,10 +20,14 @@ export function PhysicalPage() {
 
   if (isLoading || !data) {
     return (
-      <SurfaceCard title="Loading physical workspace" description="Forge is restoring workout state and sleep logging for the day.">
-        <Stack alignItems="center" py={2}>
-          <CircularProgress color="primary" />
-        </Stack>
+      <SurfaceCard title="Loading physical workspace" description="Restoring workout and sleep inputs.">
+        <EmptyState
+          title="Preparing physical inputs"
+          description="Workout state and sleep logging controls are loading."
+          loading
+          align="center"
+          tone="warning"
+        />
       </SurfaceCard>
     )
   }

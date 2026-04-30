@@ -1,5 +1,6 @@
 import TrendingUpRoundedIcon from '@mui/icons-material/TrendingUpRounded'
-import { Alert, CircularProgress, Divider, Grid, Stack, Typography } from '@mui/material'
+import { Alert, Divider, Grid, Stack, Typography } from '@mui/material'
+import { EmptyState } from '@/components/common/EmptyState'
 import { MetricTile } from '@/components/common/MetricTile'
 import { OperationalSignalCard } from '@/components/common/OperationalSignalCard'
 import { SectionHeader } from '@/components/common/SectionHeader'
@@ -17,10 +18,14 @@ export function ReadinessPage({ embedded = false }: ReadinessPageProps) {
 
   if (isLoading || !data) {
     return (
-      <SurfaceCard title="Loading readiness snapshot" description="Forge is reading pace and domain readiness from saved prep progress.">
-        <Stack alignItems="center" py={2}>
-          <CircularProgress color="primary" />
-        </Stack>
+      <SurfaceCard title="Loading readiness snapshot" description="Reading pace and domain readiness from saved prep progress.">
+        <EmptyState
+          title="Preparing readiness"
+          description="Target pace and domain coverage are loading."
+          loading
+          align="center"
+          tone="warning"
+        />
       </SurfaceCard>
     )
   }

@@ -205,7 +205,7 @@ export function AppShell() {
                       color="primary.light"
                       sx={{ fontSize: '0.62rem', letterSpacing: '0.14em' }}
                     >
-                      Personal execution OS
+                      Personal planner
                     </Typography>
                     <Stack
                       direction="row"

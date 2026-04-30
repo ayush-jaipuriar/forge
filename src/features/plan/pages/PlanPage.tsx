@@ -4,10 +4,11 @@ import EventRepeatRoundedIcon from '@mui/icons-material/EventRepeatRounded'
 import WarningAmberRoundedIcon from '@mui/icons-material/WarningAmberRounded'
 import { useState } from 'react'
 import { alpha } from '@mui/material/styles'
-import { Alert, Box, Button, Chip, CircularProgress, Stack, Typography } from '@mui/material'
+import { Alert, Box, Button, Chip, Stack, Typography } from '@mui/material'
 import { useSearchParams } from 'react-router-dom'
 import { useUiStore } from '@/app/store/uiStore'
 import { OperationalSignalCard } from '@/components/common/OperationalSignalCard'
+import { EmptyState } from '@/components/common/EmptyState'
 import { SectionHeader } from '@/components/common/SectionHeader'
 import { SurfaceCard } from '@/components/common/SurfaceCard'
 import { StatusBadge } from '@/components/status/StatusBadge'
@@ -82,9 +83,13 @@ export function PlanPage() {
 
     return (
       <SurfaceCard title="Loading plan" description="Restoring your week.">
-        <Stack alignItems="center" py={2}>
-          <CircularProgress color="primary" />
-        </Stack>
+        <EmptyState
+          title="Preparing the week"
+          description="Forge is reading the weekly rhythm and prep focus."
+          loading
+          align="center"
+          tone="warning"
+        />
       </SurfaceCard>
     )
   }

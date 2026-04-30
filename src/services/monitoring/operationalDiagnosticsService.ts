@@ -251,7 +251,7 @@ function getRestoreDiagnosticItem(recentRestoreJobs: RestoreJobRecord[]): Operat
       severity: 'healthy',
       statusLabel: 'none',
       summary: 'No recent local restore jobs have been recorded yet.',
-      owner: 'Local operator action',
+      owner: 'User action',
     }
   }
 
@@ -262,7 +262,7 @@ function getRestoreDiagnosticItem(recentRestoreJobs: RestoreJobRecord[]): Operat
       severity: 'critical',
       statusLabel: latestJob.status,
       summary: latestJob.summary,
-      owner: 'Local operator action',
+      owner: 'User action',
       lastObservedAt: latestJob.completedAt ?? latestJob.createdAt,
     }
   }
@@ -274,7 +274,7 @@ function getRestoreDiagnosticItem(recentRestoreJobs: RestoreJobRecord[]): Operat
       severity: 'warning',
       statusLabel: latestJob.status,
       summary: latestJob.summary,
-      owner: 'Local operator action',
+      owner: 'User action',
       lastObservedAt: latestJob.completedAt ?? latestJob.createdAt,
     }
   }
@@ -285,7 +285,7 @@ function getRestoreDiagnosticItem(recentRestoreJobs: RestoreJobRecord[]): Operat
     severity: 'healthy',
     statusLabel: latestJob.status,
     summary: latestJob.summary,
-    owner: 'Local operator action',
+    owner: 'User action',
     lastObservedAt: latestJob.completedAt ?? latestJob.createdAt,
   }
 }

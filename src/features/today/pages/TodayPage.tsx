@@ -2,7 +2,8 @@ import AccessTimeRoundedIcon from '@mui/icons-material/AccessTimeRounded'
 import KeyboardDoubleArrowRightRoundedIcon from '@mui/icons-material/KeyboardDoubleArrowRightRounded'
 import { useEffect, useState } from 'react'
 import { alpha } from '@mui/material/styles'
-import { Alert, Box, Button, Chip, CircularProgress, Stack, Typography } from '@mui/material'
+import { Alert, Box, Button, Chip, Stack, Typography } from '@mui/material'
+import { EmptyState } from '@/components/common/EmptyState'
 import { OperationalSignalCard } from '@/components/common/OperationalSignalCard'
 import { SurfaceCard } from '@/components/common/SurfaceCard'
 import { StatusBadge } from '@/components/status/StatusBadge'
@@ -53,9 +54,13 @@ export function TodayPage() {
 
     return (
       <SurfaceCard title="Loading today" description="Restoring your day plan.">
-        <Stack alignItems="center" py={2}>
-          <CircularProgress color="primary" />
-        </Stack>
+        <EmptyState
+          title="Preparing today"
+          description="Your current block and support signals are coming into view."
+          loading
+          align="center"
+          tone="warning"
+        />
       </SurfaceCard>
     )
   }
