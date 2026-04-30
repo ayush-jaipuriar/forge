@@ -4,7 +4,6 @@ import DownloadRoundedIcon from '@mui/icons-material/DownloadRounded'
 import DarkModeRoundedIcon from '@mui/icons-material/DarkModeRounded'
 import ExpandMoreRoundedIcon from '@mui/icons-material/ExpandMoreRounded'
 import LightModeRoundedIcon from '@mui/icons-material/LightModeRounded'
-import MonitorHeartRoundedIcon from '@mui/icons-material/MonitorHeartRounded'
 import NotificationsActiveRoundedIcon from '@mui/icons-material/NotificationsActiveRounded'
 import RestoreRoundedIcon from '@mui/icons-material/RestoreRounded'
 import UploadFileRoundedIcon from '@mui/icons-material/UploadFileRounded'
@@ -29,7 +28,7 @@ import { useSettingsWorkspace } from '@/features/settings/hooks/useSettingsWorks
 import { useSyncCalendarMirrors } from '@/features/settings/hooks/useSyncCalendarMirrors'
 import { useUpdateNotificationPreference } from '@/features/settings/hooks/useUpdateNotificationPreference'
 import { formatCalendarTimestamp, getCalendarStatusTone } from '@/domain/calendar/presentation'
-import type { PlatformCapabilityStatus, PlatformWorkspace } from '@/domain/platform/types'
+import type { PlatformCapabilityStatus } from '@/domain/platform/types'
 import type { OperationalDiagnosticSeverity } from '@/services/monitoring/operationalDiagnosticsService'
 import { parseRestorePayloadText, type RestoreStage } from '@/services/backup/restoreService'
 import { useOnlineStatus } from '@/services/sync/useOnlineStatus'
@@ -53,14 +52,6 @@ function getCapabilityTone(status: PlatformCapabilityStatus) {
 
   if (status === 'planned') {
     return 'default' as const
-  }
-
-  return 'success' as const
-}
-
-function getShellTone(workspace: PlatformWorkspace) {
-  if (workspace.runtime === 'nativeShell') {
-    return 'warning' as const
   }
 
   return 'success' as const
@@ -105,8 +96,24 @@ export function SettingsPage() {
   const [backupNotice, setBackupNotice] = useState<string | null>(null)
   const [cloudRefreshNotice, setCloudRefreshNotice] = useState<string | null>(null)
   const authenticatedOffline = status === 'authenticated' && !isOnline
+  const canLoadWorkspaceSettings = status === 'authenticated'
 
   if (isLoading || !data) {
+    if (!canLoadWorkspaceSettings) {
+      return (
+        <Stack spacing={3}>
+          <AppearanceSettingsCard mode={mode} setMode={setMode} />
+          <SurfaceCard title="Sign in to manage settings" description="Appearance is available now. Account, backup, Calendar, and notification controls unlock after sign-in.">
+            <Stack spacing={2} alignItems="flex-start">
+              <Button variant="contained" href="/auth">
+                Sign in
+              </Button>
+            </Stack>
+          </SurfaceCard>
+        </Stack>
+      )
+    }
+
     if (isError) {
       return (
         <Stack spacing={3}>
@@ -230,10 +237,10 @@ export function SettingsPage() {
                   letterSpacing: '-0.05em',
                 }}
               >
-                Keep Forge recoverable.
+                Manage your workspace.
               </Typography>
               <Typography color="text.secondary">
-                Manage sync, backup, calendar, and notifications.
+                Backups, Calendar, notifications, and appearance in one place.
               </Typography>
             </Stack>
 
@@ -243,12 +250,6 @@ export function SettingsPage() {
                 size="small"
                 variant="outlined"
                 color={getOperationalTone(operationalDiagnostics.overallSeverity)}
-              />
-              <Chip
-                label={platformWorkspace.shellLabel}
-                size="small"
-                variant="outlined"
-                color={getShellTone(platformWorkspace)}
               />
             </Stack>
           </Stack>
@@ -262,12 +263,12 @@ export function SettingsPage() {
           >
             <SettingsMetric
               label="Account"
-              value={status}
+              value={status === 'authenticated' ? 'Signed in' : 'Local'}
               detail={user?.email ?? user?.displayName ?? 'Local workspace'}
             />
             <SettingsMetric
               label="Backup"
-              value={backupOperations.healthState}
+              value={backupOperations.healthState === 'healthy' ? 'Protected' : 'Review'}
               detail={
                 backupOperations.latestSuccessfulBackupAt
                   ? `Last ${formatCalendarTimestamp(backupOperations.latestSuccessfulBackupAt, backupOperations.latestSuccessfulBackupAt)}`
@@ -276,12 +277,12 @@ export function SettingsPage() {
             />
             <SettingsMetric
               label="Calendar"
-              value={calendarConnection.connectionStatus}
+              value={calendarConnection.connectionStatus === 'connected' ? 'Connected' : 'Not set'}
               detail={`Read ${calendarSyncState.externalEventSyncStatus}`}
             />
             <SettingsMetric
               label="Notifications"
-              value={notificationState.permission}
+              value={(settings?.notificationsEnabled ?? true) ? 'On' : 'Paused'}
               detail={(settings?.notificationsEnabled ?? true) ? 'Rules enabled' : 'Rules paused'}
             />
           </Box>
@@ -561,15 +562,14 @@ export function SettingsPage() {
           <SurfaceCard
             eyebrow="Sync"
             title="Account & cloud"
-            description="Keep this browser aligned with shared state."
+            description="Refresh this browser from the shared workspace."
             action={<Chip label={status} size="small" variant="outlined" color={status === 'authenticated' ? 'success' : 'default'} />}
           >
             <Stack spacing={1.5}>
               <SettingsStatusRow
                 label="Signed in"
                 summary={user?.email ?? user?.displayName ?? 'Local workspace'}
-                meta={`${platformWorkspace.shellSupportLabel} · ${platformWorkspace.installSurfaceLabel}`}
-                trailing={<Chip label={platformWorkspace.shellLabel} size="small" variant="outlined" color={getShellTone(platformWorkspace)} />}
+                meta={status === 'authenticated' ? 'Cloud sync available' : 'Demo workspace'}
               />
               <Button
                 variant="contained"
@@ -610,7 +610,7 @@ export function SettingsPage() {
           <SurfaceCard
             eyebrow="Notifications"
             title="Notification controls"
-            description="Browser permission and daily delivery limits."
+            description="Choose whether Forge can nudge you."
             action={
               <Chip
                 label={notificationState.permission}
@@ -632,7 +632,7 @@ export function SettingsPage() {
                     Notification rules
                   </Typography>
                   <Typography variant="body2" color="text.secondary">
-                    Daily cap {notificationState.dailyCap} · {notificationState.supportedChannels.join(', ')}
+                    Daily cap {notificationState.dailyCap}
                   </Typography>
                 </Stack>
                 <Switch
@@ -662,33 +662,13 @@ export function SettingsPage() {
             </Stack>
           </SurfaceCard>
 
-          <SurfaceCard
-            eyebrow="Integrations"
-            title="Provider status"
-            description="Connected services and planned integrations."
-            action={<MonitorHeartRoundedIcon color="primary" />}
-          >
-            <Stack spacing={1.25}>
-              <SettingsStatusRow
-                label="Health providers"
-                summary={healthIntegration.statusSummaryLabel}
-                meta={`Signals ${healthIntegration.availableSignalCount}/${healthIntegration.totalSignalCount}`}
-                trailing={<Chip label={healthIntegration.connectionSummary} size="small" variant="outlined" color="default" />}
-              />
-              <SettingsStatusRow
-                label="Runtime"
-                summary={platformWorkspace.summary}
-                trailing={<Chip label={platformWorkspace.shellLabel} size="small" variant="outlined" color={getShellTone(platformWorkspace)} />}
-              />
-            </Stack>
-          </SurfaceCard>
         </Stack>
       </Box>
 
       <SurfaceCard
         eyebrow="Advanced"
-        title="Status details"
-        description="Details stay available when needed."
+        title="More details"
+        description="Diagnostics, runtime notes, and planned integrations stay tucked away."
       >
         <Stack spacing={1.5}>
           <AdvancedDisclosure title="Health details" summary={operationalDiagnostics.headline}>

@@ -917,19 +917,28 @@ Make `Insights` feel like a helpful reflection surface, not an alarm dashboard.
 
 ### Implementation Checklist
 
-- [ ] Replace alarm-like hero hierarchy.
-- [ ] Add `What changed`, `Why it matters`, and `What to adjust` framing.
-- [ ] Limit first viewport to the top 2-3 most useful signals.
-- [ ] Move raw metrics below insight summary.
-- [ ] Improve chart visual treatment for light and dark themes.
-- [ ] Preserve analytics depth below the fold.
+- [x] Replace alarm-like hero hierarchy.
+- [x] Add `What changed`, `Why it matters`, and `What to adjust` framing.
+- [x] Limit first viewport to the top 2-3 most useful signals.
+- [x] Move raw metrics below insight summary.
+- [x] Improve chart visual treatment for light and dark themes.
+- [x] Preserve analytics depth below the fold.
 
 ### QA Checklist
 
-- [ ] Insights tests updated and passing.
-- [ ] Legacy `/command-center` and `/readiness` redirect checks.
-- [ ] Screenshot QA: Insights light/dark desktop.
-- [ ] Screenshot QA: Insights light/dark mobile.
+- [x] Insights tests updated and passing.
+- [x] Legacy `/command-center` and `/readiness` redirect checks.
+- [x] Screenshot QA: Insights light/dark desktop.
+- [x] Screenshot QA: Insights light/dark mobile.
+
+### Sprint 6 Implementation Notes
+
+- Reworked `InsightsPage` around a calmer interpretive lead: the page now opens with a plain-language recommendation, a compact window/status control, and three high-signal cards before any chart-heavy evidence.
+- Moved raw score/window/source metrics into a quieter `Evidence snapshot` section so the first viewport answers "what should I understand?" before asking the user to parse numbers.
+- Updated shared chart card surfaces so charts inherit the active theme instead of forcing dark cards in light mode.
+- Kept detailed readiness, momentum, risk, recovery, and pattern analysis intact below the fold, but softened the surrounding surfaces so advanced analysis feels optional rather than noisy.
+- Added regression coverage for the new Insights hierarchy and preserved redirect coverage for legacy Command Center and Readiness routes.
+- Captured desktop and mobile screenshot QA in `output/playwright/calm-premium-planner-sprint-6/`.
 
 ### Acceptance Criteria
 
@@ -958,20 +967,30 @@ Make Settings and Auth feel calm, trustworthy, and user-oriented.
 
 ### Implementation Checklist
 
-- [ ] Lead Settings with user tasks, not system state.
-- [ ] Keep Backup and Calendar easy to find.
-- [ ] Move runtime/platform detail further into advanced disclosure.
-- [ ] Ensure Appearance controls are clear and persistent.
-- [ ] Make Auth card warmer and simpler in light mode.
-- [ ] Preserve Google sign-in and demo workspace behavior.
-- [ ] Reduce decorative auth background intensity.
+- [x] Lead Settings with user tasks, not system state.
+- [x] Keep Backup and Calendar easy to find.
+- [x] Move runtime/platform detail further into advanced disclosure.
+- [x] Ensure Appearance controls are clear and persistent.
+- [x] Make Auth card warmer and simpler in light mode.
+- [x] Preserve Google sign-in and demo workspace behavior.
+- [x] Reduce decorative auth background intensity.
 
 ### QA Checklist
 
-- [ ] Auth tests passing.
-- [ ] Settings tests passing.
-- [ ] Browser QA for signed-out auth in light/dark.
-- [ ] Browser QA for authenticated Settings in light/dark.
+- [x] Auth tests passing.
+- [x] Settings tests passing.
+- [x] Browser QA for signed-out auth in light/dark.
+- [x] Browser QA for signed-out Settings fallback in light/dark.
+- [x] Component regression coverage for authenticated Settings controls.
+
+### Sprint 7 Implementation Notes
+
+- Rebuilt the Auth page as a calmer premium entry surface with one editorial value statement, a simplified card, quieter background treatment, and preserved Google/demo actions.
+- Reframed Settings around user tasks: workspace management, backup, Calendar, notifications, appearance, and account/cloud refresh.
+- Removed provider/runtime detail from the main Settings column and kept those details inside the advanced disclosure stack.
+- Added a Settings fallback for signed-out or guest-local states so users no longer see an indefinite loading card when workspace settings are unavailable.
+- Updated tests for the new Settings hierarchy, the sign-in fallback, and the existing Auth button behaviors.
+- Captured Sprint 7 browser QA screenshots in `output/playwright/calm-premium-planner-sprint-7/`.
 
 ### Acceptance Criteria
 

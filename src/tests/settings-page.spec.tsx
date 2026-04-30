@@ -206,6 +206,15 @@ vi.mock('@/app/theme/themeModeContext', () => ({
 
 describe('SettingsPage', () => {
   beforeEach(() => {
+    authSessionMock.value = {
+      status: 'authenticated',
+      user: {
+        uid: 'user-1',
+        email: 'operator@forge.test',
+        displayName: 'Forge Operator',
+        photoURL: null,
+      },
+    }
     themeModeMock.value.setMode.mockReset()
     notificationPreferenceMock.mutate.mockReset()
     requestNotificationPermissionMock.mutate.mockReset()
@@ -360,12 +369,13 @@ describe('SettingsPage', () => {
   it('renders simplified default settings surfaces with the primary utility actions visible', () => {
     render(<SettingsPage />)
 
-    expect(screen.getByRole('heading', { name: /keep forge recoverable/i })).toBeInTheDocument()
+    expect(screen.getByRole('heading', { name: /manage your workspace/i })).toBeInTheDocument()
     expect(screen.getByRole('heading', { name: /backup & restore/i })).toBeInTheDocument()
     expect(screen.getByRole('heading', { name: /calendar access/i })).toBeInTheDocument()
     expect(screen.getByRole('heading', { name: /account & cloud/i })).toBeInTheDocument()
     expect(screen.getByRole('heading', { name: /notification controls/i })).toBeInTheDocument()
-    expect(screen.getByRole('heading', { name: /provider status/i })).toBeInTheDocument()
+    expect(screen.queryByRole('heading', { name: /provider status/i })).not.toBeInTheDocument()
+    expect(screen.getByRole('heading', { name: /more details/i })).toBeInTheDocument()
 
     expect(screen.getByRole('button', { name: /export backup json/i })).toBeInTheDocument()
     expect(screen.getByRole('button', { name: /export notes markdown/i })).toBeInTheDocument()
@@ -373,6 +383,23 @@ describe('SettingsPage', () => {
     expect(screen.getByRole('button', { name: /refresh from cloud/i })).toBeInTheDocument()
     expect(screen.getByRole('button', { name: /request browser permission/i })).toBeInTheDocument()
     expect(screen.getByRole('button', { name: /apply staged restore/i })).toBeDisabled()
+  })
+
+  it('does not leave unauthenticated users on a loading-only settings screen', () => {
+    authSessionMock.value = {
+      status: 'unauthenticated',
+      user: null,
+    } as unknown as typeof authSessionMock.value
+    settingsWorkspaceMock.value = {
+      isLoading: true,
+      data: null,
+    }
+
+    render(<SettingsPage />)
+
+    expect(screen.getByRole('heading', { name: /choose the look/i })).toBeInTheDocument()
+    expect(screen.getByRole('heading', { name: /sign in to manage settings/i })).toBeInTheDocument()
+    expect(screen.queryByRole('heading', { name: /loading settings/i })).not.toBeInTheDocument()
   })
 
   it('keeps low-level implementation details collapsed until the user asks for them', async () => {

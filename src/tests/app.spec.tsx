@@ -505,10 +505,13 @@ describe('App', () => {
 
     render(<App />)
 
-    expect(await screen.findByRole('heading', { name: /pattern detection is warming up/i })).toBeInTheDocument()
+    expect(await screen.findByRole('heading', { name: /know what to adjust/i })).toBeInTheDocument()
     expect(screen.queryByRole('tab', { name: /weekly/i })).not.toBeInTheDocument()
     expect(screen.queryByRole('tab', { name: /readiness/i })).not.toBeInTheDocument()
-    expect(screen.getByRole('heading', { name: /pace, score, and output/i })).toBeInTheDocument()
+    expect(screen.getByText(/^what changed$/i)).toBeInTheDocument()
+    expect(screen.getByText(/^why it matters$/i)).toBeInTheDocument()
+    expect(screen.getByText(/^what to adjust$/i)).toBeInTheDocument()
+    expect(screen.getByRole('heading', { name: /evidence: pace, score, and output/i })).toBeInTheDocument()
     expect(screen.getAllByRole('heading', { name: /behind target pace/i }).length).toBeGreaterThan(0)
     expect(screen.getAllByText(/history window is still empty/i).length).toBeGreaterThan(0)
     expect(screen.getAllByText(/coverage pace is slipping/i).length).toBeGreaterThan(0)
@@ -567,7 +570,7 @@ describe('App', () => {
 
     render(<App />)
 
-    expect(await screen.findByRole('heading', { name: /pattern detection is warming up/i })).toBeInTheDocument()
+    expect(await screen.findByRole('heading', { name: /know what to adjust/i })).toBeInTheDocument()
     expect(window.location.pathname).toBe('/insights')
     expect(window.location.search).toBe('?view=weekly')
   })
@@ -577,7 +580,7 @@ describe('App', () => {
 
     render(<App />)
 
-    expect(await screen.findByRole('heading', { name: /pattern detection is warming up/i })).toBeInTheDocument()
+    expect(await screen.findByRole('heading', { name: /know what to adjust/i })).toBeInTheDocument()
     expect(screen.queryByRole('tab', { name: /readiness/i })).not.toBeInTheDocument()
     expect(screen.getAllByRole('heading', { name: /behind target pace/i }).length).toBeGreaterThan(0)
     expect(window.location.pathname).toBe('/insights')

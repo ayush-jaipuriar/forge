@@ -38,6 +38,12 @@ type InsightMetricProps = {
   tone?: 'neutral' | 'success' | 'warning'
 }
 
+type InsightBrief = {
+  changed: string
+  matters: string
+  adjust: string
+}
+
 export function InsightsPage() {
   const [searchParams] = useSearchParams()
   const [windowKey, setWindowKey] = useState<AnalyticsRollingWindowKey>('30d')
@@ -115,6 +121,7 @@ function UnifiedInsightsSurface({
   const sleepComparisonReady = hasMeaningfulSleepPerformanceComparison(analytics.sleepPerformanceCorrelation)
   const statusChip = getStatusChip(analytics)
   const activeSignalCount = analytics.warnings.length + readiness.operationalSignals.length
+  const brief = getInsightBrief(analytics, readiness)
 
   return (
     <Stack spacing={3} data-insights-focus={requestedFocus}>
@@ -122,16 +129,19 @@ function UnifiedInsightsSurface({
         variant="hero"
         contentSx={{
           background: 'transparent',
+          p: { xs: 2.5, md: 3.25 },
         }}
       >
-        <Stack spacing={2.5}>
-          <Stack
-            direction={{ xs: 'column', md: 'row' }}
-            spacing={2}
-            justifyContent="space-between"
-            alignItems={{ xs: 'flex-start', md: 'center' }}
+        <Stack spacing={{ xs: 2.25, md: 2.75 }}>
+          <Box
+            sx={{
+              display: 'grid',
+              gap: { xs: 2, lg: 3 },
+              gridTemplateColumns: { xs: '1fr', lg: 'minmax(0, 1.1fr) minmax(300px, 0.9fr)' },
+              alignItems: 'center',
+            }}
           >
-            <Stack spacing={0.9} maxWidth={760}>
+            <Stack spacing={0.9} maxWidth={780}>
               <Typography
                 variant="overline"
                 color="primary.light"
@@ -146,77 +156,33 @@ function UnifiedInsightsSurface({
                 variant="h1"
                 sx={{
                   maxWidth: 760,
-                  fontSize: { xs: '2.25rem', sm: '2.7rem', md: '3rem' },
+                  fontSize: { xs: '2.2rem', sm: '2.65rem', md: '3rem' },
                   lineHeight: 0.96,
                   letterSpacing: 0,
                 }}
               >
-                {cleanCopy(analytics.coachSummary.title)}
+                Know what to adjust.
               </Typography>
               <Typography color="text.secondary" sx={{ maxWidth: 720 }}>
                 {cleanCopy(analytics.coachSummary.summary)}
               </Typography>
             </Stack>
-            <Box sx={{ flexShrink: 0 }}>
-              <Stack direction={{ xs: 'column', sm: 'row' }} spacing={1} alignItems={{ xs: 'flex-start', sm: 'center' }}>
-                <Chip label={statusChip.label} color={statusChip.color} size="small" />
-                {isStale ? <Chip label="Stale" size="small" color="warning" /> : null}
-                <Chip label={analytics.sourceLabel} size="small" />
-              </Stack>
-            </Box>
-          </Stack>
-
-          <Box
-            sx={{
-              display: 'grid',
-              gap: 2,
-              gridTemplateColumns: { xs: '1fr', lg: 'minmax(0, 1fr) 340px' },
-              alignItems: 'stretch',
-            }}
-          >
-            <Box
-              sx={{
-                display: 'grid',
-                gap: 1.5,
-                gridTemplateColumns: { xs: 'repeat(2, minmax(0, 1fr))', xl: 'repeat(4, minmax(0, 1fr))' },
-              }}
-            >
-              <InsightMetric
-                eyebrow="Momentum"
-                value={`${analytics.momentum.score}/100`}
-                detail={cleanCopy(analytics.momentum.label)}
-                tone={analytics.momentum.score >= 70 ? 'success' : analytics.momentum.score > 0 ? 'neutral' : 'warning'}
-              />
-              <InsightMetric
-                eyebrow="Readiness"
-                value={`${readinessSnapshot.paceSnapshot.coveragePercent}%`}
-                detail={`${readinessSnapshot.daysRemaining} days to target`}
-                tone={readinessSnapshot.paceSnapshot.paceLevel === 'behind' ? 'warning' : 'neutral'}
-              />
-              <InsightMetric
-                eyebrow="History"
-                value={`${analytics.trackedDays}`}
-                detail={`Tracked days in ${windowKey.toUpperCase()}`}
-                tone={analytics.dataState === 'ready' ? 'success' : 'warning'}
-              />
-              <InsightMetric
-                eyebrow="Signals"
-                value={`${activeSignalCount}`}
-                detail={activeSignalCount > 0 ? 'Need review' : 'No acute flags'}
-                tone={activeSignalCount > 0 ? 'warning' : 'success'}
-              />
-            </Box>
 
             <Stack
-              spacing={1.4}
-              sx={{
+              spacing={1.35}
+              sx={(theme) => ({
                 border: '1px solid',
-                borderColor: 'divider',
-                borderRadius: 4,
-                p: 2,
-                backgroundColor: alpha(forgeTokens.palette.background.elevated, 0.38),
-              }}
+                borderColor: alpha(theme.palette.text.secondary, theme.palette.mode === 'light' ? 0.12 : 0.1),
+                borderRadius: 2.5,
+                p: { xs: 1.4, md: 1.7 },
+                backgroundColor: alpha(theme.palette.background.paper, theme.palette.mode === 'light' ? 0.42 : 0.22),
+              })}
             >
+              <Stack direction="row" spacing={1} useFlexGap flexWrap="wrap" alignItems="center">
+                <Chip label={statusChip.label} color={statusChip.color} size="small" variant="outlined" />
+                {isStale ? <Chip label="Stale" size="small" color="warning" variant="outlined" /> : null}
+                <Chip label={analytics.sourceLabel} size="small" variant="outlined" />
+              </Stack>
               <Typography variant="overline" color="primary.light">
                 Window
               </Typography>
@@ -233,12 +199,56 @@ function UnifiedInsightsSurface({
                   </Button>
                 ))}
               </Stack>
-              <Typography variant="body2" color="text.secondary">
-                Change the history window.
-              </Typography>
             </Stack>
           </Box>
+
+          <Box
+            sx={{
+              display: 'grid',
+              gap: 1.25,
+              gridTemplateColumns: { xs: '1fr', md: 'repeat(3, minmax(0, 1fr))' },
+            }}
+          >
+            <InsightBriefCard eyebrow="What changed" text={brief.changed} />
+            <InsightBriefCard eyebrow="Why it matters" text={brief.matters} />
+            <InsightBriefCard eyebrow="What to adjust" text={brief.adjust} />
+          </Box>
         </Stack>
+      </SurfaceCard>
+
+      <SurfaceCard variant="quiet" eyebrow="Current read" title="Evidence snapshot" description="Enough numbers to orient, without making the chart wall the first thing you read.">
+        <Box
+          sx={{
+            display: 'grid',
+            gap: 1.25,
+            gridTemplateColumns: { xs: 'repeat(2, minmax(0, 1fr))', lg: 'repeat(4, minmax(0, 1fr))' },
+          }}
+        >
+          <InsightMetric
+            eyebrow="Momentum"
+            value={`${analytics.momentum.score}/100`}
+            detail={cleanCopy(analytics.momentum.label)}
+            tone={analytics.momentum.score >= 70 ? 'success' : analytics.momentum.score > 0 ? 'neutral' : 'warning'}
+          />
+          <InsightMetric
+            eyebrow="Readiness"
+            value={`${readinessSnapshot.paceSnapshot.coveragePercent}%`}
+            detail={`${readinessSnapshot.daysRemaining} days left`}
+            tone={readinessSnapshot.paceSnapshot.paceLevel === 'behind' ? 'warning' : 'neutral'}
+          />
+          <InsightMetric
+            eyebrow="History"
+            value={`${analytics.trackedDays}`}
+            detail={`${windowKey.toUpperCase()} tracked days`}
+            tone={analytics.dataState === 'ready' ? 'success' : 'warning'}
+          />
+          <InsightMetric
+            eyebrow="Signals"
+            value={`${activeSignalCount}`}
+            detail={activeSignalCount > 0 ? 'Review top items' : 'No acute flags'}
+            tone={activeSignalCount > 0 ? 'warning' : 'success'}
+          />
+        </Box>
       </SurfaceCard>
 
       <Stack spacing={2.5} sx={{ display: { xs: 'flex', lg: 'none' } }}>
@@ -257,8 +267,9 @@ function UnifiedInsightsSurface({
         <Stack spacing={2.5} sx={{ minWidth: 0, order: 1 }}>
           <SurfaceCard
             eyebrow="Primary signals"
-            title="Pace, score, and output"
-            description="The fastest read on whether the plan is moving."
+            title="Evidence: pace, score, and output"
+            description="Detailed reads for when you want the proof behind the summary."
+            variant="quiet"
           >
             <Stack spacing={2}>
               <Box
@@ -331,6 +342,7 @@ function UnifiedInsightsSurface({
             eyebrow="Explanations"
             title="What may be driving the pattern"
             description="Context for the main trend."
+            variant="quiet"
           >
             <Box
               sx={{
@@ -428,6 +440,7 @@ function UnifiedInsightsSurface({
             eyebrow="Readiness map"
             title="Coverage and confidence"
             description="Where prep is strong or thin."
+            variant="quiet"
           >
             <DomainReadinessGrid readiness={readiness} />
           </SurfaceCard>
@@ -436,6 +449,7 @@ function UnifiedInsightsSurface({
             eyebrow="Continuity"
             title="Streaks and missions"
             description="Consistency and active focus areas."
+            variant="quiet"
           >
             <Box
               sx={{
@@ -513,13 +527,13 @@ function InsightMetric({ eyebrow, value, detail, tone = 'neutral' }: InsightMetr
   return (
     <Stack
       spacing={0.8}
-      sx={{
-        minHeight: { xs: 116, md: 132 },
+      sx={(theme) => ({
+        minHeight: { xs: 104, md: 112 },
         border: '1px solid',
-        borderColor: 'divider',
-        borderRadius: 4,
-        p: { xs: 1.6, md: 2 },
-        background: `linear-gradient(180deg, ${alpha(forgeTokens.palette.background.panel, 0.96)} 0%, ${alpha(forgeTokens.palette.background.surface, 0.96)} 100%)`,
+        borderColor: alpha(theme.palette.text.secondary, theme.palette.mode === 'light' ? 0.12 : 0.09),
+        borderRadius: 2,
+        p: { xs: 1.25, md: 1.4 },
+        backgroundColor: alpha(theme.palette.background.paper, theme.palette.mode === 'light' ? 0.46 : 0.2),
         position: 'relative',
         overflow: 'hidden',
         '&::before': {
@@ -530,9 +544,9 @@ function InsightMetric({ eyebrow, value, detail, tone = 'neutral' }: InsightMetr
           height: 2,
           background: `linear-gradient(90deg, ${alpha(toneColor, 0.9)} 0%, ${alpha(toneColor, 0)} 100%)`,
         },
-      }}
+      })}
     >
-      <Typography variant="overline" color="primary.light" sx={{ letterSpacing: '0.18em' }}>
+      <Typography variant="overline" color="primary.light" sx={{ letterSpacing: '0.14em' }}>
         {eyebrow}
       </Typography>
       <Typography variant="h3" sx={{ fontSize: { xs: '1.35rem', md: '1.55rem' } }}>
@@ -540,6 +554,29 @@ function InsightMetric({ eyebrow, value, detail, tone = 'neutral' }: InsightMetr
       </Typography>
       <Typography variant="body2" color="text.secondary" sx={{ mt: 'auto' }}>
         {detail}
+      </Typography>
+    </Stack>
+  )
+}
+
+function InsightBriefCard({ eyebrow, text }: { eyebrow: string; text: string }) {
+  return (
+    <Stack
+      spacing={0.75}
+      sx={(theme) => ({
+        border: '1px solid',
+        borderColor: alpha(theme.palette.text.secondary, theme.palette.mode === 'light' ? 0.12 : 0.1),
+        borderRadius: 2.25,
+        p: { xs: 1.45, md: 1.65 },
+        backgroundColor: alpha(theme.palette.background.paper, theme.palette.mode === 'light' ? 0.46 : 0.22),
+        minHeight: { xs: 118, md: 132 },
+      })}
+    >
+      <Typography variant="overline" color="primary.light">
+        {eyebrow}
+      </Typography>
+      <Typography variant="body2" color="text.primary">
+        {text}
       </Typography>
     </Stack>
   )
@@ -557,6 +594,7 @@ function ReadinessPaceCard({
 
   return (
     <SurfaceCard
+      variant="quiet"
       eyebrow="Readiness pace"
       title={cleanCopy(snapshot.pressureLabel)}
       description={cleanCopy(snapshot.paceSnapshot.paceLabel)}
@@ -594,6 +632,7 @@ function ReadinessPaceCard({
 function MomentumCard({ analytics }: { analytics: CommandCenterWorkspace }) {
   return (
     <SurfaceCard
+      variant="quiet"
       eyebrow="Momentum"
       title={analytics.momentum.label}
       description={cleanCopy(analytics.momentum.explanation)}
@@ -637,6 +676,7 @@ function RiskPanel({
 
   return (
     <SurfaceCard
+      variant="quiet"
       eyebrow="Risks"
       title={hasSignals ? 'Needs attention' : 'No acute flags'}
       description="The few items worth reviewing."
@@ -709,6 +749,7 @@ function WarningSummary({ warning }: { warning: CommandCenterWarning }) {
 function PatternPanel({ insights }: { insights: CommandCenterInsight[] }) {
   return (
     <SurfaceCard
+      variant="quiet"
       eyebrow="Patterns"
       title={insights.length > 0 ? 'Emerging reads' : 'Need more history'}
       description="Plain reads from recent history."
@@ -802,6 +843,7 @@ function RecoveryBoundary({ readiness }: { readiness: ReadinessWorkspace }) {
 
   return (
     <SurfaceCard
+      variant="quiet"
       eyebrow="Recovery data"
       title="Provider status"
       description={readiness.healthIntegration.statusSummaryLabel}
@@ -844,6 +886,42 @@ function getStatusChip(data: CommandCenterWorkspace): { label: string; color: 'd
   }
 
   return { label: 'Current', color: 'success' }
+}
+
+function getInsightBrief(analytics: CommandCenterWorkspace, readiness: ReadinessWorkspace): InsightBrief {
+  const mainWarning = analytics.warnings[0]
+  const mainInsight = analytics.insights[0]
+  const pace = readiness.readinessSnapshot.paceSnapshot
+  const focusedDomain = readiness.focusedDomains[0]
+
+  const changed =
+    mainInsight?.summary ??
+    mainWarning?.detail ??
+    analytics.coachSummary.summary
+
+  const matters =
+    pace.paceLevel === 'behind'
+      ? `${pace.paceLabel} The target needs steadier topic coverage before the date gets close.`
+      : activeReadinessSummary(readiness)
+
+  const adjust =
+    focusedDomain
+      ? `Protect ${focusedDomain.label} next and keep the window narrow enough to finish.`
+      : mainWarning
+        ? 'Protect one execution block and add history before making bigger changes.'
+        : 'Keep the current plan steady and review the charts only if the trend changes.'
+
+  return {
+    changed: cleanCopy(changed),
+    matters: cleanCopy(matters),
+    adjust: cleanCopy(adjust),
+  }
+}
+
+function activeReadinessSummary(readiness: ReadinessWorkspace) {
+  const snapshot = readiness.readinessSnapshot
+
+  return `${snapshot.paceSnapshot.coveragePercent}% coverage with ${snapshot.daysRemaining} days left.`
 }
 
 function cleanCopy(copy: string) {

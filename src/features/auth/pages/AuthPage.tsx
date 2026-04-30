@@ -11,213 +11,91 @@ export function AuthPage() {
 
   return (
     <Box
-      sx={{
+      sx={(theme) => ({
         minHeight: '100vh',
         position: 'relative',
         overflow: 'hidden',
         display: 'flex',
+        alignItems: 'center',
         justifyContent: 'center',
-        px: { xs: 2, sm: 3.5, md: 5 },
-        py: { xs: 2.5, sm: 3.5, md: 4.5 },
-        background: (theme) =>
+        px: { xs: 2, sm: 3, md: 5 },
+        py: { xs: 2.5, sm: 4 },
+        background:
           theme.palette.mode === 'light'
-            ? 'radial-gradient(circle at 14% 37%, rgba(184, 102, 61, 0.12), transparent 22%), radial-gradient(circle at 80% 18%, rgba(146, 104, 55, 0.08), transparent 21%), linear-gradient(180deg, #fff8ef 0%, #f7f2ea 100%)'
-            : 'radial-gradient(circle at 14% 37%, rgba(200, 111, 66, 0.26), transparent 22%), radial-gradient(circle at 80% 18%, rgba(120, 116, 105, 0.16), transparent 21%), linear-gradient(180deg, #17130f 0%, #12100d 100%)',
-      }}
+            ? 'radial-gradient(circle at 20% 18%, rgba(196, 112, 66, 0.12), transparent 30%), linear-gradient(180deg, #fbf3e8 0%, #f4ecdf 100%)'
+            : 'radial-gradient(circle at 20% 18%, rgba(202, 117, 68, 0.18), transparent 32%), linear-gradient(180deg, #17130f 0%, #100e0c 100%)',
+      })}
     >
       <Box
         sx={{
           position: 'relative',
-          zIndex: 0,
-          width: 'min(1180px, 100%)',
-          minHeight: { xs: 'calc(100svh - 20px)', sm: 'calc(100svh - 28px)', md: 'calc(100vh - 36px)' },
+          zIndex: 1,
+          width: 'min(1040px, 100%)',
         }}
       >
         <Box
           aria-hidden
-          sx={{
-            position: 'absolute',
-            inset: 0,
+          sx={(theme) => ({
+            position: 'fixed',
+            inset: 'auto auto 8% 50%',
+            width: { xs: 260, sm: 360, md: 520 },
+            height: { xs: 260, sm: 360, md: 520 },
+            transform: 'translateX(-50%)',
+            borderRadius: '50%',
+            backgroundColor: alpha(theme.palette.primary.main, theme.palette.mode === 'light' ? 0.08 : 0.1),
+            filter: 'blur(48px)',
             pointerEvents: 'none',
+          })}
+        />
+        <Box
+          sx={{
+            display: 'grid',
+            gridTemplateColumns: { xs: '1fr', md: 'minmax(0, 0.9fr) minmax(420px, 0.72fr)' },
+            gap: { xs: 2.5, md: 3.5 },
+            alignItems: 'center',
           }}
         >
-          <Box
-            sx={{
-              position: 'absolute',
-              insetInline: 0,
-              top: { xs: 0, md: 6 },
-              height: { xs: '62%', md: 560 },
-            }}
-          >
-            <Box
+          <Stack spacing={2.25} sx={{ display: { xs: 'none', md: 'flex' } }}>
+            <Typography variant="overline" color="primary.light">
+              Personal execution OS
+            </Typography>
+            <Typography
+              variant="h1"
               sx={{
-                position: 'absolute',
-                left: { xs: '6%', md: '9%' },
-                top: { xs: 18, md: 24 },
-                width: { xs: '34%', md: 290 },
-                height: { xs: 150, sm: 200, md: 260 },
-                backgroundColor: (theme) => alpha(theme.palette.primary.light, theme.palette.mode === 'light' ? 0.08 : 0.12),
+                maxWidth: 560,
+                fontSize: { md: '4.3rem', lg: '5rem' },
+                lineHeight: 0.92,
+                letterSpacing: '-0.07em',
               }}
-            />
-            <Box
-              sx={{
-                position: 'absolute',
-                left: { xs: '37%', md: '33%' },
-                top: { xs: 26, md: 40 },
-                width: { xs: '14%', md: 140 },
-                height: { xs: 98, sm: 128, md: 150 },
-                backgroundColor: (theme) => alpha(theme.palette.primary.light, theme.palette.mode === 'light' ? 0.06 : 0.1),
-              }}
-            />
-            <Box
-              sx={{
-                position: 'absolute',
-                left: { xs: '25%', md: '31%' },
-                top: { xs: -42, md: -64 },
-                width: { xs: '22%', md: 220 },
-                height: { xs: 360, sm: 420, md: 520 },
-                transform: 'skewX(-21deg)',
-                backgroundColor: (theme) => alpha(theme.palette.primary.dark, theme.palette.mode === 'light' ? 0.1 : 0.22),
-              }}
-            />
-            <Box
-              sx={{
-                position: 'absolute',
-                right: { xs: '4%', md: '7%' },
-                top: { xs: -50, md: -72 },
-                width: { xs: '35%', md: 340 },
-                height: { xs: 390, sm: 470, md: 560 },
-                transform: 'skewX(-22deg)',
-                backgroundColor: (theme) => alpha(theme.palette.secondary.main, theme.palette.mode === 'light' ? 0.1 : 0.28),
-              }}
-            />
-            <Box
-              sx={{
-                position: 'absolute',
-                right: { xs: '4%', md: '7%' },
-                top: { xs: 74, md: 92 },
-                width: { xs: 16, sm: 20, md: 26 },
-                height: { xs: 120, sm: 156, md: 200 },
-                transform: 'skewX(-24deg)',
-                backgroundColor: (theme) => alpha(theme.palette.primary.light, theme.palette.mode === 'light' ? 0.12 : 0.28),
-              }}
-            />
-            <Box
-              sx={{
-                position: 'absolute',
-                left: '50%',
-                top: { xs: 84, sm: 132, md: 232 },
-                width: { xs: 250, sm: 320, md: 460 },
-                height: { xs: 250, sm: 320, md: 460 },
-                transform: 'translateX(-50%)',
-                backgroundColor: (theme) => alpha(theme.palette.background.default, theme.palette.mode === 'light' ? 0.18 : 0.46),
-                WebkitMaskImage: 'url(/maskable-source.svg)',
-                WebkitMaskRepeat: 'no-repeat',
-                WebkitMaskPosition: 'center',
-                WebkitMaskSize: 'contain',
-                maskImage: 'url(/maskable-source.svg)',
-                maskRepeat: 'no-repeat',
-                maskPosition: 'center',
-                maskSize: 'contain',
-                opacity: 0.62,
-              }}
-            />
-            <Box
-              sx={{
-                position: 'absolute',
-                left: { xs: '18%', md: '20%' },
-                bottom: { xs: 28, md: 28 },
-                width: { xs: 200, sm: 260, md: 320 },
-                height: { xs: 88, sm: 104, md: 122 },
-                background: (theme) =>
-                  theme.palette.mode === 'light'
-                    ? 'linear-gradient(180deg, rgba(255, 250, 242, 0.6) 0%, rgba(255, 250, 242, 0.12) 100%)'
-                    : 'linear-gradient(180deg, rgba(28, 22, 17, 0.76) 0%, rgba(28, 22, 17, 0.2) 100%)',
-              }}
-            />
-            <Box
-              sx={{
-                position: 'absolute',
-                right: { xs: '12%', md: '14%' },
-                bottom: { xs: -4, md: 0 },
-                width: { xs: 120, sm: 160, md: 220 },
-                height: { xs: 120, sm: 150, md: 180 },
-                transform: 'skewX(-16deg)',
-                backgroundColor: (theme) => alpha(theme.palette.text.secondary, theme.palette.mode === 'light' ? 0.08 : 0.14),
-              }}
-            />
-          </Box>
-        </Box>
-        <Box
-          aria-hidden
-          sx={{
-            position: 'absolute',
-            inset: 0,
-            background:
-              (theme) =>
-                theme.palette.mode === 'light'
-                  ? 'linear-gradient(109deg, transparent 0 30%, rgba(184, 102, 61, 0.05) 30% 41%, transparent 41% 58%, rgba(146, 104, 55, 0.05) 58% 79%, transparent 79% 100%)'
-                  : 'linear-gradient(109deg, transparent 0 30%, rgba(228, 169, 104, 0.07) 30% 41%, transparent 41% 58%, rgba(127, 138, 138, 0.08) 58% 79%, transparent 79% 100%)',
-            opacity: 0.52,
-            pointerEvents: 'none',
-          }}
-        />
-        <Box
-          aria-hidden
-          sx={{
-            position: 'absolute',
-            insetInline: 0,
-            bottom: 0,
-            height: '28%',
-            background:
-              (theme) =>
-                theme.palette.mode === 'light'
-                  ? 'linear-gradient(180deg, rgba(247, 242, 234, 0) 0%, rgba(247, 242, 234, 0.76) 42%, rgba(247, 242, 234, 1) 100%)'
-                  : 'linear-gradient(180deg, rgba(18, 16, 13, 0) 0%, rgba(18, 16, 13, 0.78) 42%, rgba(18, 16, 13, 1) 100%)',
-            pointerEvents: 'none',
-          }}
-        />
-        <Box
-          aria-hidden
-          sx={{
-            position: 'absolute',
-            left: '50%',
-            bottom: { xs: 18, sm: 22, md: 26 },
-            width: { xs: '86%', sm: '70%', md: 760 },
-            maxWidth: '88vw',
-            height: 10,
-            transform: 'translateX(-50%)',
-            borderRadius: 999,
-            background: (theme) =>
-              `linear-gradient(90deg, ${alpha(theme.palette.primary.light, 0.04)} 0%, ${alpha(theme.palette.primary.light, 0.14)} 50%, ${alpha(theme.palette.primary.light, 0.04)} 100%)`,
-            pointerEvents: 'none',
-          }}
-        />
+            >
+              Start with a clear day.
+            </Typography>
+            <Typography color="text.secondary" sx={{ maxWidth: 480, fontSize: '1.08rem' }}>
+              Forge keeps planning, backups, and daily execution in one calm workspace.
+            </Typography>
+          </Stack>
+
         <Card
           data-forge-page-transition="true"
           sx={{
-            position: 'absolute',
-            zIndex: 1,
-            left: '50%',
-            top: { xs: '50%', sm: '50%', md: '50%' },
-            transform: 'translate(-50%, -50%)',
             width: '100%',
-            maxWidth: { xs: '100%', sm: 590, md: 610 },
-            borderRadius: { xs: 5, sm: 5.5 },
+            maxWidth: { xs: 520, md: 'none' },
+            mx: 'auto',
+            borderRadius: { xs: 4, sm: 5 },
             borderColor: (theme) => alpha(theme.palette.text.secondary, theme.palette.mode === 'light' ? 0.18 : 0.22),
             background: (theme) =>
               theme.palette.mode === 'light'
-                ? 'linear-gradient(180deg, rgba(255, 250, 242, 0.96) 0%, rgba(248, 239, 226, 0.98) 100%)'
-                : 'linear-gradient(180deg, rgba(38, 31, 24, 0.96) 0%, rgba(24, 20, 16, 0.98) 100%)',
+                ? 'rgba(255, 250, 242, 0.94)'
+                : 'rgba(35, 29, 23, 0.94)',
             backdropFilter: 'blur(20px)',
             boxShadow: (theme) =>
               theme.palette.mode === 'light'
-                ? '0 28px 72px rgba(75, 55, 34, 0.12)'
-                : '0 28px 72px rgba(10, 7, 5, 0.34)',
+                ? '0 24px 70px rgba(75, 55, 34, 0.12)'
+                : '0 24px 70px rgba(10, 7, 5, 0.32)',
           }}
         >
-          <CardContent sx={{ p: { xs: 3, sm: 3.75 }, pt: { xs: 4.6, sm: 4.8 } }}>
-            <Stack spacing={{ xs: 2.8, sm: 2.5 }}>
+          <CardContent sx={{ p: { xs: 3, sm: 4 } }}>
+            <Stack spacing={2.6}>
               <Typography
                 variant="overline"
                 color="primary.light"
@@ -227,16 +105,16 @@ export function AuthPage() {
                   opacity: 0.86,
                 }}
               >
-                Entry Gate
+                Forge
               </Typography>
               <Stack spacing={1.2}>
                 <Typography
                   variant="h2"
                   sx={{
-                    fontSize: { xs: '2.6rem', sm: '3rem' },
-                    lineHeight: 0.94,
+                    fontSize: { xs: '2.45rem', sm: '3rem' },
+                    lineHeight: 0.96,
                     letterSpacing: '-0.05em',
-                    maxWidth: { xs: '10.4ch', sm: '9.5ch' },
+                    maxWidth: { xs: '11ch', sm: '10ch' },
                   }}
                 >
                   Sign in to Forge
@@ -249,7 +127,7 @@ export function AuthPage() {
                     maxWidth: { xs: '19ch', sm: '20.5ch' },
                   }}
                 >
-                  Continue with Google or try a temporary demo workspace.
+                  Continue with Google. Use demo mode only for a quick preview.
                 </Typography>
               </Stack>
               {status === 'missing_config' ? (
@@ -324,6 +202,7 @@ export function AuthPage() {
             </Stack>
           </CardContent>
         </Card>
+        </Box>
       </Box>
     </Box>
   )

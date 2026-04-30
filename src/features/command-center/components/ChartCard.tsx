@@ -32,7 +32,7 @@ export function ChartCard({
       title={title}
       description={description}
       contentSx={{
-        background: `linear-gradient(180deg, ${palette.soft} 0%, rgba(13, 17, 26, 0.96) 100%)`,
+        background: 'transparent',
       }}
       action={
         state === 'stale' ? (
