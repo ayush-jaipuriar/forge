@@ -1,112 +1,109 @@
 # Forge
 
-Forge is a focused daily execution app for planning the week, running the day, reviewing patterns, and keeping recovery inputs visible.
+Forge is a calm, premium daily planner for people who want more clarity and less drift.
 
-It is designed to answer a simple question well:
+It is built around one practical question:
 
-**What should I do next, and how do I stay honest about whether the day is actually working?**
+**What matters today, what should happen next, and what needs adjustment before the day starts slipping?**
 
-Unlike a generic productivity dashboard, Forge keeps routine, prep, training, readiness, and calendar load in one practical workflow.
+Forge is not a generic productivity dashboard. It brings daily execution, weekly planning, recovery signals, prep work, and review into one structured workflow with a warmer, more editorial product feel.
 
-## Why This Project Stands Out
+## What Forge Is
 
-Forge is not just a UI demo. It is a complete product-style build with:
+Forge is a personal planning application with four primary surfaces:
 
-- a multi-route React application
-- local-first persistence with IndexedDB
-- typed domain modeling for routines, scoring, prep, readiness, sync, and backup flows
-- Firebase-backed auth, hosting, storage, and server-side jobs
-- installable PWA behavior with offline shell support
-- guest-mode onboarding with seeded demo data
-- structured product documentation, implementation planning, and test coverage
+- `Today` for running the current day with clarity
+- `Plan` for shaping the week and tuning upcoming days
+- `Insights` for understanding trends, patterns, and pressure
+- `Settings` for account, appearance, integrations, and app controls
 
-For recruiters and hiring teams, this project demonstrates:
+The current product direction is intentionally simpler and calmer than earlier iterations. The app now prioritizes:
 
-- product thinking, not just feature coding
-- frontend architecture and UX systems work
-- local persistence and sync design
-- practical Firebase platform integration
-- release verification discipline
+- clear next actions over dense dashboards
+- warm, premium visual design over cockpit-style UI
+- one coherent planner experience over too many competing surfaces
+- cloud-backed authenticated state as the source of truth
 
-## What Forge Does
-
-Forge helps a user run their day with more structure and less drift.
-
-Core product goals:
-
-- keep the day plan visible and actionable
-- make prep progress measurable
-- treat physical training and recovery as execution inputs, not separate apps
-- show when calendar load is starting to distort the routine
-- make the next best action clearer
-
-## Main Product Surfaces
+## Core Experience
 
 ### Today
 
-The daily workspace.
+The daily execution workspace.
 
-It shows:
+It focuses on:
 
-- current day context
-- the current block
-- quick sleep and energy updates
-- day-mode posture
-- alerts
-- calendar and support context
+- the day headline and current direction
+- the current block or next meaningful action
+- execution context and key support signals
+- lightweight day adjustments without over-editing
 
 ### Plan
 
 The planning workspace.
 
-It combines:
+It focuses on:
 
 - weekly structure
-- selected-day tuning
-- prep progress
-- topic focus
-- calendar-aware constraints
+- prep and upcoming work
+- day selection and week views
+- shaping the plan before the day arrives
 
 ### Insights
 
-The pattern review workspace.
+The review and intelligence workspace.
 
-It combines:
+It focuses on:
 
-- momentum
-- risk
-- projections
-- analytics charts
-- readiness pace
-- domain readiness
-- continuity and missions
+- what changed
+- why it matters
+- what to adjust next
+- supporting analytics and evidence below the fold
 
 ### Settings
 
-The utility workspace.
+The utility and control workspace.
 
-It includes:
+It focuses on:
 
-- account and app status
-- backup and restore status
-- notification state
-- calendar integration state
-- advanced status details
-- planned provider integrations
+- account and sign-in state
+- theme and appearance preferences
+- integration controls
+- app-level actions such as refresh and platform utilities
 
-## Key Features
+## Product Highlights
 
-- Local-first workspace backed by IndexedDB
-- Installable PWA shell
-- Google sign-in
-- Guest workspace with temporary demo data
-- Daily scoring and recommendation system
-- Day-mode overrides for real-world changes
-- Prep progress tracking
-- Workout and signal logging
-- Calendar load awareness
-- Backup and restore tools
-- Firebase Functions for background jobs
+- Google-authenticated personal workspace
+- guest/demo mode for quick exploration
+- Firebase-backed cloud state for signed-in usage
+- installable PWA shell for web and mobile-home-screen use
+- daily and weekly planning surfaces with shared design language
+- insights surfaces that preserve depth without leading with clutter
+- light and dark themes with user-controlled switching
+- background platform support through Firebase Hosting, Firestore, Storage, and Functions
+
+## Current Runtime Model
+
+Forge now treats authenticated cloud data as the primary source of truth.
+
+That means:
+
+- signed-in usage is designed around Firebase-backed online state
+- guest/demo usage is local and disposable
+- browser storage is still used for lightweight local concerns such as shell state, preferences, and temporary caches
+- the older local-first/offline-heavy posture is no longer the main product direction
+
+This keeps the day-to-day experience more predictable across devices and reduces sync ambiguity.
+
+## Why This Repo Is Useful
+
+Forge is not just a static UI exercise. It demonstrates:
+
+- product thinking and iterative scope refinement
+- frontend architecture across multiple routes and shared systems
+- a real design-system modernization pass
+- Firebase integration across auth, data, hosting, storage, and functions
+- PWA deployment and installability
+- automated testing, verification, and release hardening
 
 ## Tech Stack
 
@@ -119,14 +116,14 @@ It includes:
 - Zustand
 - TanStack Query
 
-### Persistence and Platform
+### Platform
 
-- IndexedDB via `idb`
 - Firebase Auth
 - Firestore
 - Cloud Storage
 - Firebase Functions
 - Firebase Hosting
+- PWA support via Vite plugin tooling
 
 ### Quality and Tooling
 
@@ -134,45 +131,44 @@ It includes:
 - Testing Library
 - ESLint
 - TypeScript project builds
-- Capacitor Android foundation
+- Capacitor foundation for future native-shell exploration
 
-## Architecture Summary
-
-Forge is built around a few clear layers:
+## Architecture at a Glance
 
 - `src/domain`
-  Business rules, scoring, readiness, schedule rules, recommendation logic, and typed contracts.
-
-- `src/services`
-  Application services for persistence, analytics, calendar integration, notifications, sync, backup, and platform operations.
-
-- `src/data`
-  Local repositories and IndexedDB storage access.
+  Typed business rules, scoring, planning logic, and shared contracts.
 
 - `src/features`
-  Product routes and their hooks, pages, and feature-level components.
+  Route-level product areas such as Today, Plan, Insights, Settings, and Auth.
+
+- `src/services`
+  Application services for sync, analytics, notifications, backup, integrations, and app operations.
+
+- `src/data`
+  Repository and persistence implementations, including local browser-side support where still needed.
+
+- `src/components`
+  Shared layout, shell, and design-system primitives.
 
 - `functions/`
-  Firebase Functions for scheduled or operator-driven background work.
+  Firebase Functions for scheduled jobs and platform workflows.
 
-This separation makes the project easier to test, reason about, and extend.
+## Routes
 
-## Guest Mode
+Current primary routes:
 
-Forge supports a guest workspace so anyone can explore the product without signing in.
+- `/` -> Today
+- `/plan` -> Plan
+- `/insights` -> Insights
+- `/settings` -> Settings
+- `/auth` -> Authentication entry
 
-Guest mode:
+Legacy routes are redirected to the newer information architecture:
 
-- seeds local demo data
-- works without cloud sync
-- is safe to experiment with
-- clears when the guest exits
-
-This is useful for:
-
-- product demos
-- recruiter review
-- quick evaluation without account setup
+- `/schedule` -> `/plan?view=week`
+- `/command-center` -> `/insights?view=weekly`
+- `/readiness` -> `/insights?view=readiness`
+- `/prep` -> `/plan?view=prep`
 
 ## Getting Started
 
@@ -183,59 +179,60 @@ npm install
 npm run functions:install
 ```
 
-### 2. Create your local environment file
+### 2. Configure Firebase web environment
 
 ```bash
 cp .env.example .env
 ```
 
-Add real Firebase web app values to `.env`.
+Add your real Firebase web app values to `.env`:
 
-Important:
+```bash
+VITE_FIREBASE_API_KEY=...
+VITE_FIREBASE_AUTH_DOMAIN=...
+VITE_FIREBASE_PROJECT_ID=...
+VITE_FIREBASE_STORAGE_BUCKET=...
+VITE_FIREBASE_MESSAGING_SENDER_ID=...
+VITE_FIREBASE_APP_ID=...
+```
 
-- Forge needs valid Firebase config for authenticated flows
-- guest mode can still be useful for product exploration
+Forge supports guest/demo exploration without a full signed-in flow, but authenticated usage needs valid Firebase configuration.
 
-### 3. Start the app locally
+### 3. Start the app
 
 ```bash
 npm run dev
 ```
 
-Open the URL printed by Vite, usually:
+Vite will print the local URL, usually something like:
 
 ```text
 http://127.0.0.1:5173
 ```
 
-## Recommended Local Test Flow
+## Recommended Local Workflow
 
-### Fast development loop
+### Fast UI iteration
 
 ```bash
 npm run dev
 ```
 
-Use this when you are changing UI or product behavior.
+Use this for day-to-day interface and behavior work.
 
-### Production-like local check
+### Production-like local verification
 
 ```bash
 npm run build
-npm run preview -- --host 127.0.0.1 --port 4181
+npm run preview -- --host 127.0.0.1 --port 4180
 ```
 
-Then open:
+This is the better check for:
 
-```text
-http://127.0.0.1:4181
-```
-
-Use this when checking:
-
-- PWA shell behavior
+- final layout behavior
 - auth behavior closer to production
-- final layout and asset output
+- PWA shell behavior
+- release-candidate UI review
 
 ## Useful Commands
 
@@ -244,136 +241,87 @@ npm run dev
 npm run lint
 npm run typecheck
 npm run test:run
+npm run coverage
 npm run build
 npm run preview
 npm run launch:verify
 npm run functions:verify
 ```
 
-### Android / native shell support
+### Native-shell foundation commands
 
 ```bash
 npm run native:doctor
+npm run native:sync
 npm run android:sync
 npm run android:assemble
 npm run android:install
+npm run android:open
+npm run android:run
 ```
+
+## Firebase and Deployment Notes
+
+Forge is currently deployed on Firebase Hosting.
+
+Production URL:
+
+- [forge-510f3.web.app](https://forge-510f3.web.app)
+
+The deploy flow covers:
+
+- Hosting
+- Firestore rules and indexes
+- Storage rules
+- Cloud Functions
+
+If you are setting the project up from scratch, these docs are the best starting points:
+
+- [Firebase setup](docs/firebase-setup.md)
+- [Architecture overview](docs/architecture-overview.md)
+- [Deployment guide](docs/deployment-guide.md)
+- [Phone install guide](docs/production-deployment-and-phone-install-guide.md)
+
+## Core Docs
+
+For deeper product and implementation context, these are the most useful follow-on reads:
+
+- [Architecture overview](docs/architecture-overview.md)
+- [Firebase setup](docs/firebase-setup.md)
+- [Deployment guide](docs/deployment-guide.md)
+- [Notification delivery rules](docs/notification-delivery-rules.md)
+- [Calm premium planner redesign plan](docs/calm-premium-planner-visual-redesign-plan.md)
+
+## Project Status
+
+The current codebase reflects a completed visual modernization and simplification pass that:
+
+- merges older dashboard-style surfaces into a more focused planner IA
+- introduces warmer dark mode and light mode support
+- reduces copy verbosity across the app
+- preserves analytics depth while improving clarity
+- hardens the release-candidate web/PWA experience
+
+## Development Principles Behind This Version
+
+This version of Forge is shaped by a few strong product choices:
+
+- simplify before expanding
+- keep the planner legible on both desktop and mobile
+- avoid exposing noisy implementation details to users
+- preserve useful depth, but put it behind clearer structure
+- optimize the real signed-in experience, not just demo screenshots
 
 ## Verification
 
-The main pre-deploy verification path is:
+Before major merges or deploys, the main verification flow is:
 
 ```bash
-npm run launch:verify
-```
-
-That runs:
-
-- lint
-- typecheck
-- tests
-- production build
-- Functions verification
-
-## Deployment
-
-Forge is deployed on Firebase Hosting.
-
-### Hosting-only deploy
-
-Use this when only the frontend/PWA shell changed:
-
-```bash
+npm run lint
+npm run typecheck
+npm run test:run
 npm run build
-firebase deploy --project forge-510f3 --only hosting
+npm run functions:verify
 ```
 
-### Full deploy
-
-Use this when rules, storage, or functions changed too:
-
-```bash
-npm run launch:verify
-firebase deploy --project forge-510f3 --only hosting,firestore:rules,firestore:indexes,storage,functions
-```
-
-Live site:
-
-```text
-https://forge-510f3.web.app
-```
-
-## How To Evaluate The Product Quickly
-
-If you are new to Forge, this is the fastest useful walkthrough:
-
-1. Open the app and sign in, or enter guest mode.
-2. Go to `Today` to see what to do now.
-3. Open `Plan` to adjust the week and prep focus.
-4. Open `Insights` to review patterns, risks, and readiness pace.
-5. Open `Settings` to manage backup, restore, Calendar, notifications, and account status.
-6. Open `About` only if you want project and developer context.
-
-## Current Product Boundaries
-
-Forge is intentionally **not**:
-
-- a generic habit tracker
-- a free-form calendar replacement
-- a template-driven dashboard toy
-- a social productivity app
-
-The current product philosophy is:
-
-- routines are seeded and structured
-- overrides are allowed when reality changes
-- metrics should support honest execution, not vanity tracking
-- integrations should exist only when they add real value
-
-## Current Limitations
-
-- browser and installed-PWA notifications are supported more directly than native mobile push
-- health integrations are planned, not fully live provider sync
-- native shell foundations exist, but full native capability parity is still incomplete
-- calendar support is intentionally bounded and not a complete long-lived server-managed integration system yet
-- offline support is strongest at the shell and local workspace level, not full cloud-state parity across every screen
-
-## Developer
-
-Built by **Ayush Jaipuriar**  
-**Developer at TransUnion**
-
-- LinkedIn: [Ayush Jaipuriar](https://www.linkedin.com/in/ayush-jaipuriar/)
-- Portfolio: [Personal Portfolio](https://ayush-jaipuriar.github.io/Personal-Portfolio/about)
-
-## Core Project Docs
-
-If you want deeper technical or delivery context, start here:
-
-- [Architecture Overview](docs/architecture-overview.md)
-- [Forge Senior Engineering Study Guide](docs/forge-senior-study-guide.md)
-- [Firebase Setup](docs/firebase-setup.md)
-- [Deployment Guide](docs/deployment-guide.md)
-- [Production Deployment And Phone Install Guide](docs/production-deployment-and-phone-install-guide.md)
-- [UI Modernization Implementation Plan](docs/ui-modernization-implementation-plan.md)
-- [Product Simplification Roadmap](docs/product-simplification-roadmap.md)
-- [Product Simplification Implementation Plan](docs/product-simplification-implementation-plan.md)
-- [Product Simplification Milestone Breakdown](docs/product-simplification-milestone-breakdown.md)
-- [Product Simplification Sprint 1 Plan](docs/product-simplification-sprint-1-plan.md)
-- [Product Simplification Sprint 2 Plan](docs/product-simplification-sprint-2-plan.md)
-- [Product Simplification Sprint 3 Plan](docs/product-simplification-sprint-3-plan.md)
-- [Product Simplification Sprint 4 Plan](docs/product-simplification-sprint-4-plan.md)
-- [Product Simplification Sprint 5 Plan](docs/product-simplification-sprint-5-plan.md)
-- [Product Simplification Sprint 6 Plan](docs/product-simplification-sprint-6-plan.md)
-- [Auth Hardening Sprint Plan](docs/auth-hardening-sprint-plan.md)
-- [Cross-Device Sync Hydration Sprint Plan](docs/cross-device-sync-hydration-sprint-plan.md)
-- [Settings Sync Hardening Sprint Plan](docs/settings-sync-hardening-sprint-plan.md)
-- [Guest Workspace Implementation Notes](docs/guest-workspace-implementation-notes.md)
-- [Phase 4 Native Shell Workflow](docs/phase-4-native-shell-workflow.md)
-- [Phase 4 Launch Operations](docs/phase-4-launch-operations.md)
-
-## Final Note
-
-Forge is a serious product project: part planner, part daily execution tool, part pattern review.
-
-It was built to show that productivity software can be structured, opinionated, and honest without becoming noisy or generic.
+For full release checks, `npm run launch:verify` runs the complete chain.
